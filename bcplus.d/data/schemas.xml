@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<locatingRules xmlns="http://thaiopensource.com/ns/locating-rules/1.0">
+  <uri resource="synth.xml" uri="synth.rnc"/>
+  <uri resource="engies.xml" uri="engies.rnc"/>
+</locatingRules>

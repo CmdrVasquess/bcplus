@@ -1,0 +1,4 @@
+{"name":"FSD Injection","improves":"Jump Range","levels":[{"%":25,"germanium":1,"vanadium":2},{"%":50,"cadmium":2,"germanium":1,"niobium":1,"vanadium":1},{"%":100,"arsenic":1,"niobium":3,"polonium":1,"yttrium":1}]}
+{"name":"AFMU Refill","improves":"Speed","levels":[{"%":0,"chromium":2,"nickel":2,"vanadium":3,"zinc":2},{"%":50,"tin":1,"manganese":2,"molybdenum":1,"vanadium":6,"zirconium":1},{"%":100,"chromium":4,"ruthenium":1,"tellurium":1,"vanadium":6,"zinc":2,"zirconium":2}]}
+{"name":"SRV Refuel","improves":"Shield Overcharge","levels":[{"%":0,"phosphorus":1,"sulphur":1},{"%":50,"arsenic":1,"mercury":1,"phosphorus":1,"sulphur":1},{"%":100,"arsenic":1,"mercury":1,"sulphur":1,"technetium":1}]}
+{"name":"SRV Repair","improves":"Hull Strength","levels":[{"%":0,"iron":2,"nickel":1},{"%":50,"manganese":1,"molybdenum":1,"nickel":3,"vanadium":2},{"%":100,"chromium":2,"tellurium":1,"tungsten":1,"vanadium":2,"zinc":1}]}

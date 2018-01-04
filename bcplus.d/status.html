@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+: `title`</title>
+<!-- >>> title-offline >>> -->
+–offline–
+<!-- <<< title-offline <<< -->
+<!-- >>> title-online >>> -->
+CMDR `cmdr-name`
+<!-- <<< title-online <<< -->
+    <link rel="stylesheet" href="s/jqts/css/theme.dark.css">
+    <link rel="stylesheet" href="s/jqui/jquery-ui.css">
+    <link rel="stylesheet" href="s/css/bcp.css">
+	<script type="text/javascript" src="s/js/jquery.js"></script>
+	<script type="text/javascript" src="s/jqui/jquery-ui.js"></script>
+	<script type="text/javascript" src="s/jqts/js/jquery.tablesorter.js"></script>
+	<script type="text/javascript" src="s/jqts/js/jquery.tablesorter.widgets.js"></script>
+  </head>
+  <body>
+<!-- >>> body <<< -->
+<!-- >>> body-offline >>> -->
+    <header>
+	  <h1>…offline…</h1>
+	</header>
+<!-- <<< body-offline <<< -->
+<!-- >>> body-online >>> -->
+    <header>
+	  <h1>CMDR `cmdr-name` – `ship-type`: `ship-name`/`ship-id` @`sys-name`</h1>
+	  <table>
+		<tr>
+		  <td>`credits` Cr</td>
+		  <th>Combat</th>
+		  <th>Trade</th>
+		  <th>Explore</th>
+		  <th>CQC</th>
+		  <th>Emprie</th>
+		  <th>Federation</th>
+		</tr>
+		<tr>
+		  <td>`loan` Cr Loan</td>
+		  <td>`rnk-cbt`/8 +`rnkpgs-cbt`%</td>
+		  <td>`rnk-trd`/8 +`rnkpgs-trd`%</td>
+		  <td>`rnk-xpl`/8 +`rnkpgs-xpl`%</td>
+		  <td>`rnk-cqc`/8 +`rnkpgs-cqc`%</td>
+		  <td>`rnk-imp`/8 +`rnkpgs-imp`%</td>
+		  <td>`rnk-fed`/8 +`rnkpgs-fed`%</td>
+		</tr>
+	  </table>
+	</header>
+	<div id="tabs">
+	  <ul>
+		<li><a href="#routes">Routes</a></li>
+		<li><a href="#resources">Ressources</a></li>
+		<li><a href="#fleet">Fleet</a></li>
+	  </ul>
+	  <div id="routes">
+		NYI!
+	  </div>
+	  <div id="resources">
+<!-- >>> resource-line >>> -->
+       <tr>
+		<td>`name`</td>
+		<td>`have`</td>
+		<td>`need`</td>
+		<td>`src`</td>
+	  </tr>
+<!-- <<< resource-line <<< -->
+        <table class="tablesorter" style="display: inline-table">
+		  <caption>Raw Materials: `rawmat-no`</caption>
+		  <thead>
+			<tr>
+			  <th>Raw</th>
+			  <th>Have</th>
+			  <th>Need</th>
+			  <th>Source</th>
+			</tr>
+		  </thead>
+		  <tbody>
+<!-- >>> rawmat-lines <<< -->
+	      </tbody>
+		</table>
+		<table class="tablesorter" style="display: inline-table">
+		  <caption>Manufactured Materials: `manmat-no`</caption>
+		  <thead>
+			<tr>
+			  <th>Manufactured</th>
+			  <th>Have</th>
+			  <th>Need</th>
+			  <th>Source</th>
+			</tr>
+		  </thead>
+		  <tbody>
+<!-- >>> manmat-lines <<< -->
+          </tbody>
+		</table>
+		<table class="tablesorter" style="display: inline-table">
+		  <caption>Encoded Data: `encdta-no`</caption>
+		  <thead>
+			<tr>
+			  <th>Data</th>
+			  <th>Have</th>
+			  <th>Need</th>
+			  <th>Source</th>
+			</tr>
+		  </thead>
+		  <tbody>
+<!-- >>> encdta-lines <<< -->
+          </tbody>
+		</table>
+	  </div>
+	  <div id="fleet">
+		<h3>Anaconda: Sularco/JV-AC1 @Sol (3.000Ly) – 204.000.000 Cr / 8.128.123 Cr</h3><div>
+		<table>
+		  <thead>
+			<tr>
+			  <td colspan="4">Core Modules</td>
+			</tr>
+		  </thead>
+		  <tbody>
+			<tr><td>1</td><td>1C</td>
+			  <td>Lightweight Alloy</td>
+			  <td/>
+			</tr>
+			<tr><td>8</td><td>8E</td>
+			  <td>Power Plant</td>
+			  <td>Overcharged 4</td>
+			</tr>
+		  </tbody>
+		</table></div>
+		<h3>Anaconda: Sularco/JV-AC1 @Sol</h3><div>
+		<table>
+		  <thead>
+			<tr>
+			  <td colspan="4">Core Modules</td>
+			</tr>
+		  </thead>
+		  <tbody>
+			<tr><td>1</td><td>1C</td>
+			  <td>Lightweight Alloy</td>
+			  <td/>
+			</tr>
+			<tr><td>8</td><td>8E</td>
+			  <td>Power Plant</td>
+			  <td>Overcharged 4</td>
+			</tr>
+		  </tbody>
+		</table></div>
+	  </div>
+	</div>
+<!-- <<< body-online <<< -->
+	<script type="text/javascript">
+$(function(){
+  $("#tabs").tabs();
+  $(".tablesorter").tablesorter();
+  $("#fleet").accordion({heightStyle: "content"});
+})
+	</script>
+  </body>
+</html>

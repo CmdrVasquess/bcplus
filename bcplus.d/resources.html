@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de">
+  <head>
+<!-- >>> local-style >>> -->
+	<style>
+main table {	
+	/*float: left;*/
+	display: inline;
+}
+main tr.engh {
+	color: var(--colGood)
+}
+main tr.miss {
+	color: var(--colBad)
+}
+main td.itmhv {
+  text-align: right;
+}
+main td.itmnd {
+  text-align: right;
+}
+main span.spacer {
+  width: 20px;
+}
+main img.matgrd {
+	height: 1em;
+}
+	</style>
+<!-- <<< local-style <<< -->
+  </head>
+  <body>
+  <main>
+<!-- >>> topic >>> -->
+  	<table>
+  	<caption>`rawmat-type`</caption>
+  	<tr><th>⌬</th>
+  	    <th style="text-align: left">Capacity: `raw-max`</th>
+  	    <th style="text-align: right">∑:`raw-sum`</th>
+  	    <th title="Your demand for this material">D</th>
+  	    <th title="Best Deposit in System">ŝ</th>
+  	    <th title="Body with best deposit">Body</th></tr>
+<!-- >>> rawmats <<< \-->
+<!-- >>> rawmat >>> -->
+   <tr class="`demand`">
+ 	  <td class="center"><img class="matgrd" src="s/mat/g`mat-grd`.png"></td>
+ 	  <td class="itmnm"><a target="BCPxref" href="http://elite-dangerous.wikia.com/wiki/`xref`">`name`</a></td>
+     <td class="itmhv">`have`</td>
+     <td class="itmnd">`need`</td>
+     <td class="right">`raw-prc`</td>
+     <td>`raw-bdy`</td>
+   </tr>
+
+<!-- <<< rawmat <<< \-->
+  	</table>
+<span class="spacer">&nbsp;</span>
+<!-- >>> list-man <<< -->
+<span class="spacer">&nbsp;</span>
+<!-- >>> list-enc <<< -->
+<!-- <<< topic <<< -->
+<!-- >>> resc-list >>> -->
+  	<table>
+  	<caption>`resc-type`</caption>
+  	<tr><th>⌬</th>
+  		 <th style="text-align: left">Capacity: `max`</th>
+  	    <th style="text-align: right">∑:`sum`</th>
+  	    <th title="Your demand for this material">D</th></tr>
+<!-- >>> items <<< \-->
+<!-- >>> item >>> -->
+   <tr class="`demand`">
+ 	  <td class="center"><img class="matgrd" src="s/mat/g`mat-grd`.png"></td>
+ 	  <td class="itmnm"><a target="BCPxref" href="http://elite-dangerous.wikia.com/wiki/`xref`">`name`</a></td>
+     <td class="itmhv">`have`</td>
+     <td class="itmnd">`need`</td>
+   </tr>
+
+<!-- <<< item <<< \-->
+  	</table>
+<!-- <<< resc-list <<< -->
+  </main>
+  </body>
+</html>

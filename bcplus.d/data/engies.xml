@@ -1,0 +1,342 @@
+<?xml version="1.0"?>
+<engineers xmlns="https://fractalqb.de/ed/engineers/2.4">
+  <group key="core">
+	<name>Core Modules</name>
+  </group>
+  <group key="laser">
+	<name>Lasers</name>
+  </group>
+  <group key="ordnance">
+	<name>Ordnance</name>
+  </group>
+  <group key="util">
+	<name>Utilities</name>
+  </group>
+  <group key="limpets">
+	<name>Limpet Controller</name>
+  </group>
+  <group key="misc">
+	<name>Optional Modules</name>
+  </group>
+  
+  <module key="powerplant" group="core">
+	<name>Powerplant</name>
+	<name lang="de">Kraftwerk</name>
+  </module>
+  <module key="thrusters" group="core">
+	<name>Thrusters</name>
+  </module>
+  <module key="fsd" group="core">
+	<blueprint key="fastboot" grade="1">
+	  <material key="grid-resistors"/>
+	  <name>Fast Boot Sequence</name>
+	</blueprint>
+	<blueprint key="fastboot" grade="2">
+	  <material key="chromium"/>
+	  <material key="grid-resistors"/>
+	</blueprint>
+	<blueprint key="fastboot" grade="3">
+	  <material key="grid-resistors"/>
+	  <material key="heat-dispersion-plate"/>
+	  <material key="selenium"/>
+	</blueprint>
+	<blueprint key="fastboot" grade="4">
+	  <material key="cadmium"/>
+	</blueprint>
+	<blueprint key="fastboot" grade="5">
+	</blueprint>
+	<blueprint key="incrange" grade="1">
+	  <effect property="integrity" min="-5" max="0"/>
+	  <effect property="mass" min="-5" max="0"/>
+	  <effect property="opt-mass" min="4" max="10"/>
+	  <effect property="pow-draw" min="-4" max="0"/>
+	  <material key="atypical-disrupted-wake-echo"/>
+	  <name>Increased Range</name>
+	</blueprint>
+	<blueprint key="incrange" grade="2">
+	  <effect property="integrity" min="-10" max="-3"/>
+	  <effect property="mass" min="-14" max="-5"/>
+	  <effect property="opt-mass" min="8" max="20"/>
+	  <effect property="pow-draw" min="-10" max="2"/>
+	  <material key="atypical-disrupted-wake-echo"/>
+	  <material key="chem-proc"/>
+	</blueprint>
+	<name>Frameshift Drive</name>
+  </module>
+  <module key="lifesupp" group="core">
+	<name>Life Support</name>
+  </module>
+  <module key="powdistr" group="core">
+	<name>Power Distributor</name>
+  </module>
+  <module key="sensors" group="core">
+	<name>Sensors</name>
+  </module>
+  
+  <module key="pulselaser" group="laser">
+	<name>Pulse Laser</name>
+  </module>
+  <module key="burstlaser" group="laser">
+	<name>Burst Laser</name>
+  </module>
+  <module key="beamlaser" group="laser">
+	<name>Beam Laser</name>
+  </module>
+  <module key="mininglaser" group="laser">
+	<name>Mining Laser</name>
+  </module>
+
+  <module key="multi-cannon" group="ordnance">
+	<name>Multi-Cannon</name>
+  </module>
+  <module key="cannon" group="ordnance">
+	<name>Cannon</name>
+  </module>
+  <module key="frag-cannon" group="ordnance">
+	<name>Fragment Cannon</name>
+  </module>
+  <module key="plasma-accel" group="ordnance">
+	<name>Plasma Accelerator</name>
+  </module>
+  <module key="rail-gun" group="ordnance">
+	<name>Rail Gun</name>
+  </module>
+
+  <module key="shield-boost" group="util">
+	<name>Shield Booster</name>
+  </module>
+  <module key="heat-sink" group="util">
+	<name>Heat Sink Launcher</name>
+  </module>
+  <module key="chaff" group="util">
+	<name>Chaff Launcher</name>
+  </module>
+  <module key="point-defense" group="util">
+	<name>Point Defence</name>
+  </module>
+  <module key="electronic-counter" group="util">
+	<name>Electronic Countermeasure</name>
+  </module>
+  <module key="scan-manifest" group="util">
+	<name>Manifest Scanner</name>
+  </module>
+  <module key="scan-kill-warrant" group="util">
+	<name>Kill Warrant Scanner</name>
+  </module>
+  <module key="scan-fsw" group="util">
+	<name>Frame Shift Wake Scanner</name>
+  </module>
+
+  <module key="limp-collect" group="limpets">
+	<name>Collector Limpet Controller</name>
+  </module>
+  <module key="limp-fuel" group="limpets">
+	<name>Fule Transfer Limpet Controller</name>
+  </module>
+  <module key="limp-prospect" group="limpets">
+	<name>Prospector Limpet Controller</name>
+  </module>
+  <module key="limp-hatch" group="limpets">
+	<name>Hatch Breaker Limpet Controller</name>
+  </module>
+
+  <module key="fsd-interdict" group="misc">
+	<name>Frame Shift Driver Interdictor</name>
+  </module>
+  <module key="shield-gen" group="misc">
+	<name>Shield Generator</name>
+  </module>
+  <module key="shield-cell" group="misc">
+	<name>Shield Cell Bank</name>
+  </module>
+  <module key="hull-reinf" group="misc">
+	<name>Hull Reinforcment Package</name>
+  </module>
+  <module key="armor" group="misc">
+	<name>Armor</name>
+  </module>
+  <module key="refinery" group="misc">
+	<name>Refinery</name>
+  </module>
+  <module key="fuel-scoop" group="misc">
+	<name>Fuel Scoop</name>
+  </module>
+  <module key="afmu" group="misc">
+	<name>Auto Fiel Maintenance Unit</name>
+  </module>
+
+  <engineer name="Felicity Farseer">
+	<location system="DECIAT"/>
+	<requirement>Gain exploration rank Scout or higher.</requirement>
+	<unlock>Provide 1 unit of Meta Alloys.</unlock>
+	<rep>Craft modules.</rep>
+	<rep>Sell exploration data at Farseer Inc.</rep>
+	<modification module="fsd" grade="5"/>
+	<modification module="thrusters" grade="3"/>
+	<modification module="sensors" grade="3"/>
+	<modification module="surf-scan" grade="3"/>
+	<modification module="shield-boost" grade="1"/>
+	<modification module="fsd-interdict" grade="1"/>
+	<modification module="powerplant" grade="1"/>
+  </engineer>
+
+  <engineer name="Elvira Martuuk">
+	<modification module="fsd" grade="5"/>
+	<modification module="shield-gen" grade="3"/>
+	<modification module="thrusters" grade="2"/>
+	<modification module="shield-cell" grade="1"/>
+  </engineer>
+  
+  <engineer name="Professor Palin">
+	<modification module="thrusters" grade="5"/>
+	<modification module="fsd" grade="3"/>
+  </engineer>
+  
+  <engineer name="The Dweller">
+	<modification module="powdistr" grade="5"/>
+	<modification module="pulselaser" grade="4"/>
+	<modification module="burstlaser" grade="3"/>
+	<modification module="beamlaser" grade="3"/>
+  </engineer>
+  
+  <engineer name="Liz Ryder">
+	<modification module="dumbfire-missile" grade="5"/>
+	<modification module="heat-missile" grade="5"/>
+	<modification module="torpedo" grade="5"/>
+	<modification module="mine" grade="3"/>
+	<modification module="hull-reinf" grade="1"/>
+	<modification module="armor" grade="1"/>
+  </engineer>
+  
+  <engineer name="Tod McQuinn">
+	<modification module="multi-cannon" grade="5"/>
+	<modification module="rail-gun" grade="5"/>
+	<modification module="frag-cannon" grade="3"/>
+	<modification module="cannon" grade="2"/>
+  </engineer>
+  
+  <engineer name="Marco Qwent">
+	<modification module="powerplant" grade="4"/>
+	<modification module="powdistr" grade="3"/>
+  </engineer>
+  
+  <engineer name="Selene Jean">
+	<modification module="hull-reinf" grade="5"/>
+	<modification module="armor" grade="5"/>
+  </engineer>
+  
+  <engineer name="Zacariah Nemo">
+	<modification module="frag-cannon" grade="5"/>
+	<modification module="multi-cannon" grade="3"/>
+	<modification module="plasma-accel" grade="2"/>
+  </engineer>
+  
+  <engineer name="Lei Cheung">
+	<modification module="shield-gen" grade="5"/>
+	<modification module="sensors" grade="5"/>
+	<modification module="surf-scan" grade="5"/>
+	<modification module="shield-boost" grade="3"/>
+  </engineer>
+  
+  <engineer name="Didi Vatermann">
+	<modification module="shield-boost" grade="5"/>
+	<modification module="shield-gen" grade="3"/>
+  </engineer>
+  
+  <engineer name="Hera Tani">
+	<modification module="powerplant" grade="5"/>
+	<modification module="surf-scan" grade="5"/>
+	<modification module="sensors" grade="3"/>
+	<modification module="powdistr" grade="3"/>
+  </engineer>
+
+  <engineer name="Juri Ishmaak">
+	<location system="GIRYAK"/>
+	<discover>Felicity Farseer</discover>
+	<requirement>Earn more than 50 combat bonds.</requirement>
+	<unlock>Provide 100,000 or 1,000,000 credits worth of combat bonds
+	(the amount needed depends on the currently unknown
+	conditions).</unlock>
+	<rep>Craft modules.</rep>
+	<rep>Hand in combat bonds to Pater's Memorial.</rep>
+	<modification module="mine" grade="5"/>
+	<modification module="sensors" grade="5"/>
+	<modification module="surf-scan" grade="5"/>
+	<modification module="torpedo" grade="3"/>
+	<modification module="dumbfire-missile" grade="3"/>
+	<modification module="heat-missile" grade="3"/>
+	<modification module="scan-fsw" grade="3"/>
+	<modification module="scan-kill-warrant" grade="3"/>
+	<modification module="scan-manifest" grade="3"/>
+  </engineer>
+
+  <engineer name="Colonel Bris Dekker">
+	<modification module="fsd-interdict" grade="4"/>
+	<modification module="fsd" grade="3"/>
+  </engineer>
+  
+  <engineer name="Broo Tarquin">
+	<modification module="burstlaser" grade="5"/>
+	<modification module="pulselaser" grade="5"/>
+	<modification module="beamlaser" grade="5"/>
+  </engineer>
+  
+  <engineer name="Lori Jameson">
+	<modification module="sensors" grade="5"/>
+	<modification module="surf-scan" grade="5"/>
+	<modification module="refinery" grade="4"/>
+	<modification module="fuel-scoop" grade="4"/>
+	<modification module="afmu" grade="4"/>
+	<modification module="lifesupp" grade="4"/>
+	<modification module="scan-fsw" grade="3"/>
+	<modification module="scan-kill-warrant" grade="3"/>
+	<modification module="scan-manifest" grade="3"/>
+	<modification module="shield-cell" grade="3"/>
+  </engineer>
+  
+  <engineer name="The Sarge">
+	<modification module="limp-collect" grade="5"/>
+	<modification module="limp-fuel" grade="5"/>
+	<modification module="limp-hatch" grade="5"/>
+	<modification module="limp-prospect" grade="5"/>
+	<modification module="cannon" grade="5"/>
+	<modification module="rail-gun" grade="3"/>
+  </engineer>
+  
+  <engineer name="Tiana Fortune">
+	<modification module="scan-fsw" grade="5"/>
+	<modification module="scan-kill-warrant" grade="5"/>
+	<modification module="scan-manifest" grade="5"/>
+	<modification module="limp-collect" grade="5"/>
+	<modification module="limp-fuel" grade="5"/>
+	<modification module="limp-hatch" grade="5"/>
+	<modification module="limp-prospect" grade="5"/>
+	<modification module="sensors" grade="5"/>
+	<modification module="fsd-interdict" grade="3"/>
+	<modification module="surf-scan" grade="3"/>
+  </engineer>
+  
+  <engineer name="Bill Turner">
+	<modification module="plasma-accel" grade="5"/>
+	<modification module="sensors" grade="5"/>
+	<modification module="surf-scan" grade="5"/>
+	<modification module="lifesupp" grade="3"/>
+	<modification module="refinery" grade="3"/>
+	<modification module="afmu" grade="3"/>
+	<modification module="fuel-scoop" grade="3"/>
+	<modification module="scan-fsw" grade="3"/>
+	<modification module="scan-kill-warrant" grade="3"/>
+	<modification module="scan-manifest" grade="3"/>
+  </engineer>
+  
+  <engineer name="Ram Tah">
+	<modification module="electronic-counter" grade="5"/>
+	<modification module="point-defense" grade="5"/>
+	<modification module="heat-sink" grade="5"/>
+	<modification module="chaff" grade="5"/>
+	<modification module="limp-collect" grade="4"/>
+	<modification module="limp-fuel" grade="4"/>
+	<modification module="limp-prospect" grade="4"/>
+	<modification module="limp-hatch" grade="4"/>
+  </engineer>
+</engineers>

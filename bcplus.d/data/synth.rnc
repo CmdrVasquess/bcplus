@@ -1,0 +1,18 @@
+default namespace = "https://fractalqb.de/ed/synthesis/2.4"
+
+start =
+   element synthesis {
+      element synth {
+         attribute id { text },
+         attribute improves { text },
+         element quality {
+            attribute level { xsd:nonNegativeInteger },
+            attribute bonus { xsd:nonNegativeInteger }?,
+            element use {
+               attribute count { xsd:integer }?,
+               attribute material { xsd:NCName }
+            }+
+         }*
+      }*
+   }
+   

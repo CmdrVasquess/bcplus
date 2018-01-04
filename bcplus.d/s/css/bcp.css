@@ -1,0 +1,177 @@
+:root {
+	--colBkg: #000;
+	--colFrg: #ff7000;
+	--colGood: #00a6ea;
+	--colBad: #FD0406;
+	--tblOdd: #522400;
+	--tblEvn: #2f1500;
+	--navBtn: #0080FF;
+	--brdrHdr: medium solid black;
+/*	--colBkg: #eee;
+	--colFrg: #000;
+	--colGood: #070;
+	--colBad: #700;
+	--tblOdd: #ccc;
+	--tblEvn: #ddd;
+	--navBtn: #888;
+	--brdrHdr: medium solid white;*/
+}
+.center {
+	text-align: center;
+}
+.right {
+	text-align: right;
+}
+.b-t {
+	border-top: var(--brdrHdr);
+}
+.b-tlr {
+	border-top: var(--brdrHdr);
+	border-left: var(--brdrHdr);
+	border-right: var(--brdrHdr);
+}
+.b-tl {
+	border-top: var(--brdrHdr);
+	border-left: var(--brdrHdr);
+}
+.b-tr {
+	border-top: var(--brdrHdr);
+	border-right: var(--brdrHdr);
+}
+.b-lr {
+	border-left: var(--brdrHdr);
+	border-right: var(--brdrHdr);
+}
+.b-b {
+	border-bottom: var(--brdrHdr);
+}
+.b-blr {
+	border-bottom: var(--brdrHdr);
+	border-left: var(--brdrHdr);
+	border-right: var(--brdrHdr);
+}
+.b-bl {
+	border-bottom: var(--brdrHdr);
+	border-left: var(--brdrHdr);
+}
+.b-br {
+	border-bottom: var(--brdrHdr);
+	border-right: var(--brdrHdr);
+}
+.b-tb {
+	border-top: var(--brdrHdr);
+	border-bottom: var(--brdrHdr);
+}
+.b-tbl {
+	border-top: var(--brdrHdr);
+	border-bottom: var(--brdrHdr);
+	border-left: var(--brdrHdr);
+}
+.b-tbr {
+	border-top: var(--brdrHdr);
+	border-bottom: var(--brdrHdr);
+	border-right: var(--brdrHdr);
+}
+body {
+	color: var(--colFrg);
+	background-color: var(--colBkg);
+	font-family: sans-serif;
+	margin: 0;
+}
+select {
+	color: var(--colFrg);
+	background-color: var(--tblOdd);
+	border-style: none;
+   -moz-appearance: none;
+   -webkit-appearance: none;
+	appearance: none;
+	border-top-left-radius: .4em;
+	border-top-right-radius: .4em;
+	border-bottom: 1px dashed var(--colFrg); 
+}
+header, nav, main {
+	margin: .5em;
+}
+header table {
+	border-collapse: collapse;
+	width:  100%;
+}
+header td {
+	font-weight: bold;
+	background-color: var(--tblEvn);
+	padding-left: 0.2em;
+	padding-right: 0.2em;
+}
+header td.rnk {
+	text-align: center;
+}
+header td.rnk-prgs {
+	text-align: center;
+}
+header img.rnklogo {
+	width: 3.5em;
+}
+nav {
+	display: block;
+	margin-top: .2em;
+}
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+nav li {
+  float: left;
+}
+nav a {
+	display: block;
+	padding: 8px;
+	margin: 0px 2px;
+	color: var(--colBkg);
+	background-color: var(--navBtn);
+	font-weight: bolder;
+	text-decoration: none;
+  border-radius: 3px;
+}
+nav a:hover {
+	box-shadow: 0 0 20px var(--colFrg);
+}
+footer {
+	position: fixed;
+  	bottom: 0px;
+  	width: 100%;
+  	margin: 0;
+  	padding-top: 0.2em; 
+  	padding-bottom: 0.2em;
+  	padding-left: 0.5em;
+  	padding-right: 0.5em;
+	color: var(--colFrg);
+  	background-color: var(--tblOdd);
+  	box-shadow: 0 0 5px black;
+}
+main {
+	clear: both;
+	margin-bottom: 2em;
+}
+main a {
+	color: var(--colFgr);
+	text-decoration: none;
+}
+main a:hover {
+	text-decoration: underline;
+}
+main table caption {
+	color: var(--colGood);
+	font-weight: bold;
+	text-align: left;
+}
+main table th {
+	color: var(--colBkg);
+	background-color: var(--colFrg);
+	padding-left: .3em;
+	padding-right: .3em;
+}
+main table td {
+	padding-left: .3em;
+	padding-right: .3em;
+}

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<synthesis xmlns="https://fractalqb.de/ed/synthesis/2.4">
+  <synth id="FSD Injection" improves="Jump Range">
+	<quality level="1" bonus="25">
+	  <use material="germanium"/>
+	  <use material="vanadium" count="2"/>
+	</quality>
+	<quality level="2" bonus="50">
+	  <use material="cadmium" count="2"/>
+	  <use material="germanium"/>
+	  <use material="niobium"/>
+	  <use material="vanadium"/>
+	</quality>
+	<quality level="3" bonus="100">
+	  <use material="arsenic"/>
+	  <use material="niobium" count="3"/>
+	  <use material="polonium"/>
+	  <use material="yttrium"/>
+	</quality>
+  </synth>
+  <synth id="AFMU Refill" improves="Speed">
+	<quality level="1">
+	  <use material="chromium" count="2"/>
+	  <use material="nickel" count="2"/>
+	  <use material="vanadium" count="3"/>
+	  <use material="zinc" count="2"/>
+	</quality>
+	<quality level="2" bonus="50">
+	  <use material="tin"/>
+	  <use material="manganese" count="2"/>
+	  <use material="molybdenum"/>
+	  <use material="vanadium" count="6"/>
+	  <use material="zirconium"/>
+	</quality>
+	<quality level="3" bonus="100">
+	  <use material="chromium" count="4"/>
+	  <use material="ruthenium"/>
+	  <use material="tellurium"/>
+	  <use material="vanadium" count="6"/>
+	  <use material="zinc" count="2"/>
+	  <use material="zirconium" count="2"/>
+	</quality>
+  </synth>
+  <synth id="SRV Refuel" improves="Shield Overcharge">
+	<quality level="1">
+	  <use material="phosphorus"/>
+	  <use material="sulphur"/>
+	</quality>
+	<quality level="2" bonus="50">
+	  <use material="arsenic"/>
+	  <use material="mercury"/>
+	  <use material="phosphorus"/>
+	  <use material="sulphur"/>
+	</quality>
+	<quality level="3" bonus="100">
+	  <use material="arsenic"/>
+	  <use material="mercury"/>
+	  <use material="sulphur"/>
+	  <use material="technetium"/>
+	</quality>
+  </synth>
+  <synth id="SRV Repair" improves="Hull Strength">
+	<quality level="1">
+	  <use material="iron" count="2"/>
+	  <use material="nickel"/>
+	</quality>
+	<quality level="2" bonus="50">
+	  <use material="manganese"/>
+	  <use material="molybdenum"/>
+	  <use material="nickel" count="3"/>
+	  <use material="vanadium" count="2"/>
+	</quality>
+	<quality level="3" bonus="100">
+	  <use material="chromium" count="2"/>
+	  <use material="tellurium"/>
+	  <use material="tungsten"/>
+	  <use material="vanadium" count="2"/>
+	  <use material="zinc"/>
+	</quality>
+  </synth>
+</synthesis>

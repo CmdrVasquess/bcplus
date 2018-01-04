@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="de">
+  <head>
+<!-- >>> local-style >>> -->
+	<style>
+main td {
+	padding-left: .3em;
+	padding-right: .3em;
+}
+main td.avgttl {
+  text-align: right;
+  font-weight: bold;
+}
+main td.avgttl::after {
+  content: ":"
+}
+main td.avgdta1 {
+  text-align: center;
+}
+main td.avgdta2 {
+  text-align: right;
+}
+main tr:nth-of-type(odd) {
+	background-color: var(--tblOdd);
+}
+main tr:nth-of-type(even) {
+	background-color: var(--tblEvn);
+}
+	</style>
+<!-- <<< local-style <<< -->
+  </head>
+  <body>
+  <main>
+</select>
+<!-- >>> topic >>> -->
+<p>Plan with ship: <select name="shipopt" onchange="showStatus(value+' / '+name+' / '+document.URL)">
+<!-- onchange="showStatus(value+" "+text)"-->
+<!-- >>> shipopts <<< \-->
+<!-- >>> shipopt >>> -->
+<option value="`id`">`ship` – `jump` Ly</option>
+
+<!-- <<< shipopt <<< \-->
+<!-- >>> shipopt-sel >>> -->
+<option value="`id`" selected="selected">`ship` – `jump` Ly</option>
+
+<!-- <<< shipopt-sel <<< \-->
+</select></p>
+	<table id="dests" style="width:100%">
+		<caption>Destinations: max=`lypj-max` / avg=`lypj-avg` Ly/Jump</caption>
+		<thead><tr>
+			<th>Destination</th>
+			<th>Distance</th>
+			<th>ETD</th>
+			<th>EJD</th>
+			<th>Coordinates</th>
+			<th>Note</th>
+			<th>Tags</th>
+		</tr></thead>
+		<tbody>
+<!-- >>> destinations <<< \-->
+<!-- >>> dest >>> -->
+		<tr>
+			<td>`name`</td>
+			<td class="right">`dist` Ly</td>
+			<td class="right">`etd`</td>
+			<td class="center">`ejd`</td>
+			<td class="center">`coox` / `cooy` / `cooz`</td>
+			<td>`note`</td>
+			<td>`tags`</td>
+		</tr>
+
+<!-- <<< dest <<< \-->
+		</tbody>
+	</table>
+	<table id="jhist" style="width:100%">
+		<caption style="margin-top:1em">Jump History</caption>
+		<thead><tr>
+			<th>Last…</th>
+			<th colspan="2">Jump</th>
+<!-- >>> avg-heads <<< \-->
+<!-- >>> avg-heading >>> -->
+			<th colspan="2">`count` Jumps</th>
+
+<!-- <<< avg-heading <<< \-->
+		</tr></thead>
+		<tbody>
+<!-- >>> avg-rows <<< \-->
+<!-- >>> avg-row >>> -->
+		<tr>
+			<td class="avgttl">`title`</td>
+<!-- >>> values <<< \-->
+<!-- >>> value1 >>> -->
+			<td class="avgdta1" colspan="2">`data`</td>
+
+<!-- <<< value1 <<< \-->
+<!-- >>> value2 >>> -->
+			<td class="avgdta2">∑: `sum`</td><td class="avgdta">Ø: `avg`</td>
+
+<!-- <<< value2 <<< \-->
+		</tr>
+
+<!-- <<< avg-row <<< \-->
+		<tbody>
+	</table>
+<!-- <<< topic <<< -->
+  </main>
+  </body>
+</html>

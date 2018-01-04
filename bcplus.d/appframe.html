@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+: `title`</title>
+    <link rel="stylesheet" href="s/css/bcp.css">
+<!-- >>> dyn-styles <<< -->
+<!-- >>> title-offline >>> -->
+–offline–
+<!-- <<< title-offline <<< \-->
+<!-- >>> title-online >>> -->
+CMDR `cmdr-name`
+<!-- <<< title-online <<< \-->
+  </head>
+  <body>
+<!-- >>> body <<< -->
+<!-- >>> body-offline >>> -->
+    <header>
+	  <h1>…offline…</h1>
+	</header>
+<!-- <<< body-offline <<< \-->
+<!-- >>> body-online >>> -->
+	<header>
+	<table>
+	<tr><td class="b-tlr">CMDR `cmdr-name`</td>
+		 <td rowspan="2" class="center b-tbl"><img class="rnklogo" src="s/rnk/combat/`rlvl-combat`.png"></td>
+	    <td class="rnk b-t">Combat: `rnk-combat`</td>
+		 <td rowspan="2" class="center b-tb"><img class="rnklogo" src="s/rnk/trading/`rlvl-trade`.png"></td>
+	    <td class="rnk b-t">Trade: `rnk-trade`</td>
+		 <td rowspan="2" class="center b-tb"><img class="rnklogo" src="s/rnk/explorer/`rlvl-explorer`.png"></td>
+	    <td class="rnk b-t">Explorer: `rnk-explorer`</td>
+		 <td rowspan="2" class="center b-tb"><img class="rnklogo" src="s/rnk/cqc/`rlvl-cqc`.png"></td>
+	    <td class="rnk b-tr">CQC: `rnk-cqc`</td></tr>
+	<tr><td class="b-lr">`credits` Cr<!-- / `loan` Cr--></td>
+	    <td class="rnk-prgs b-b">`rlvl-combat`/8 +`rprg-combat`%</td>
+	    <td class="rnk-prgs b-b">`rlvl-trade`/8 +`rprg-trade`%</td>
+	    <td class="rnk-prgs b-b">`rlvl-explorer`/8 +`rprg-explorer`%</td>
+	    <td class="rnk-prgs b-br">`rlvl-cqc`/8 +`rprg-cqc`%</td></tr>
+	<tr><td class="b-lr">`ship-name` / `ship-ident`</td>
+	    <td colspan="3" class="b-tl">`location`</td>
+	    <td class="b-tr">Home: `home`</td>
+	    <td rowspan="2" class="b-tbl"><img class="rnklogo" src="s/fctn/feds.png"></td>
+	    <td class="rnk-prgs b-t">Federation: `rlvl-fed`/14 +`rprg-fed`%</td>
+	    <td rowspan="2" class="b-tb"><img class="rnklogo" src="s/fctn/imps.png"></td>
+	    <td class="rnk-prgs b-tr">Empire: `rlvl-imp`/14 +`rprg-imp`%</td>
+	    </tr>
+	<tr><td class="b-blr">`ship-type`</td>
+	    <td colspan="3" class="b-bl">`locx` / `locy` / `locz`</td>
+	    <td class="b-br">→ `homedist` Ly</td>
+	    <td class="rnk b-b">`rnk-fed`</td>
+	    <td class="rnk b-br">`rnk-imp`</td></tr>
+	</table>
+	</header>
+	<nav>
+	  <ul>
+<!-- >>> nav-items <<< \-->
+<!-- >>> nav-item >>> -->
+		<li><a href="`link`">`title`</a></li>
+
+<!-- <<< nav-item <<< \-->
+	  </ul>
+	</nav>
+	<main>
+	<br>
+<!-- >>> topic <<< -->
+	</main>
+<!-- <<< body-online <<< \-->
+	<footer id="status">&nbsp;</footer>
+	<script type="text/javascript">
+var statLine = document.getElementById("status");
+function showStatus(msg) {
+	statLine.innerHTML = msg;
+	setTimeout(function(){ statLine.innerHTML = "&nbsp;" }, 10000);
+}
+var wsurl = "ws://"+location.hostname+":"+location.port+"/ws";
+function startWs() {
+	var wsockUpd = new WebSocket(wsurl);
+	// https://www.tutorialspoint.com/html5/html5_websocket.htm
+	// .onerror(err); .onopen; .onmessage(msg); .onclose
+	/*wsockUpd.onopen = function () {
+	   showStatus('Event Channel Connected: '+wsurl);	   	
+	}*/
+	wsockUpd.onerror = function (err) {
+	   showStatus('Event Channel Error: '+err);	   	
+	}
+	wsockUpd.onclose = function(evt) {
+	   showStatus('Event Channel Closed: '+wsurl);
+	   setTimeout(startWs(), 1500);
+	}
+	wsockUpd.onmessage = function(evt) {
+		var cmd = JSON.parse(evt.data)
+	 	if (cmd.cmd == "reload") {
+	   	location.reload(true);
+	  	} else {
+	     	showStatus('Event: ['+evt.data+']');
+	   }
+	}	   
+}
+window.onload = function () {
+	if (window["WebSocket"]) {
+		startWs()
+	} else {
+		alert("Your browser does not support WebSockets.")
+	}
+}
+	</script>
+  </body>
+</html>
