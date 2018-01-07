@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
-	gx "git.fractalqb.de/goxic"
-	gxm "git.fractalqb.de/goxic/textmessage"
-	gxw "git.fractalqb.de/goxic/web"
-	"git.fractalqb.de/namemap"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	gx "github.com/fractalqb/goxic"
+	gxm "github.com/fractalqb/goxic/textmessage"
+	gxw "github.com/fractalqb/goxic/web"
+	"github.com/fractalqb/namemap"
+	l "github.com/fractalqb/qblog"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -258,6 +259,6 @@ func runWebGui() {
 	setupTopic("dashboard", wuiDashboard)
 	setupTopic("resources", wuiResources)
 	setupTopic("travel", wuiTravel)
-	glog.Infof("Starting web GUI on port %d", webGuiPort)
+	glog.Logf(l.Info, "Starting web GUI on port %d", webGuiPort)
 	go http.ListenAndServe(fmt.Sprintf(":%d", webGuiPort), nil)
 }

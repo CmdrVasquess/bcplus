@@ -7,10 +7,10 @@ import (
 	str "strings"
 	"time"
 
-	gx "git.fractalqb.de/goxic"
-	gxm "git.fractalqb.de/goxic/textmessage"
-	gxw "git.fractalqb.de/goxic/web"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	gx "github.com/fractalqb/goxic"
+	gxm "github.com/fractalqb/goxic/textmessage"
+	gxw "github.com/fractalqb/goxic/web"
 )
 
 var gxtTrvlFrame struct {

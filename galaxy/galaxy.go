@@ -9,13 +9,11 @@ import (
 	"os"
 	str "strings"
 
-	"github.com/op/go-logging"
+	l "github.com/fractalqb/qblog"
 )
 
-// CRITICAL ERROR WARNING NOTICE INFO DEBUG
-const logModule = "bc+:gxy"
-
-var glog = logging.MustGetLogger(logModule)
+var log = l.Std("BC+gxy:")
+var LogRoot = l.Root(log)
 
 type Galaxy struct {
 	glxyfile  string
@@ -29,7 +27,7 @@ func OpenGalaxy(filename string, refData string) (res *Galaxy, err error) {
 		sysByName: make(map[string]*StarSys)}
 	if rd, err := os.Open(res.glxyfile); err == nil {
 		defer rd.Close()
-		glog.Infof("load galaxy from %s", filename)
+		log.Logf(l.Info, "load galaxy from %s", filename)
 		jdec := json.NewDecoder(rd)
 		for {
 			ssys := new(StarSys)
@@ -42,7 +40,7 @@ func OpenGalaxy(filename string, refData string) (res *Galaxy, err error) {
 		}
 	}
 	weaveGalaxy(res)
-	glog.Infof("%d star-systems loaded", len(res.sysByName))
+	log.Logf(l.Info, "%d star-systems loaded", len(res.sysByName))
 	err = loadRefData(res, refData)
 	return res, err
 }
@@ -67,7 +65,7 @@ func (g *Galaxy) Close() {
 	fnm := g.glxyfile + "~"
 	w, _ := os.Create(fnm) // error handling; tmp-file + rename
 	defer w.Close()
-	glog.Infof("save systems to %s", g.glxyfile)
+	log.Logf(l.Info, "save systems to %s", g.glxyfile)
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	for _, sys := range g.sysByName {
@@ -96,6 +94,15 @@ func (g *Galaxy) GetSystem(name string) (res *StarSys) {
 		g.sysByName[name] = res
 	}
 	return res
+}
+
+func (g *Galaxy) MatCategory(jname string) MatCategory {
+	mat, ok := g.Materials[jname]
+	if ok {
+		return mat.Category
+	} else {
+		return MCatUndef
+	}
 }
 
 type Location interface {

@@ -16,6 +16,7 @@ import (
 
 	"runtime"
 
+	l "github.com/fractalqb/qblog"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -35,7 +36,7 @@ func splitLogLines(data []byte, atEOF bool) (advance int, token []byte, err erro
 }
 
 func pollFile(watchFiles chan string, doPerLine func(line []byte)) {
-	glog.Notice("file poller waiting for journals")
+	glog.Log(lNotice, "file poller waiting for journals")
 	var jrnlName string
 	var jrnlFile *os.File
 	var jrnlRdPos int64
@@ -49,13 +50,13 @@ func pollFile(watchFiles chan string, doPerLine func(line []byte)) {
 		if len(jrnlName) == 0 {
 			jrnlName = <-watchFiles
 			if jrnlName == "" {
-				glog.Info("exit logwatch file-poller")
+				glog.Log(l.Info, "exit logwatch file-poller")
 				runtime.Goexit()
 			}
-			glog.Infof("start watching: %s", jrnlName)
+			glog.Logf(l.Info, "start watching: %s", jrnlName)
 			var err error
 			if jrnlFile, err = os.Open(jrnlName); err != nil {
-				glog.Errorf("cannot watch %s: %s", jrnlName, err)
+				glog.Logf(l.Error, "cannot watch %s: %s", jrnlName, err)
 				jrnlName = ""
 			}
 			jrnlRdPos = 0
@@ -63,14 +64,14 @@ func pollFile(watchFiles chan string, doPerLine func(line []byte)) {
 		}
 		jrnlStat, err := jrnlFile.Stat()
 		if err != nil {
-			glog.Errorf("cannot Stat() %s: %s", jrnlName, err)
+			glog.Logf(l.Error, "cannot Stat() %s: %s", jrnlName, err)
 			jrnlFile.Close()
 			jrnlFile = nil
 			jrnlName = ""
 		} else {
 			newRdPos := jrnlStat.Size()
 			if newRdPos > jrnlRdPos {
-				glog.Debugf("new bytes: %d [%d > %d]",
+				glog.Logf(l.Debug, "new bytes: %d [%d > %d]",
 					newRdPos-jrnlRdPos,
 					jrnlRdPos,
 					newRdPos)
@@ -91,11 +92,11 @@ func pollFile(watchFiles chan string, doPerLine func(line []byte)) {
 						sleep = sleepMax
 					}
 				}
-				glog.Debugf("nothing to do, sleep %d mSec…", sleep)
+				glog.Logf(l.Debug, "nothing to do, sleep %d mSec…", sleep)
 				time.Sleep(time.Duration(sleep) * time.Millisecond)
-				glog.Debugf("…woke up again")
+				glog.Logf(l.Debug, "…woke up again")
 			} else {
-				glog.Noticef("closing journal: %s", jrnlName)
+				glog.Logf(lNotice, "closing journal: %s", jrnlName)
 				jrnlFile.Close()
 				jrnlFile = nil
 				jrnlName = ""
@@ -112,7 +113,7 @@ func isJournalFile(name string) bool {
 func newestJournal(inDir string) (res string) {
 	dir, err := os.Open(inDir)
 	if err != nil {
-		glog.Error("fail to scan journal-dir: ", err)
+		glog.Log(l.Error, "fail to scan journal-dir: ", err)
 		return ""
 	}
 	defer dir.Close()
@@ -146,30 +147,30 @@ func WatchJournal(done <-chan bool,
 	go pollFile(watchList, doPerLine)
 	if pickupLatest {
 		if newest := newestJournal(inDir); len(newest) > 0 {
-			glog.Infof("dispatching latest log: %s", newest)
+			glog.Logf(l.Info, "dispatching latest log: %s", newest)
 			watchList <- newest
 		}
 	}
-	glog.Infof("watching journals in: %s", inDir)
+	glog.Logf(l.Info, "watching journals in: %s", inDir)
 	for {
 		select {
 		case fse := <-watch.Events:
 			if !isJournalFile(filepath.Base(fse.Name)) {
-				glog.Debugf("ignore event %s on non-journal file: %s",
+				glog.Logf(l.Debug, "ignore event %s on non-journal file: %s",
 					fse.Op,
 					fse.Name)
 			} else if fse.Op&fsnotify.Create == fsnotify.Create {
 				cleanName := filepath.Clean(fse.Name)
-				glog.Debugf("enqueue new journal: %s", cleanName)
+				glog.Logf(l.Debug, "enqueue new journal: %s", cleanName)
 				watchList <- cleanName
 			} else {
-				glog.Debugf("ignore fs-event: %s @ %s", fse.Op, fse.Name)
+				glog.Logf(l.Debug, "ignore fs-event: %s @ %s", fse.Op, fse.Name)
 			}
 		case err = <-watch.Errors:
-			glog.Errorf("fs-watch error: %q", err)
+			glog.Logf(l.Error, "fs-watch error: %q", err)
 		case <-done:
 			watchList <- ""
-			glog.Info("exit journal watcher")
+			glog.Log(l.Info, "exit journal watcher")
 			runtime.Goexit()
 		}
 	}

@@ -2,7 +2,7 @@
 
 package galaxy
 
-import "fmt"
+import "strconv"
 
 const _BodyCat_name = "UnknownStarPlanet"
 
@@ -10,7 +10,7 @@ var _BodyCat_index = [...]uint8{0, 7, 11, 17}
 
 func (i BodyCat) String() string {
 	if i >= BodyCat(len(_BodyCat_index)-1) {
-		return fmt.Sprintf("BodyCat(%d)", i)
+		return "BodyCat(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 	return _BodyCat_name[_BodyCat_index[i]:_BodyCat_index[i+1]]
 }

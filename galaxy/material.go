@@ -8,14 +8,24 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"git.fractalqb.de/xsx"
-	xsxtab "git.fractalqb.de/xsx/table"
+	"github.com/fractalqb/xsx"
+	xsxtab "github.com/fractalqb/xsx/table"
+)
+
+//go:generate stringer -type MatCategory
+type MatCategory uint8
+
+const (
+	MCatUndef MatCategory = 255
+	Raw       MatCategory = iota
+	Man
+	Enc
 )
 
 type Material struct {
-	JName   string // Name from CMDR's Journal
-	Kind    uint8
-	Commons int8
+	JName    string // Name from CMDR's Journal
+	Category MatCategory
+	Commons  int8
 }
 
 type MatDemand map[string]int
@@ -40,15 +50,15 @@ func loadMaterials(dataDir string) (res map[string]Material, err error) {
 	}
 	colKind := tDef.ColIndex("kind")
 	if colKind < 0 {
-		glog.Fatal("galaxy loading material data: no column 'kind'")
+		log.Fatal("galaxy loading material data: no column 'kind'")
 	}
 	colJournal := tDef.ColIndex("journal")
 	if colJournal < 0 {
-		glog.Fatal("galaxy loading material data: no column 'journal'")
+		log.Fatal("galaxy loading material data: no column 'journal'")
 	}
 	colCmns := tDef.ColIndex("commonness")
 	if colCmns < 0 {
-		glog.Fatal("galaxy loading material data: no column 'commonness'")
+		log.Fatal("galaxy loading material data: no column 'commonness'")
 	}
 	// TODO evaluate definition(?)
 	for row, err := tDef.NextRow(xrd, nil); row != nil; row, err = tDef.NextRow(xrd, row) {
@@ -58,19 +68,19 @@ func loadMaterials(dataDir string) (res map[string]Material, err error) {
 		r, _ := utf8.DecodeRune([]byte(row[colKind]))
 		kind := strings.IndexRune("rmd", r)
 		if kind < 0 {
-			glog.Fatalf("galaxy loading material data: unknown kind '%s'", row[colKind])
+			log.Fatalf("galaxy loading material data: unknown kind '%s'", row[colKind])
 		}
 		cmns := -1
 		if row[colCmns] != "_" {
 			cmns, err = strconv.Atoi(row[colCmns])
 			if err != nil {
-				glog.Fatalf("galaxy loading material data: comminness '%s'", row[colCmns])
+				log.Fatalf("galaxy loading material data: comminness '%s'", row[colCmns])
 			}
 		}
 		mat := Material{
-			JName:   row[colJournal],
-			Kind:    uint8(kind),
-			Commons: int8(cmns)}
+			JName:    row[colJournal],
+			Category: MatCategory(kind),
+			Commons:  int8(cmns)}
 		res[row[colJournal]] = mat
 	}
 	return res, nil

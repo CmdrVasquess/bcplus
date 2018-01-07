@@ -1,28 +1,22 @@
 package main
 
 import (
-	"github.com/op/go-logging"
+	"io"
+	"os"
+
+	"github.com/CmdrVasquess/BCplus/galaxy"
+	"github.com/fractalqb/qblog"
 )
 
-// CRITICAL ERROR WARNING NOTICE INFO DEBUG
-const logModule = "bcplus"
+const lNotice int = qblog.Warn / 2
 
-var glog = logging.MustGetLogger(logModule)
+var glog = qblog.Std("bcplus:")
+var nmlog = glog.NewSub("bc+nmp:")
+var ejlog = glog.NewSub("bc+evj:")
 
-type teeBackend struct {
-	bs []logging.Backend
+func init() {
+	galaxy.LogRoot.SetParent(glog)
+	logFile, _ := os.Create("BCplus.log")
+	logWr := io.MultiWriter(logFile, os.Stderr)
+	glog.SetOutput(logWr)
 }
-
-func (tbe teeBackend) Log(lvl logging.Level, i int, rec *logging.Record) (err error) {
-	for _, b := range tbe.bs {
-		if e := b.Log(lvl, i, rec); e != nil {
-			err = e
-		}
-	}
-	return err
-}
-
-//func init() {
-//	tee := teeBackend{}
-//	tee.bs = append(tee.bs, logging.NewLogBackend()
-//}

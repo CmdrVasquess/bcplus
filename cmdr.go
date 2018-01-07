@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	l "github.com/fractalqb/qblog"
 )
 
 //go:generate stringer -type=RankType
@@ -118,7 +119,7 @@ func (stat *GmState) addJump(ssys *gxy.StarSys, t Timestamp) {
 		i--
 	}
 	if i >= 0 && !time.Time(t).After(time.Time(hist[i].Arrive)) {
-		glog.Warning("duplicate jump in history: ", time.Time(t), ssys.Name)
+		glog.Log(l.Warn, "duplicate jump in history: ", time.Time(t), ssys.Name)
 	}
 	hist[i+1] = newJump
 	if len(hist) > jumpHistMax {
@@ -215,7 +216,7 @@ func (lr *LocRef) UnmarshalJSON(json []byte) error {
 			lr.Location = ssys
 		}
 		if lr.Location == nil {
-			glog.Errorf("unmarshal LocRef: cannot resolve '%s'", jstr)
+			glog.Logf(l.Error, "unmarshal LocRef: cannot resolve '%s'", jstr)
 		}
 	}
 	return nil
@@ -246,13 +247,13 @@ func (shr *ShipRef) UnmarshalJSON(json []byte) error {
 	} else {
 		match := shipRefRgx.FindStringSubmatch(jstr)
 		if match == nil {
-			glog.Errorf("cannot resolve ship-ref: '%s'", jstr)
+			glog.Logf(l.Error, "cannot resolve ship-ref: '%s'", jstr)
 			shr.Ship = nil
 		} else {
 			shipId, _ := strconv.Atoi(match[1])
 			shr.Ship = theGame.Cmdr.ShipById(shipId)
 			if shr.Ship == nil {
-				glog.Errorf("json unmarshal: cannot resolve ship-id %d", shipId)
+				glog.Logf(l.Error, "json unmarshal: cannot resolve ship-id %d", shipId)
 			}
 		}
 	}

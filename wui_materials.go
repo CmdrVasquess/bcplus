@@ -5,10 +5,13 @@ import (
 	"net/http"
 	"sort"
 
-	gx "git.fractalqb.de/goxic"
-	gxw "git.fractalqb.de/goxic/web"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	gx "github.com/fractalqb/goxic"
+	gxw "github.com/fractalqb/goxic/web"
+	l "github.com/fractalqb/qblog"
 )
+
+var _ = &l.Logger{}
 
 var gxtRescFrame struct {
 	*gx.Template
@@ -95,7 +98,7 @@ func sortMats() {
 	}
 	rawSorted, manSorted, encSorted = nil, nil, nil
 	for _, mat := range theGalaxy.Materials {
-		switch mat.Kind {
+		switch mat.Category {
 		case 0:
 			rawSorted = append(rawSorted, mat.JName)
 		case 1:
@@ -103,7 +106,7 @@ func sortMats() {
 		case 2:
 			encSorted = append(encSorted, mat.JName)
 		default:
-			glog.Fatalf("material '%s' with unknown kind %d", mat.JName, mat.Kind)
+			glog.Fatalf("material '%s' with unknown kind %d", mat.JName, mat.Category)
 		}
 	}
 	sort.Slice(rawSorted,
@@ -150,7 +153,11 @@ func emitRawMats(mats CmdrsMats, wr io.Writer) (n int) {
 		btItem.Bind(gxtRawItem.XRef, nmap(&nmMatsXRef, mat))
 		btItem.Bind(gxtRawItem.Name, nmap(&nmMats, mat))
 		if cmdrHas {
-			btItem.BindP(gxtRawItem.Have, cmdrmat.Have)
+			if cmdrmat.Have == 0 {
+				btItem.Bind(gxtRawItem.Have, gx.Empty)
+			} else {
+				btItem.BindP(gxtRawItem.Have, cmdrmat.Have)
+			}
 			if cmdrmat.Need == 0 {
 				btItem.Bind(gxtRawItem.Demand, gx.Empty)
 				btItem.Bind(gxtRawItem.Need, gx.Empty)
@@ -163,7 +170,7 @@ func emitRawMats(mats CmdrsMats, wr io.Writer) (n int) {
 				btItem.BindP(gxtRawItem.Need, cmdrmat.Need)
 			}
 		} else {
-			btItem.BindP(gxtRawItem.Demand, "miss")
+			btItem.Bind(gxtRawItem.Demand, gx.Empty)
 			btItem.Bind(gxtRawItem.Have, gx.Empty)
 			btItem.Bind(gxtRawItem.Need, gx.Empty)
 		}
@@ -196,7 +203,11 @@ func emitMatLs(mats []string, cMat CmdrsMats, name string, max int, wr io.Writer
 			btItem.Bind(gxtRescItem.XRef, nmap(&nmMatsXRef, mat))
 			btItem.Bind(gxtRescItem.Name, nmap(&nmMats, mat))
 			if cmdrHas {
-				btItem.BindP(gxtRescItem.Have, cmdrmat.Have)
+				if cmdrmat.Have == 0 {
+					btItem.Bind(gxtRescItem.Have, gx.Empty)
+				} else {
+					btItem.BindP(gxtRescItem.Have, cmdrmat.Have)
+				}
 				if cmdrmat.Need == 0 {
 					btItem.Bind(gxtRescItem.Demand, gx.Empty)
 					btItem.Bind(gxtRescItem.Need, gx.Empty)
@@ -209,7 +220,7 @@ func emitMatLs(mats []string, cMat CmdrsMats, name string, max int, wr io.Writer
 					btItem.BindP(gxtRescItem.Need, cmdrmat.Need)
 				}
 			} else {
-				btItem.BindP(gxtRawItem.Demand, "miss")
+				btItem.BindP(gxtRawItem.Demand, gx.Empty)
 				btItem.Bind(gxtRescItem.Need, gx.Empty)
 				btItem.Bind(gxtRescItem.Have, gx.Empty)
 			}

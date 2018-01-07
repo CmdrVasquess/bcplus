@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"sync"
 
-	"git.fractalqb.de/namemap"
+	"github.com/fractalqb/namemap"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	"github.com/op/go-logging"
+	l "github.com/fractalqb/qblog"
 )
 
 func init() {
@@ -23,7 +23,7 @@ func init() {
 	if assetPathRoot, err = filepath.Abs(assetPathRoot); err != nil {
 		panic(err)
 	}
-	glog.Infof("assets: %s", assetPathRoot)
+	glog.Logf(l.Info, "assets: %s", assetPathRoot)
 	nmNavItem = namemap.MustLoad(assetPath("nm/navitems.xsx")).
 		FromStd().
 		To(false, "lang:").
@@ -99,23 +99,23 @@ var nmBdyCats namemap.FromTo
 
 func saveState() {
 	if theGame.Cmdr.Name == "" {
-		glog.Infof("empty state, nothing to save")
+		glog.Logf(l.Info, "empty state, nothing to save")
 	} else {
 		fnm := theGame.Cmdr.Name + ".json"
 		fnm = filepath.Join(dataDir, fnm)
 		tnm := fnm + "~"
 		if w, err := os.Create(tnm); err == nil {
 			defer w.Close()
-			glog.Infof("save state to %s", fnm)
+			glog.Logf(l.Info, "save state to %s", fnm)
 			err := theGame.save(w)
 			w.Close()
 			if err != nil {
-				glog.Error(err)
+				glog.Log(l.Error, err)
 			} else if err = os.Rename(tnm, fnm); err != nil {
-				glog.Error(err)
+				glog.Log(l.Error, err)
 			}
 		} else {
-			glog.Errorf("cannot save game status to '%s': %s", fnm, err)
+			glog.Logf(l.Error, "cannot save game status to '%s': %s", fnm, err)
 		}
 	}
 	theGalaxy.Close()
@@ -124,7 +124,7 @@ func saveState() {
 func loadState(cmdrNm string) bool {
 	fnm := fmt.Sprintf("%s.json", cmdrNm)
 	fnm = filepath.Join(dataDir, fnm)
-	glog.Infof("load state from %s", fnm)
+	glog.Logf(l.Info, "load state from %s", fnm)
 	if r, err := os.Open(fnm); os.IsNotExist(err) {
 		return false
 	} else if err == nil {
@@ -149,13 +149,13 @@ const (
 )
 
 func eventLoop() {
-	glog.Info("starting main event loop…")
+	glog.Log(l.Info, "starting main event loop…")
 	for e := range eventq {
 		switch e.source {
 		case esrcJournal:
 			HandleJournal(&theStateLock, theGame, e.data.([]byte))
 		case esrcUsr:
-			glog.Notice("handling user events: NYI!")
+			glog.Log(lNotice, "handling user events: NYI!")
 		}
 	}
 }
@@ -169,6 +169,7 @@ func main() {
 		"web GUI port")
 	pun := flag.Bool("l", false, "pickup newest existing log")
 	verbose := flag.Bool("v", false, "verbose logging")
+	verybose := flag.Bool("vv", false, "very verbose logging")
 	flag.BoolVar(&acceptHistory, "hist", false, "accept historic events")
 	loadCmdr := flag.String("cmdr", "", "preload commander")
 	showHelp := flag.Bool("h", false, "show help")
@@ -179,18 +180,18 @@ func main() {
 		flag.Usage()
 		os.Exit(0)
 	}
-	if *verbose {
-		logging.SetLevel(logging.DEBUG, logModule)
-	} else {
-		logging.SetLevel(logging.INFO, logModule)
+	if *verybose {
+		glog.SetLevel(l.Trace)
+	} else if *verbose {
+		glog.SetLevel(l.Debug)
 	}
-	glog.Infof("Bordcomputer+ running on: %s\n", runtime.GOOS)
-	glog.Infof("data    : %s\n", dataDir)
+	glog.Logf(l.Info, "Bordcomputer+ running on: %s\n", runtime.GOOS)
+	glog.Logf(l.Info, "data    : %s\n", dataDir)
 	var err error
 	if _, err = os.Stat(dataDir); os.IsNotExist(err) {
 		glog.Fatal("data dir does not exist")
 	}
-	glog.Infof("journals: %s\n", jrnlDir)
+	glog.Logf(l.Info, "journals: %s\n", jrnlDir)
 	theGalaxy, err = gxy.OpenGalaxy(
 		filepath.Join(dataDir, "systems.json"),
 		assetPath("data/"))
@@ -212,9 +213,9 @@ func main() {
 	signal.Notify(sigs, os.Interrupt)
 	<-sigs
 	stopWatch <- true
-	glog.Info("BC+ interrupted")
+	glog.Log(l.Info, "BC+ interrupted")
 	theStateLock.RLock()
 	saveState()
 	theStateLock.RUnlock()
-	glog.Info("bye…")
+	glog.Log(l.Info, "bye…")
 }

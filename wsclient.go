@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	l "github.com/fractalqb/qblog"
 	wsock "github.com/gorilla/websocket"
 )
 
@@ -16,7 +17,7 @@ func wscHub() {
 	var wscls = make(map[*WsClient]bool)
 	// TODO need cleanup in case of exit?
 	defer func() {
-		glog.Warning("web-service client hub terminated")
+		glog.Log(l.Warn, "web-service client hub terminated")
 	}()
 	for {
 		select {
@@ -78,7 +79,7 @@ func (wsc *WsClient) talkTo() {
 			}
 			wr, err := wsc.conn.NextWriter(wsock.TextMessage)
 			if err != nil {
-				glog.Error("web-socket: cannot get writer:", err)
+				glog.Log(l.Error, "web-socket: cannot get writer:", err)
 				return
 			}
 			wr.Write(cmdReload)
@@ -91,13 +92,13 @@ func (wsc *WsClient) talkTo() {
 			//			}
 
 			if err := wr.Close(); err != nil {
-				glog.Error("web-socket: closing writer:", err)
+				glog.Log(l.Error, "web-socket: closing writer:", err)
 				return
 			}
 		case <-ticker.C:
 			wsc.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := wsc.conn.WriteMessage(wsock.PingMessage, nil); err != nil {
-				glog.Error("web-socket: writing ping:", err)
+				glog.Log(l.Error, "web-socket: writing ping:", err)
 				return
 			}
 		}
@@ -106,7 +107,7 @@ func (wsc *WsClient) talkTo() {
 
 func (wsc *WsClient) readFrom() {
 	defer func() {
-		glog.Debugf("drop web-socket client: %s", wsc.conn.RemoteAddr().String())
+		glog.Logf(l.Debug, "drop web-socket client: %s", wsc.conn.RemoteAddr().String())
 		wscUnregister <- wsc
 		wsc.conn.Close()
 	}()
@@ -120,15 +121,15 @@ func (wsc *WsClient) readFrom() {
 		_, msg, err := wsc.conn.ReadMessage()
 		if err != nil {
 			if wsock.IsUnexpectedCloseError(err, wsock.CloseGoingAway) {
-				glog.Error("web-socket:", err)
+				glog.Log(l.Error, "web-socket:", err)
 			}
 			break
 		}
-		glog.Noticef("web-socket incoming: [%s]", msg)
+		glog.Logf(lNotice, "web-socket incoming: [%s]", msg)
 		jevt := make(map[string]interface{})
 		err = json.Unmarshal(msg, jevt)
 		if err != nil {
-			glog.Error("cannot parse user event", err)
+			glog.Log(l.Error, "cannot parse user event", err)
 		} else {
 			eventq <- bcEvent{esrcUsr, jevt}
 		}
@@ -143,7 +144,7 @@ var upgrader = wsock.Upgrader{
 func serveWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		glog.Error("cannot upgrade to seb-socket:", err)
+		glog.Log(l.Error, "cannot upgrade to seb-socket:", err)
 		return
 	}
 	client := &WsClient{conn: conn, events: make(chan bool, 16)}
@@ -151,5 +152,5 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 
 	go client.talkTo()
 	go client.readFrom()
-	glog.Debugf("new web-socket client: %s", conn.RemoteAddr().String())
+	glog.Logf(l.Debug, "new web-socket client: %s", conn.RemoteAddr().String())
 }

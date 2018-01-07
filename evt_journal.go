@@ -8,6 +8,7 @@ import (
 	"time"
 
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	l "github.com/fractalqb/qblog"
 )
 
 type event = map[string]interface{}
@@ -15,21 +16,27 @@ type event = map[string]interface{}
 type eventHanlder func(*GmState, map[string]interface{}, time.Time)
 
 var dispatch = map[string]eventHanlder{
-	"Fileheader":       fileheader,
-	"Loadout":          loadout,
-	"Rank":             rank,
-	"Location":         location,
-	"Progress":         progress,
-	"Materials":        materials,
-	"FSDJump":          fsdjump,
-	"Docked":           docked,
-	"ShipyardBuy":      shipBuy,
-	"ShipyardNew":      shipNew,
-	"ShipyardSell":     shipSell,
-	"ShipyardSwap":     shipSwap,
-	"ShipyardTransfer": shipXfer,
-	"SupercruiseEntry": scEntry,
-	"Scan":             scan}
+	"Fileheader":         fileheader,
+	"Loadout":            loadout,
+	"Rank":               rank,
+	"Location":           location,
+	"Progress":           progress,
+	"Materials":          materials,
+	"FSDJump":            fsdjump,
+	"Docked":             docked,
+	"ShipyardBuy":        shipBuy,
+	"ShipyardNew":        shipNew,
+	"ShipyardSell":       shipSell,
+	"ShipyardSwap":       shipSwap,
+	"ShipyardTransfer":   shipXfer,
+	"SupercruiseEntry":   scEntry,
+	"Scan":               scan,
+	"MaterialCollected":  matCollect,
+	"MaterialDiscarded":  matDiscard,
+	"MaterialDiscovered": matDiscover,
+	"EngineerCraft":      engyCraft,
+	"Synthesis":          synthesis,
+}
 
 func init() {
 	dispatch["LoadGame"] = loadGame
@@ -51,32 +58,32 @@ var acceptHistory = false
 
 func HandleJournal(lock *sync.RWMutex, state *GmState, event []byte) {
 	if len(event) == 0 {
-		glog.Warningf("empty journal event")
+		ejlog.Logf(l.Warn, "empty journal event")
 		return
 	}
 	var jsonEvt map[string]interface{}
 	if err := json.Unmarshal(event, &jsonEvt); err != nil {
-		glog.Warningf("cannot parse journal event: %s", err)
-		glog.Errorf("Event has %d byte:[%s]", len(event), string(event))
+		ejlog.Logf(l.Warn, "cannot parse journal event: %s", err)
+		ejlog.Logf(l.Error, "Event has %d byte:[%s]", len(event), string(event))
 		return
 	}
 	evt, ok := jsonEvt["event"].(string)
 	if !ok {
-		glog.Warningf("cannot determine journal event from: %s", string(event))
+		ejlog.Logf(l.Warn, "cannot determine journal event from: %s", string(event))
 		return
 	}
 	hdlr, ok := dispatch[evt]
 	if ok {
 		t, err := eventTime(jsonEvt)
 		if err != nil {
-			glog.Error(err)
+			ejlog.Log(l.Error, err)
 		}
 		var cmdrSwitch = evt == "Fileheader" || evt == "LoadGame"
 		if state.isOffline() && !cmdrSwitch {
-			glog.Infof("retain event: %s @%s", evt, t)
+			ejlog.Logf(l.Info, "retain event: %s @%s", evt, t)
 			state.evtBacklog = append(state.evtBacklog, jsonEvt)
 		} else if acceptHistory || !t.Before(time.Time(state.T)) {
-			glog.Infof("process event: %s @%s", evt, t)
+			ejlog.Logf(l.Info, "process event: %s @%s", evt, t)
 			lock.Lock()
 			defer lock.Unlock()
 			hdlr(state, jsonEvt, t)
@@ -85,18 +92,18 @@ func HandleJournal(lock *sync.RWMutex, state *GmState, event []byte) {
 			}
 			select {
 			case wscSendTo <- true:
-				glog.Debug("sent web-socket event")
+				ejlog.Log(l.Debug, "sent web-socket event")
 			default:
-				glog.Debug("no web-socket event sent – channel blocked")
+				ejlog.Log(l.Debug, "no web-socket event sent – channel blocked")
 			}
 		} else {
-			glog.Noticef("historic event: %s < %s", t, time.Time(state.T))
+			ejlog.Logf(lNotice, "historic event: %s < %s", t, time.Time(state.T))
 		}
 
 	} else if t, err := eventTime(jsonEvt); err == nil {
-		glog.Debugf("no handler for event: %s (%s)", evt, t)
+		ejlog.Logf(l.Debug, "no handler for event: %s (%s)", evt, t)
 	} else {
-		glog.Debugf("no handler for event: %s", evt)
+		ejlog.Logf(l.Debug, "no handler for event: %s", evt)
 	}
 }
 
@@ -134,7 +141,7 @@ func updStr(e event, name string, dst *string) bool {
 
 func setStr(e event, name string, dst *string) {
 	if !updStr(e, name, dst) {
-		glog.Fatalf("no attribute %s in event %s", name, e)
+		ejlog.Fatalf("no attribute %s in event %s", name, e)
 	}
 }
 
@@ -168,7 +175,7 @@ func updInt(e event, name string, dst *int) bool {
 
 func setInt(e event, name string, dst *int) {
 	if !updInt(e, name, dst) {
-		glog.Fatalf("no attribute %s in event %s", name, e)
+		ejlog.Fatalf("no attribute %s in event %s", name, e)
 	}
 }
 
@@ -188,7 +195,7 @@ func updUint8(e event, name string, dst *uint8) bool {
 
 func setUint8(e event, name string, dst *uint8) {
 	if !updUint8(e, name, dst) {
-		glog.Fatalf("no attribute %s in event %s", name, e)
+		ejlog.Fatalf("no attribute %s in event %s", name, e)
 	}
 }
 
@@ -213,7 +220,7 @@ func updUint16(e event, name string, dst *uint16) bool {
 
 func setUint16(e event, name string, dst *uint16) {
 	if !updUint16(e, name, dst) {
-		glog.Fatalf("no attribute %s in event %s", name, e)
+		ejlog.Fatalf("no attribute %s in event %s", name, e)
 	}
 }
 
@@ -233,7 +240,7 @@ func updInt64(e event, name string, dst *int64) bool {
 
 func setInt64(e event, name string, dst *int64) {
 	if !updInt64(e, name, dst) {
-		glog.Fatalf("no attribute %s in event %s", name, e)
+		ejlog.Fatalf("no attribute %s in event %s", name, e)
 	}
 }
 
@@ -251,7 +258,7 @@ func fileheader(gstat *GmState, evt map[string]interface{}, t time.Time) {
 		gstat.IsBeta = str.Contains(str.ToLower(gvers), "beta")
 	} else {
 		gstat.IsBeta = true
-		glog.Warning("fileheader without gameversion => assume beta")
+		ejlog.Log(l.Warn, "fileheader without gameversion => assume beta")
 	}
 }
 
@@ -259,7 +266,7 @@ func loadout(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shipId, ok := attInt(evt, "ShipID")
 	if !ok {
-		glog.Error("ignore loadout without ship id")
+		ejlog.Log(l.Error, "ignore loadout without ship id")
 		return
 	}
 	ship := cmdr.ShipById(shipId)
@@ -282,7 +289,7 @@ func loadGame(gstat *GmState, evt map[string]interface{}, t time.Time) {
 			gstat.next1stJump = true
 			return
 		} else {
-			glog.Errorf("switched cmdrs in non-offline state: '%s' → '%s'",
+			ejlog.Logf(l.Error, "switched cmdrs in non-offline state: '%s' → '%s'",
 				gstat.Cmdr.Name,
 				cmdrNm)
 			gstat.clear()
@@ -291,13 +298,13 @@ func loadGame(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	eventBacklog := gstat.evtBacklog
 	gstat.evtBacklog = nil
 	if !ok {
-		glog.Fatalf("load game without commander in %s", evt)
+		ejlog.Fatalf("load game without commander in %s", evt)
 	}
 	loadState(cmdrNm)
 	gstat.Cmdr.Name = cmdrNm
 	if eventBacklog != nil {
 		blc := 0
-		glog.Info("process event backlog…")
+		ejlog.Log(l.Info, "process event backlog…")
 		for _, evt := range eventBacklog {
 			enm, _ := attStr(evt, "event")
 			hdlr, _ := dispatch[enm]
@@ -307,7 +314,7 @@ func loadGame(gstat *GmState, evt map[string]interface{}, t time.Time) {
 			}
 			blc++
 		}
-		glog.Infof("%d events from backlog done!", blc)
+		ejlog.Logf(l.Info, "%d events from backlog done!", blc)
 	}
 	cmdr := &gstat.Cmdr
 	setInt64(evt, "Credits", &cmdr.Credits)
@@ -461,7 +468,7 @@ func shipXfer(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 	shId, _ := attInt(evt, "ShipID")
 	if cmdr.CurShip.Ship != nil && cmdr.CurShip.ID == shId {
-		glog.Warning("ship trxnfer for commanders current ship")
+		ejlog.Log(l.Warn, "ship trxnfer for commanders current ship")
 		return
 	}
 	ship := cmdr.ShipById(shId)
@@ -510,12 +517,12 @@ func shipSell(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shId, ok := attInt(evt, "SellShipID")
 	if !ok {
-		glog.Fatal("sell ship w/o id")
+		ejlog.Fatal("sell ship w/o id")
 	}
 	if mny, ok := attInt64(evt, "ShipPrice"); ok {
 		cmdr.Credits += mny
 	} else {
-		glog.Warning("selling a ship without a price")
+		ejlog.Log(l.Warn, "selling a ship without a price")
 	}
 	cmdr.SellShipId(shId, Timestamp(t))
 }
@@ -524,7 +531,7 @@ func shipSwap(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	oldId, ok := attInt(evt, "StoreShipID")
 	if !ok {
-		glog.Fatal("ship swap w/o id for old ship")
+		ejlog.Fatal("ship swap w/o id for old ship")
 	}
 	oldShip := cmdr.ShipById(oldId)
 	if oldShip == nil {
@@ -535,7 +542,7 @@ func shipSwap(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 	newId, ok := attInt(evt, "ShipID")
 	if !ok {
-		glog.Fatal("ship swap w/o id for new ship")
+		ejlog.Fatal("ship swap w/o id for new ship")
 	}
 	newShip := cmdr.ShipById(newId)
 	if newShip == nil {
@@ -568,12 +575,12 @@ func stripSystemName(sysNm, bodyNm string) string {
 
 func scan(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	if gstat.Cmdr.Loc.Location == nil {
-		glog.Notice("scan event without known star-system")
+		ejlog.Log(lNotice, "scan event without known star-system")
 		return
 	}
 	ssys := gstat.Cmdr.Loc.System()
 	if ssys == nil {
-		glog.Error("commander's location has no system")
+		ejlog.Log(l.Error, "commander's location has no system")
 		return
 	}
 	bdyNm, _ := attStr(evt, "BodyName")
@@ -596,6 +603,82 @@ func scan(gstat *GmState, evt map[string]interface{}, t time.Time) {
 				rh, _ := attF32(mat, "Percent")
 				body.Mats[nm] = rh
 			}
+		}
+	}
+}
+
+func sumMat(cmdr *Commander, cat, name string, d int16) {
+	var mats CmdrsMats
+	switch cat {
+	case "Raw":
+		mats = cmdr.MatsRaw
+	case "Manufactured":
+		mats = cmdr.MatsMan
+	case "Encoded":
+		mats = cmdr.MatsEnc
+	}
+	cmat, _ := mats[name]
+	if cmat == nil {
+		cmat = &Material{Have: d, Need: 0}
+		mats[name] = cmat
+	} else {
+		cmat.Have += d
+	}
+}
+
+func matCollect(gstat *GmState, evt map[string]interface{}, t time.Time) {
+	matCat, _ := attStr(evt, "Category")
+	matNm, _ := attStr(evt, "Name")
+	matNo, _ := attInt16(evt, "Count")
+	sumMat(&gstat.Cmdr, matCat, matNm, matNo)
+}
+
+func matDiscard(gstat *GmState, evt map[string]interface{}, t time.Time) {
+	matCat, _ := attStr(evt, "Category")
+	matNm, _ := attStr(evt, "Name")
+	matNo, _ := attInt16(evt, "Count")
+	sumMat(&gstat.Cmdr, matCat, matNm, -matNo)
+}
+
+func matDiscover(gstat *GmState, evt map[string]interface{}, t time.Time) {
+	matCat, _ := attStr(evt, "Category")
+	matNm, _ := attStr(evt, "Name")
+	matNo, _ := attInt16(evt, "DiscoveryNumber")
+	sumMat(&gstat.Cmdr, matCat, matNm, matNo)
+}
+
+func synthesis(gstat *GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	used := evt["Materials"].(map[string]interface{})
+	for mat, jNo := range used {
+		matNo := int16(jNo.(float64))
+		switch theGalaxy.MatCategory(mat) {
+		case gxy.Raw:
+			sumMat(cmdr, "Raw", mat, -matNo)
+		case gxy.Man:
+			sumMat(cmdr, "Manufactured", mat, -matNo)
+		case gxy.Enc:
+			sumMat(cmdr, "Encoded", mat, -matNo)
+		default:
+			ejlog.Logf(l.Warn, "cannot categorize material '%s'", mat)
+		}
+	}
+}
+
+func engyCraft(gstat *GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	used := evt["Ingredients"].(map[string]interface{})
+	for mat, jNo := range used {
+		matNo := int16(jNo.(float64))
+		switch theGalaxy.MatCategory(mat) {
+		case gxy.Raw:
+			sumMat(cmdr, "Raw", mat, -matNo)
+		case gxy.Man:
+			sumMat(cmdr, "Manufactured", mat, -matNo)
+		case gxy.Enc:
+			sumMat(cmdr, "Encoded", mat, -matNo)
+		default:
+			ejlog.Logf(l.Warn, "cannot categorize material '%s'", mat)
 		}
 	}
 }

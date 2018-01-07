@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	gx "git.fractalqb.de/goxic"
+	gx "github.com/fractalqb/goxic"
 )
 
 var _ = gx.Empty
