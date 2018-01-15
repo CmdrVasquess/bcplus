@@ -125,9 +125,9 @@ func (wsc *WsClient) readFrom() {
 			}
 			break
 		}
-		glog.Logf(lNotice, "web-socket incoming: [%s]", msg)
+		glog.Logf(l.Trace, "web-socket incoming: [%s]", msg)
 		jevt := make(map[string]interface{})
-		err = json.Unmarshal(msg, jevt)
+		err = json.Unmarshal(msg, &jevt)
 		if err != nil {
 			glog.Log(l.Error, "cannot parse user event", err)
 		} else {

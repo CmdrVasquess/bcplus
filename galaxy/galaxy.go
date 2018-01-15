@@ -13,7 +13,7 @@ import (
 )
 
 var log = l.Std("BC+gxy:")
-var LogRoot = l.Root(log)
+var LogConfig = l.Package(log)
 
 type Galaxy struct {
 	glxyfile  string

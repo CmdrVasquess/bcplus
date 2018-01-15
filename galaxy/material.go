@@ -8,7 +8,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	l "github.com/fractalqb/qblog"
 	"github.com/fractalqb/xsx"
+	"github.com/fractalqb/xsx/gem"
 	xsxtab "github.com/fractalqb/xsx/table"
 )
 
@@ -16,10 +18,10 @@ import (
 type MatCategory uint8
 
 const (
-	MCatUndef MatCategory = 255
-	Raw       MatCategory = iota
+	Raw MatCategory = iota
 	Man
 	Enc
+	MCatUndef MatCategory = 255
 )
 
 type Material struct {
@@ -38,7 +40,9 @@ type Synthesis struct {
 
 func loadMaterials(dataDir string) (res map[string]Material, err error) {
 	res = make(map[string]Material)
-	inf, err := os.Open(filepath.Join(dataDir, "materials.xsx"))
+	matFile := filepath.Join(dataDir, "materials.xsx")
+	log.Logf(l.Info, "loading materials from: %s", matFile)
+	inf, err := os.Open(matFile)
 	if err != nil {
 		return nil, err
 	}
@@ -65,23 +69,27 @@ func loadMaterials(dataDir string) (res map[string]Material, err error) {
 		if err != nil {
 			return nil, err
 		}
-		r, _ := utf8.DecodeRune([]byte(row[colKind]))
+		str := row[colKind].(*gem.Atom).Str
+		r, _ := utf8.DecodeRune([]byte(str))
 		kind := strings.IndexRune("rmd", r)
 		if kind < 0 {
-			log.Fatalf("galaxy loading material data: unknown kind '%s'", row[colKind])
+			log.Fatalf("galaxy loading material data: unknown kind '%s'", str)
 		}
 		cmns := -1
-		if row[colCmns] != "_" {
-			cmns, err = strconv.Atoi(row[colCmns])
+		str = row[colCmns].(*gem.Atom).Str
+		if str != "_" {
+			cmns, err = strconv.Atoi(str)
 			if err != nil {
-				log.Fatalf("galaxy loading material data: comminness '%s'", row[colCmns])
+				log.Fatalf("galaxy loading material data: comminness '%s'", str)
 			}
 		}
+		str = row[colJournal].(*gem.Atom).Str
 		mat := Material{
-			JName:    row[colJournal],
+			JName:    str,
 			Category: MatCategory(kind),
 			Commons:  int8(cmns)}
-		res[row[colJournal]] = mat
+		res[str] = mat
 	}
+	log.Logf(l.Info, "loaded %d materials", len(res))
 	return res, nil
 }

@@ -13,29 +13,29 @@ import (
 
 type event = map[string]interface{}
 
-type eventHanlder func(*GmState, map[string]interface{}, time.Time)
+type journalHanlder func(*GmState, map[string]interface{}, time.Time)
 
-var dispatch = map[string]eventHanlder{
-	"Fileheader":         fileheader,
-	"Loadout":            loadout,
-	"Rank":               rank,
-	"Location":           location,
-	"Progress":           progress,
-	"Materials":          materials,
-	"FSDJump":            fsdjump,
-	"Docked":             docked,
-	"ShipyardBuy":        shipBuy,
-	"ShipyardNew":        shipNew,
-	"ShipyardSell":       shipSell,
-	"ShipyardSwap":       shipSwap,
-	"ShipyardTransfer":   shipXfer,
-	"SupercruiseEntry":   scEntry,
-	"Scan":               scan,
-	"MaterialCollected":  matCollect,
-	"MaterialDiscarded":  matDiscard,
-	"MaterialDiscovered": matDiscover,
-	"EngineerCraft":      engyCraft,
-	"Synthesis":          synthesis,
+var dispatch = map[string]journalHanlder{
+	"Fileheader":        fileheader,
+	"Loadout":           loadout,
+	"Rank":              rank,
+	"Location":          location,
+	"Progress":          progress,
+	"Materials":         materials,
+	"FSDJump":           fsdjump,
+	"Docked":            docked,
+	"ShipyardBuy":       shipBuy,
+	"ShipyardNew":       shipNew,
+	"ShipyardSell":      shipSell,
+	"ShipyardSwap":      shipSwap,
+	"ShipyardTransfer":  shipXfer,
+	"SupercruiseEntry":  scEntry,
+	"Scan":              scan,
+	"MaterialCollected": matCollect,
+	"MaterialDiscarded": matDiscard,
+	//	"MaterialDiscovered": matDiscover,
+	"EngineerCraft": engyCraft,
+	"Synthesis":     synthesis,
 }
 
 func init() {
@@ -56,7 +56,7 @@ func eventTime(evt map[string]interface{}) (time.Time, error) {
 
 var acceptHistory = false
 
-func HandleJournal(lock *sync.RWMutex, state *GmState, event []byte) {
+func DispatchJournal(lock *sync.RWMutex, state *GmState, event []byte) {
 	if len(event) == 0 {
 		ejlog.Logf(l.Warn, "empty journal event")
 		return
@@ -640,12 +640,12 @@ func matDiscard(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	sumMat(&gstat.Cmdr, matCat, matNm, -matNo)
 }
 
-func matDiscover(gstat *GmState, evt map[string]interface{}, t time.Time) {
-	matCat, _ := attStr(evt, "Category")
-	matNm, _ := attStr(evt, "Name")
-	matNo, _ := attInt16(evt, "DiscoveryNumber")
-	sumMat(&gstat.Cmdr, matCat, matNm, matNo)
-}
+//func matDiscover(gstat *GmState, evt map[string]interface{}, t time.Time) {
+//	matCat, _ := attStr(evt, "Category")
+//	matNm, _ := attStr(evt, "Name")
+//	discoNo, _ := attInt16(evt, "DiscoveryNumber")
+//	// Do NOT sum discoNo! It's ~an ID
+//}
 
 func synthesis(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
@@ -667,9 +667,11 @@ func synthesis(gstat *GmState, evt map[string]interface{}, t time.Time) {
 
 func engyCraft(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
-	used := evt["Ingredients"].(map[string]interface{})
-	for mat, jNo := range used {
-		matNo := int16(jNo.(float64))
+	used := evt["Ingredients"].([]interface{})
+	for _, i := range used {
+		ingr := i.(map[string]interface{})
+		mat, _ := attStr(ingr, "Name")
+		matNo, _ := attInt16(ingr, "Count")
 		switch theGalaxy.MatCategory(mat) {
 		case gxy.Raw:
 			sumMat(cmdr, "Raw", mat, -matNo)

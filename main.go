@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/fractalqb/namemap"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	"github.com/fractalqb/namemap"
 	l "github.com/fractalqb/qblog"
 )
 
@@ -153,9 +153,9 @@ func eventLoop() {
 	for e := range eventq {
 		switch e.source {
 		case esrcJournal:
-			HandleJournal(&theStateLock, theGame, e.data.([]byte))
+			DispatchJournal(&theStateLock, theGame, e.data.([]byte))
 		case esrcUsr:
-			glog.Log(lNotice, "handling user events: NYI!")
+			DispatchUser(&theStateLock, theGame, e.data.(map[string]interface{}))
 		}
 	}
 }

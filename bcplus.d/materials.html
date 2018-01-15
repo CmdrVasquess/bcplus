@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="s/css/bcp.css">
+<!-- >>> local-style >>> -->
+	<style>
+main table {	
+	/*float: left;*/
+	display: inline;
+}
+main th.show, main th.hide {
+	cursor: pointer;
+}
+main th.hide::before {
+	content: "▸";
+}
+main th.show::before {
+	content: "▾";
+}
+main tr.engh {
+	color: var(--colGood)
+}
+main tr.miss {
+	color: var(--colBad)
+}
+main tr:nth-of-type(odd) {
+	background-color: var(--tblOdd);
+}
+main tr:nth-of-type(even) {
+	background-color: var(--tblEvn);
+}
+main tr.sec-title th {
+	background-color: var(--colSec);
+}
+main img.matgrd {
+	height: 1em;
+}
+main .mdmnd {
+	max-width: 4em;
+}
+	</style>
+<!-- <<< local-style <<< -->
+  </head>
+  <body>
+  <main>
+<!-- >>> topic >>> -->
+	<table>
+		<tr> 
+			<th>⌬</th><th>Material</th>
+			<th><select>
+				<option>All</option>
+				<option>All and</option>
+				<option>Have and</option>
+				<option>Have or</option>
+				<option>None and</option>
+				<option>None or</option>
+			</select></th>
+			<th><input type="checkbox" name="shwnd" checked>Need</th>
+			<th colspan="2">Sorce</th>
+			<th>Manual<br>Demand</th>
+<!-- >>> th-needs <<< \-->
+<!-- >>> th-need >>> -->
+			<th>`need`</th>
+
+<!-- <<< th-need <<< \-->
+		</tr>
+<!-- >>> sections <<< \-->
+<!-- >>> sec-title >>> -->
+		<tr class="sec-title">
+			<th class="show" onclick="toggleCat(this, '`cat`')"></th>
+			<th>`category`</th><th class="right">`have`</th><th class="right">`need`</th>
+			<th colspan="2" class="left">Free: `free`</th>
+			<th colspan="`needs-no`"></th>
+		</tr>
+
+<!-- <<< sec-title <<< \-->
+<!-- >>> sec-row >>> -->
+		<tr class="`demand`">
+ 	  		<td class="center"><img class="matgrd" src="s/mat/g`mat-grade`.png"></td>			
+ 	  		<td><a target="BCPxref"
+ 	  		       href="http://elite-dangerous.wikia.com/wiki/`xref`">`name`</a></td>
+ 	  		<td class="right">`have`</td>
+ 	  		<td class="right">`need`</td>
+<!-- >>> source <<< \-->
+			<td class="right"><input class="mdmnd" type="number" min="0" value="`need`"></td>
+<!-- >>> src1 >>> -->
+ 	  		<td colspan="2">`value`</td>
+
+<!-- <<< src1 <<< \-->
+<!-- >>> src2 >>> -->
+ 	  		<td class="right">`val1`</td><td>`val2`</td>
+
+<!-- <<< src2 <<< \-->
+<!-- >>> needs <<< \-->
+<!-- >>> need >>> -->
+			<td>`count`</td>
+<!-- <<< need <<< \--> 	  		
+		</tr>
+
+<!-- <<< sec-row <<< \-->
+	</table>
+	<script type="text/javascript" >
+function toggleCat(btn, cat) {
+	var rows = document.querySelectorAll('main tr.'+cat);
+	var vis = 'visible';
+	if (btn.classList.contains('show')) {
+		vis = 'collapse';
+	}
+	btn.classList.toggle('show');
+	btn.classList.toggle('hide');
+	for (i = 0; i < rows.length; i++) {
+		rows[i].style.visibility = vis;
+	}
+}
+	</script>
+<!-- <<< topic <<< -->
+  </main>
+  </body>
+</html>

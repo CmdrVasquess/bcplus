@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="de">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="s/css/bcp.css">
 <!-- >>> local-style >>> -->
 	<style>
 main td {
@@ -26,6 +29,11 @@ main tr:nth-of-type(odd) {
 main tr:nth-of-type(even) {
 	background-color: var(--tblEvn);
 }
+#tagf {
+  display: inline;
+  border: none;
+  margin: 0;
+}
 	</style>
 <!-- <<< local-style <<< -->
   </head>
@@ -33,7 +41,8 @@ main tr:nth-of-type(even) {
   <main>
 </select>
 <!-- >>> topic >>> -->
-<p>Plan with ship: <select name="shipopt" onchange="showStatus(value+' / '+name+' / '+document.URL)">
+<p>Plan with ship: <select name="shipopt" onchange="selShip(value)">
+                           <!--onchange="showStatus(value+' / '+name+' / '+document.URL)"-->
 <!-- onchange="showStatus(value+" "+text)"-->
 <!-- >>> shipopts <<< \-->
 <!-- >>> shipopt >>> -->
@@ -45,8 +54,18 @@ main tr:nth-of-type(even) {
 
 <!-- <<< shipopt-sel <<< \-->
 </select></p>
+	<h1>Destinations: max=`lypj-max` / avg=`lypj-avg` Ly/Jump</h1>
+<!--	Filter <fieldset id="tagf">
+	  <input type="radio" id="tfall" name="tagf" value="all">
+	  <label for="tfall">all</label>
+	  <input type="radio" id="tfany" name="tagf" value="any" checked="checked">
+	  <label for="tfany">any</label>
+	</fieldset> tags: <input type="text" list="tags" id="tagf" value="" name="tagf" placeholder="Type tag">
+<datalist id="tags">
+  <option value="Home">
+  <option value="Formidine Rift">
+</datalist -->	
 	<table id="dests" style="width:100%">
-		<caption>Destinations: max=`lypj-max` / avg=`lypj-avg` Ly/Jump</caption>
 		<thead><tr>
 			<th>Destination</th>
 			<th>Distance</th>
@@ -72,8 +91,8 @@ main tr:nth-of-type(even) {
 <!-- <<< dest <<< \-->
 		</tbody>
 	</table>
+	<h1>Jump Statistics</h1>
 	<table id="jhist" style="width:100%">
-		<caption style="margin-top:1em">Jump History</caption>
 		<thead><tr>
 			<th>Last…</th>
 			<th colspan="2">Jump</th>
@@ -102,6 +121,16 @@ main tr:nth-of-type(even) {
 <!-- <<< avg-row <<< \-->
 		<tbody>
 	</table>
+   <script type="text/javascript">
+function selShip(shId) {
+	var rq = new Object();
+	rq.topic = "travel";
+	rq.op = "planShip";
+	rq.shipId = parseInt(shId);
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
+}
+	</script>
 <!-- <<< topic <<< -->
   </main>
   </body>

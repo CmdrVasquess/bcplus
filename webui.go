@@ -5,16 +5,23 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	gx "github.com/fractalqb/goxic"
 	gxm "github.com/fractalqb/goxic/textmessage"
 	gxw "github.com/fractalqb/goxic/web"
 	"github.com/fractalqb/namemap"
+	"github.com/fractalqb/nmconv"
 	l "github.com/fractalqb/qblog"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
+
+var idxMapNames = nmconv.Conversion{
+	Norm:   nmconv.Uncamel,
+	Denorm: nmconv.SepX(strings.ToLower, "-"),
+}
 
 func needTemplate(tmap map[string]*gx.Template, path string) *gx.Template {
 	if t, ok := tmap[path]; !ok {
@@ -36,18 +43,18 @@ var gxtPage struct {
 
 var gxtTitle struct {
 	*gx.Template
-	CmdrName []int `goxic:"cmdr-name"`
+	CmdrName []int
 }
 
 var gxtFrame struct {
 	*gx.Template
-	CmdrName   []int `goxic:"cmdr-name"`
-	Credits    []int `goxic:"credits"`
-	Loan       []int `goxic:"loan"`
-	RnkCombat  []int `goxic:"rnk-combat"`
-	RnkTrade   []int `goxic:"rnk-trade"`
+	CmdrName   []int
+	Credits    []int
+	Loan       []int
+	RnkCombat  []int
+	RnkTrade   []int
 	RnkExplor  []int `goxic:"rnk-explorer"`
-	RnkCqc     []int `goxic:"rnk-cqc"`
+	RnkCqc     []int
 	RLvlCombat []int `goxic:"rlvl-combat"`
 	RLvlTrade  []int `goxic:"rlvl-trade"`
 	RLvlExplor []int `goxic:"rlvl-explorer"`
@@ -56,29 +63,29 @@ var gxtFrame struct {
 	RPrgTrade  []int `goxic:"rprg-trade"`
 	RPrgExplor []int `goxic:"rprg-explorer"`
 	RPrgCqc    []int `goxic:"rprg-cqc"`
-	RnkFed     []int `goxic:"rnk-fed"`
+	RnkFed     []int
 	RLvlFed    []int `goxic:"rlvl-fed"`
 	RPrgFed    []int `goxic:"rprg-fed"`
-	RnkImp     []int `goxic:"rnk-imp"`
+	RnkImp     []int
 	RLvlImp    []int `goxic:"rlvl-imp"`
 	RPrgImp    []int `goxic:"rprg-imp"`
 	Loc        []int `goxic:"location"`
 	LocX       []int `goxic:"locx"`
 	LocY       []int `goxic:"locy"`
 	LocZ       []int `goxic:"locz"`
-	ShipType   []int `goxic:"ship-type"`
-	ShipName   []int `goxic:"ship-name"`
-	ShipIdent  []int `goxic:"ship-ident"`
-	Home       []int `goxic:"home"`
+	ShipType   []int
+	ShipName   []int
+	ShipIdent  []int
+	Home       []int
 	HomeDist   []int `goxic:"homedist"`
-	NavItems   []int `goxic:"nav-items"`
-	Topic      []int `goxic:"topic"`
+	NavItems   []int
+	Topic      []int
 }
 
 var gxtNavItem struct {
 	*gx.Template
-	Link  []int `goxic:"link"`
-	Title []int `goxic:"title"`
+	Link  []int
+	Title []int
 }
 
 func loadTmpls() {
@@ -86,12 +93,12 @@ func loadTmpls() {
 	if err := gxw.ParseHtmlTemplate(assetPath("appframe.html"), "frame", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
-	gx.MustIndexMap(&gxtPage, needTemplate(tmpls, ""))
+	gx.MustIndexMap(&gxtPage, needTemplate(tmpls, ""), idxMapNames.Convert)
 	prepareOfflinePage(needTemplate(tmpls, "title-offline"),
 		needTemplate(tmpls, "body-offline"))
-	gx.MustIndexMap(&gxtTitle, needTemplate(tmpls, "title-online"))
-	gx.MustIndexMap(&gxtFrame, needTemplate(tmpls, "body-online"))
-	gx.MustIndexMap(&gxtNavItem, needTemplate(tmpls, "body-online/nav-item"))
+	gx.MustIndexMap(&gxtTitle, needTemplate(tmpls, "title-online"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtFrame, needTemplate(tmpls, "body-online"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtNavItem, needTemplate(tmpls, "body-online/nav-item"), idxMapNames.Convert)
 	loadRescTemplates()
 	loadTrvlTemplates()
 }
@@ -225,8 +232,16 @@ func preparePage(styles gx.Content) (emit, bindto *gx.BounT, hook []int) {
 		btFrame.Bind(gxtFrame.ShipIdent, webGuiNOC)
 	} else {
 		btFrame.Bind(gxtFrame.ShipType, nmap(&nmShipType, cshp.Type))
-		btFrame.Bind(gxtFrame.ShipName, gxw.EscHtml{gx.Print{cshp.Name}})
-		btFrame.Bind(gxtFrame.ShipIdent, gxw.EscHtml{gx.Print{cshp.Ident}})
+		if len(cshp.Name) == 0 {
+			btFrame.Bind(gxtFrame.ShipName, webGuiNOC)
+		} else {
+			btFrame.Bind(gxtFrame.ShipName, gxw.EscHtml{gx.Print{cshp.Name}})
+		}
+		if len(cshp.Ident) == 0 {
+			btFrame.Bind(gxtFrame.ShipIdent, webGuiNOC)
+		} else {
+			btFrame.Bind(gxtFrame.ShipIdent, gxw.EscHtml{gx.Print{cshp.Ident}})
+		}
 	}
 	if cmdr.Home.Location == nil {
 		btFrame.Bind(gxtFrame.Home, webGuiNOC)
@@ -257,7 +272,7 @@ func runWebGui() {
 	go wscHub()
 	http.HandleFunc("/ws", serveWs)
 	setupTopic("dashboard", wuiDashboard)
-	setupTopic("resources", wuiResources)
+	setupTopic("materials", wuiMats)
 	setupTopic("travel", wuiTravel)
 	glog.Logf(l.Info, "Starting web GUI on port %d", webGuiPort)
 	go http.ListenAndServe(fmt.Sprintf(":%d", webGuiPort), nil)

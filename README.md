@@ -5,10 +5,11 @@
 
 BC+ evaluates the player's journal and serves web pages with useful
 informaton. I.e. one can easily access BC+ from any computer, tablet
-or smartphone without ATL-TAB'ing away running E:D.
+or smartphone without ATL-TAB'ing away from E:D.
 
 Currnetly information for long distance tarvel is supported - I'm on
-the way to Beagle Point, i.e. estimations based on the recent jump history:
+the way to Beagle Point. It displays estimations based on the recent
+jump history:
 
 ![Materials Screen](doc/imgs/screen-mats.jpg?raw=true)
 

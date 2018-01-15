@@ -14,5 +14,6 @@
 (sidewinder Sidewinder)
 (testbuggy "SRV")
 (type6 "Type-6 Transporter")
+(type7 "Type-7 Transporter")
 (type9 "Type-9 Heavy")
 (vulture "Vulture")

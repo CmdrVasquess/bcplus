@@ -11,30 +11,31 @@ import (
 	gx "github.com/fractalqb/goxic"
 	gxm "github.com/fractalqb/goxic/textmessage"
 	gxw "github.com/fractalqb/goxic/web"
+	l "github.com/fractalqb/qblog"
 )
 
 var gxtTrvlFrame struct {
 	*gx.Template
-	AvgHeads []int `goxic:"avg-heads"`
-	AvgRows  []int `goxic:"avg-rows"`
+	AvgHeads []int
+	AvgRows  []int
 	Dests    []int `goxic:"destinations"`
-	LypjMax  []int `goxic:"lypj-max"`
-	LypjAvg  []int `goxic:"lypj-avg"`
+	LypjMax  []int
+	LypjAvg  []int
 	ShipOpts []int `goxic:"shipopts"`
 }
 
 var gxtShipOpt struct {
 	*gx.Template
-	Id   []int `goxic:"id"`
-	Ship []int `goxic:"ship"`
-	Jump []int `goxic:"jump"`
+	Id   []int
+	Ship []int
+	Jump []int
 }
 
 var gxtShipOptSel struct {
 	*gx.Template
-	Id   []int `goxic:"id"`
-	Ship []int `goxic:"ship"`
-	Jump []int `goxic:"jump"`
+	Id   []int
+	Ship []int
+	Jump []int
 }
 
 var gxtTrvlAvgHead struct {
@@ -44,32 +45,32 @@ var gxtTrvlAvgHead struct {
 
 var gxtTrvlAvgRow struct {
 	*gx.Template
-	Title []int `goxic:"title"`
+	Title []int
 	Vals  []int `goxic:"values"`
 }
 
 var gxtTrvlAvgVal1 struct {
 	*gx.Template
-	Data []int `goxic:"data"`
+	Data []int
 }
 
 var gxtTrvlAvgVal2 struct {
 	*gx.Template
-	Sum []int `goxic:"sum"`
-	Avg []int `goxic:"avg"`
+	Sum []int
+	Avg []int
 }
 
 var gxtTrvlDestRow struct {
 	*gx.Template
-	Name []int `goxic:"name"`
-	Dist []int `goxic:"dist"`
+	Name []int
+	Dist []int
 	ETD  []int `goxic:"etd"`
 	EJD  []int `goxic:"ejd"`
 	CooX []int `goxic:"coox"`
 	CooY []int `goxic:"cooy"`
 	CooZ []int `goxic:"cooz"`
-	Note []int `goxic:"note"`
-	Tags []int `goxic:"tags"`
+	Note []int
+	Tags []int
 }
 
 var dynTrvlStyles gx.Content
@@ -80,14 +81,14 @@ func loadTrvlTemplates() {
 		panic("failed loading templates: " + err.Error())
 	}
 	dynTrvlStyles = pageLocalStyle(tmpls)
-	gx.MustIndexMap(&gxtTrvlFrame, needTemplate(tmpls, "topic"))
-	gx.MustIndexMap(&gxtShipOpt, needTemplate(tmpls, "topic/shipopt"))
-	gx.MustIndexMap(&gxtShipOptSel, needTemplate(tmpls, "topic/shipopt-sel"))
-	gx.MustIndexMap(&gxtTrvlAvgHead, needTemplate(tmpls, "topic/avg-heading"))
-	gx.MustIndexMap(&gxtTrvlAvgRow, needTemplate(tmpls, "topic/avg-row"))
-	gx.MustIndexMap(&gxtTrvlAvgVal1, needTemplate(tmpls, "topic/avg-row/value1"))
-	gx.MustIndexMap(&gxtTrvlAvgVal2, needTemplate(tmpls, "topic/avg-row/value2"))
-	gx.MustIndexMap(&gxtTrvlDestRow, needTemplate(tmpls, "topic/dest"))
+	gx.MustIndexMap(&gxtTrvlFrame, needTemplate(tmpls, "topic"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtShipOpt, needTemplate(tmpls, "topic/shipopt"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtShipOptSel, needTemplate(tmpls, "topic/shipopt-sel"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtTrvlAvgHead, needTemplate(tmpls, "topic/avg-heading"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtTrvlAvgRow, needTemplate(tmpls, "topic/avg-row"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtTrvlAvgVal1, needTemplate(tmpls, "topic/avg-row/value1"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtTrvlAvgVal2, needTemplate(tmpls, "topic/avg-row/value2"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtTrvlDestRow, needTemplate(tmpls, "topic/dest"), idxMapNames.Convert)
 }
 
 var theAvgSteps = []int{5, 20, 50}
@@ -344,7 +345,9 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 		pathEffcy := dists[jStatIdx] / paths[jStatIdx]
 		useJumpStats = (pathEffcy - JS_LOWTH) / (JS_HIGTH - JS_LOWTH)
 	}
-	if useJumpStats <= 0.0 {
+	if jStatIdx < 0 {
+		dpjAvg = 0
+	} else if useJumpStats <= 0.0 {
 		dpjAvg = paths[jStatIdx] / float64(len(theGame.JumpHist)-1)
 	} else if useJumpStats >= 1.0 {
 		dpjAvg = dists[jStatIdx] / float64(len(theGame.JumpHist)-1)
@@ -354,30 +357,45 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 		dpjAvg = useJumpStats*dpjAvgD + (1-useJumpStats)*dpjAvgP
 	}
 	cmdr := &theGame.Cmdr
-	cship := cmdr.CurShip.Ship
-	if cship == nil || cship.Jump.DistMax <= 0 {
-		dpjMax = dpjAvg // same values → no interval
+	planship := theGame.TrvlPlanShip.Ship
+	if planship == nil {
+		planship = cmdr.CurShip.Ship
+		glog.Logf(l.Debug, "plannig with current ship")
+	} else if planship != nil {
+		glog.Logf(l.Debug, "plannig with ship %d %s / %s",
+			planship.ID,
+			planship.Name,
+			planship.Ident)
 	} else {
-		dpjMax = float64(cship.Jump.DistMax)
+		glog.Logf(l.Debug, "no ship to plan with")
+	}
+	if planship == nil || planship.Jump.DistMax <= 0 {
+		dpjMax = dpjAvg // same values → no interval
+		glog.Logf(l.Debug, "no max jumprange for ship → use avg: %.2f", dpjAvg)
+	} else {
+		dpjMax = float64(planship.Jump.DistMax)
 		if dpjAvg == 0 {
 			dpjAvg = dpjMax // same values → no interval
+			glog.Logf(l.Debug, "no avg jumprange → use ship max: %.2f", dpjMax)
 		} else if dpjAvg > dpjMax {
-			dpjMax = dpjAvg
+			dpjAvg = dpjMax
+			glog.Logf(l.Debug, "avg jumprange exceeds ships max: %f > %f", dpjAvg, dpjMax)
 		}
 	}
 	btShipOpt := gxtShipOpt.NewBounT()
 	btShipOptSel := gxtShipOptSel.NewBounT()
 	btFrame.BindGen(gxtTrvlFrame.ShipOpts, func(wr io.Writer) (n int) {
-		if cship != nil {
-			if theGame.TrvlPlanShip.Ship == nil {
+		curship := cmdr.CurShip.Ship
+		if curship != nil {
+			if theGame.TrvlPlanShip.Ship == curship {
 				btShipOptSel.BindP(gxtShipOptSel.Id, -1)
 				btShipOptSel.BindP(gxtShipOptSel.Ship, "Current ship")
-				btShipOptSel.BindFmt(gxtShipOptSel.Jump, "%.2f", cship.Jump.DistMax)
+				btShipOptSel.BindFmt(gxtShipOptSel.Jump, "%.2f", curship.Jump.DistMax)
 				n += btShipOptSel.Emit(wr)
 			} else {
-				btShipOpt.BindP(gxtShipOpt.Id, cship.ID)
+				btShipOpt.BindP(gxtShipOpt.Id, -1)
 				btShipOpt.BindP(gxtShipOpt.Ship, "Current ship")
-				btShipOpt.BindFmt(gxtShipOpt.Jump, "%.2f", cship.Jump.DistMax)
+				btShipOpt.BindFmt(gxtShipOpt.Jump, "%.2f", curship.Jump.DistMax)
 				n += btShipOpt.Emit(wr)
 			}
 		}

@@ -16,41 +16,50 @@ CMDR `cmdr-name`
   <body>
 <!-- >>> body <<< -->
 <!-- >>> body-offline >>> -->
-    <header>
-	  <h1>…offline…</h1>
+    <header style="display:block;" class="center">
+	  <h1>offline</h1>
 	</header>
+	<main class="center">
+	<img src="s/img/EDLoader.svg" alt="loading…" style="margin-top:5em">
+	</main>
 <!-- <<< body-offline <<< \-->
 <!-- >>> body-online >>> -->
 	<header>
-	<table>
-	<tr><td class="b-tlr">CMDR `cmdr-name`</td>
-		 <td rowspan="2" class="center b-tbl"><img class="rnklogo" src="s/rnk/combat/`rlvl-combat`.png"></td>
-	    <td class="rnk b-t">Combat: `rnk-combat`</td>
-		 <td rowspan="2" class="center b-tb"><img class="rnklogo" src="s/rnk/trading/`rlvl-trade`.png"></td>
-	    <td class="rnk b-t">Trade: `rnk-trade`</td>
-		 <td rowspan="2" class="center b-tb"><img class="rnklogo" src="s/rnk/explorer/`rlvl-explorer`.png"></td>
-	    <td class="rnk b-t">Explorer: `rnk-explorer`</td>
-		 <td rowspan="2" class="center b-tb"><img class="rnklogo" src="s/rnk/cqc/`rlvl-cqc`.png"></td>
-	    <td class="rnk b-tr">CQC: `rnk-cqc`</td></tr>
-	<tr><td class="b-lr">`credits` Cr<!-- / `loan` Cr--></td>
-	    <td class="rnk-prgs b-b">`rlvl-combat`/8 +`rprg-combat`%</td>
-	    <td class="rnk-prgs b-b">`rlvl-trade`/8 +`rprg-trade`%</td>
-	    <td class="rnk-prgs b-b">`rlvl-explorer`/8 +`rprg-explorer`%</td>
-	    <td class="rnk-prgs b-br">`rlvl-cqc`/8 +`rprg-cqc`%</td></tr>
-	<tr><td class="b-lr">`ship-name` / `ship-ident`</td>
-	    <td colspan="3" class="b-tl">`location`</td>
-	    <td class="b-tr">Home: `home`</td>
-	    <td rowspan="2" class="b-tbl"><img class="rnklogo" src="s/fctn/feds.png"></td>
-	    <td class="rnk-prgs b-t">Federation: `rlvl-fed`/14 +`rprg-fed`%</td>
-	    <td rowspan="2" class="b-tb"><img class="rnklogo" src="s/fctn/imps.png"></td>
-	    <td class="rnk-prgs b-tr">Empire: `rlvl-imp`/14 +`rprg-imp`%</td>
-	    </tr>
-	<tr><td class="b-blr">`ship-type`</td>
-	    <td colspan="3" class="b-bl">`locx` / `locy` / `locz`</td>
-	    <td class="b-br">→ `homedist` Ly</td>
-	    <td class="rnk b-b">`rnk-fed`</td>
-	    <td class="rnk b-br">`rnk-imp`</td></tr>
-	</table>
+	<div id="base">
+	<p>CMDR `cmdr-name`<p>
+	<p>`credits` €</p>
+	<p>`ship-name` / `ship-ident`</p>
+	<p>`ship-type`</p>
+	</div>
+	<div class="rank">
+		<img class="logo" src="s/rnk/combat/`rlvl-combat`.png">
+		<div><p>Combat: `rnk-combat`</p><p>`rlvl-combat`/8 +`rprg-combat`%</p></div>
+	</div>
+	<div class="rank">
+		<img class="logo" src="s/rnk/trading/`rlvl-trade`.png">
+		<div><p>Trading: `rnk-trade`</p><p>`rlvl-trade`/8 +`rprg-trade`%</p></div>
+	</div>
+	<div class="rank">
+		<img class="logo" src="s/rnk/explorer/`rlvl-explorer`.png">
+		<div><p>Explorer: `rnk-explorer`</p><p>`rlvl-explorer`/8 +`rprg-explorer`%</p></div>
+	</div>
+	<div class="rank">
+		<img class="logo" src="s/rnk/cqc/`rlvl-cqc`.png">
+		<div><p>CQC: `rnk-cqc`</p><p>`rlvl-cqc`/8 +`rprg-cqc`%</p></div>
+	</div>
+	<div class="locinfo">
+		<div><p><pan title="Bookmark – NYI!" onclick="togglebm(this)"
+		             style="cursor: pointer"><!--★-->☆</span> `location`</p><p>`locx` / `locy` / `locz`</p></div>
+		<div style="margin-left:1em"><p>Home: `home`</p><p>→ `homedist` Ly</p></div>
+	</div>
+	<div class="rank" style="justify-content: center">
+		<img class="logo" src="s/fctn/feds.png" alt="Feds">
+		<div><p>Federation: `rlvl-fed`/14</p><p>Master +`rprg-fed`%</p></div>
+	</div>
+	<div class="rank" style="justify-content: center">
+		<img class="logo" src="s/fctn/imps.png" alt="Imps">
+		<div><p>Empire: `rlvl-imp`/14</p><p>Master +`rprg-imp`%</p></div>
+	</div>
 	</header>
 	<nav>
 	  <ul>
@@ -74,21 +83,21 @@ function showStatus(msg) {
 	setTimeout(function(){ statLine.innerHTML = "&nbsp;" }, 10000);
 }
 var wsurl = "ws://"+location.hostname+":"+location.port+"/ws";
+var wsock = new WebSocket(wsurl);
 function startWs() {
-	var wsockUpd = new WebSocket(wsurl);
 	// https://www.tutorialspoint.com/html5/html5_websocket.htm
 	// .onerror(err); .onopen; .onmessage(msg); .onclose
 	/*wsockUpd.onopen = function () {
 	   showStatus('Event Channel Connected: '+wsurl);	   	
 	}*/
-	wsockUpd.onerror = function (err) {
+	wsock.onerror = function (err) {
 	   showStatus('Event Channel Error: '+err);	   	
 	}
-	wsockUpd.onclose = function(evt) {
+	wsock.onclose = function(evt) {
 	   showStatus('Event Channel Closed: '+wsurl);
 	   setTimeout(startWs(), 1500);
 	}
-	wsockUpd.onmessage = function(evt) {
+	wsock.onmessage = function(evt) {
 		var cmd = JSON.parse(evt.data)
 	 	if (cmd.cmd == "reload") {
 	   	location.reload(true);

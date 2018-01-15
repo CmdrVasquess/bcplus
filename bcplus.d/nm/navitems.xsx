@@ -1,4 +1,4 @@
 [\link lang:]
 (dashboard "Dashboard")
-(resources "Materials")
+(materials "Materials")
 (travel "Travel")
