@@ -11,12 +11,12 @@ Currnetly information for long distance tarvel is supported - I'm on
 the way to Beagle Point. It displays estimations based on the recent
 jump history:
 
-![Materials Screen](doc/imgs/screen-mats.jpg?raw=true)
+![Travel Screen](doc/imgs/screen-travel.jpg?raw=true)
 
 As well as the availability of raw materials on scanned bodies in the
 current system:
 
-![Travel Screen](doc/imgs/screen-travel.jpg?raw=true)
+![Materials Screen](doc/imgs/screen-mats.jpg?raw=true)
 
 ## Disclaimer Board Computer plus was created using assets and imagery
 from [Elite: Dangerous](https://www.elitedangerous.com/), with the
