@@ -21,6 +21,8 @@ func DispatchUser(lock *sync.RWMutex, state *GmState, event map[string]interface
 		switch topic {
 		case "travel":
 			handler = travelPlanShip
+		case "materials":
+			handler = matsVis
 		}
 	}
 	if handler == nil {
@@ -65,4 +67,19 @@ func travelPlanShip(gstat *GmState, evt map[string]interface{}) (reload bool) {
 		eulog.Logf(l.Error, "missing ship id in travel/plan-ship")
 	}
 	return reload
+}
+
+func matsVis(gstat *GmState, evt map[string]interface{}) (reload bool) {
+	cat, ok := attStr(evt, "cat")
+	if !ok {
+		eulog.Log(l.Error, "materials visibility changes has no category")
+		return false
+	}
+	vis, ok := attStr(evt, "vis")
+	if !ok {
+		eulog.Log(l.Error, "materials visibility changes has no visibility")
+		return false
+	}
+	gstat.MatCatHide[cat] = vis == "collapse"
+	return false
 }

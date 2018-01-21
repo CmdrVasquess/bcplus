@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"strings"
+	str "strings"
 	"testing"
 )
 

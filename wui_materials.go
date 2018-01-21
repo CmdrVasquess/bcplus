@@ -10,6 +10,11 @@ import (
 	gxw "github.com/fractalqb/goxic/web"
 )
 
+type MatFilter struct {
+	Have string
+	Need bool
+}
+
 var gxtRescFrame struct {
 	*gx.Template
 	ThNeeds  []int
@@ -28,7 +33,7 @@ var gxtSecTitle struct {
 	Have     []int
 	Need     []int
 	Free     []int
-	NeedsNo  []int
+	Needs    []int
 }
 
 var gxtSecRow struct {
@@ -59,14 +64,21 @@ var gxtRowNeed struct {
 	Count []int
 }
 
+var gxtHideCat struct {
+	*gx.Template
+	Cat []int
+}
+
 var dynRescStyles gx.Content
+var endRescScript *gx.Template
 
 func loadRescTemplates() {
 	tmpls := make(map[string]*gx.Template)
 	if err := gxw.ParseHtmlTemplate(assetPath("materials.html"), "resources", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
-	dynRescStyles = pageLocalStyle(tmpls)
+	dynRescStyles = pgLocStyleFix(tmpls)
+	endRescScript = pgEndScript(tmpls)
 	gx.MustIndexMap(&gxtRescFrame, needTemplate(tmpls, "topic"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtThNeed, needTemplate(tmpls, "topic/th-need"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtSecTitle, needTemplate(tmpls, "topic/sec-title"), idxMapNames.Convert)
@@ -74,6 +86,7 @@ func loadRescTemplates() {
 	gx.MustIndexMap(&gxtRowSrc1, needTemplate(tmpls, "topic/sec-row/src1"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtRowSrc2, needTemplate(tmpls, "topic/sec-row/src2"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtRowNeed, needTemplate(tmpls, "topic/sec-row/need"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtHideCat, needTemplate(tmpls, "end-script/hide-cat"), idxMapNames.Convert)
 }
 
 func resourceCount(rescs CmdrsMats) (have, need int) {
@@ -241,13 +254,24 @@ func secTitle(bt *gx.BounT, wr io.Writer, cat string, have, need, free, needs in
 	bt.BindP(gxtSecTitle.Have, have)
 	bt.BindP(gxtSecTitle.Need, need)
 	bt.BindP(gxtSecTitle.Free, free)
-	bt.BindP(gxtSecTitle.NeedsNo, 1)
+	bt.Bind(gxtSecTitle.Needs, gx.Empty)
 	n += bt.Emit(wr)
 	return n
 }
 
 func wuiMats(w http.ResponseWriter, r *http.Request) {
-	btEmit, btBind, hook := preparePage(dynRescStyles)
+	btEndScript := endRescScript.NewBounT()
+	btEndScript.BindGenName("hide-cats", func(wr io.Writer) (n int) {
+		btHide := gxtHideCat.NewBounT()
+		for cat, doHide := range theGame.MatCatHide {
+			if doHide {
+				btHide.BindP(gxtHideCat.Cat, cat)
+				n += btHide.Emit(wr)
+			}
+		}
+		return n
+	})
+	btEmit, btBind, hook := preparePage(dynRescStyles, btEndScript)
 	btFrame := gxtRescFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr
@@ -255,9 +279,9 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 	haveMan, needMan := resourceCount(cmdr.MatsMan)
 	haveEnc, needEnc := resourceCount(cmdr.MatsEnc)
 	sortMats()
-	btThNeed := gxtThNeed.NewBounT()
-	btThNeed.Bind(gxtThNeed.Need, webGuiNOC)
-	btFrame.Bind(gxtRescFrame.ThNeeds, btThNeed)
+	//	btThNeed := gxtThNeed.NewBounT()
+	//	btThNeed.Bind(gxtThNeed.Need, webGuiNOC)
+	btFrame.Bind(gxtRescFrame.ThNeeds, gx.Empty)
 	btSec := gxtSecTitle.NewBounT()
 	btRow := gxtSecRow.NewBounT()
 	btRow.Bind(gxtSecRow.Needs, gx.Empty)

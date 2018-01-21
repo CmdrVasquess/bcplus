@@ -62,9 +62,12 @@ type GmState struct {
 	Cmdr         Commander
 	Tj2j         time.Duration // min. time: jump to jump
 	TrvlPlanShip ShipRef
-	JumpHist     []*Jump `json:",omitempty"`
+	JumpHist     []*Jump         `json:",omitempty"`
+	MatCatHide   map[string]bool `json:",omitempty"`
+	MatFlt       MatFilter
 	evtBacklog   []map[string]interface{}
 	next1stJump  bool
+	creds        *CmdrCreds
 }
 
 func (g *GmState) isOffline() bool {
@@ -136,7 +139,9 @@ func (stat *GmState) addJump(ssys *gxy.StarSys, t Timestamp) {
 func NewGmState() *GmState {
 	res := GmState{
 		Cmdr:        *NewCommander(),
-		next1stJump: true}
+		MatCatHide:  make(map[string]bool),
+		next1stJump: true,
+	}
 	return &res
 }
 
@@ -145,6 +150,7 @@ func (s *GmState) clear() {
 	s.JumpHist = nil
 	s.evtBacklog = nil
 	s.next1stJump = true
+	s.creds.Clear()
 }
 
 func (s *GmState) save(w io.Writer) error {

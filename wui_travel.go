@@ -74,13 +74,15 @@ var gxtTrvlDestRow struct {
 }
 
 var dynTrvlStyles gx.Content
+var endTrvlScrpit gx.Content
 
 func loadTrvlTemplates() {
 	tmpls := make(map[string]*gx.Template)
 	if err := gxw.ParseHtmlTemplate(assetPath("travel.html"), "travel", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
-	dynTrvlStyles = pageLocalStyle(tmpls)
+	dynTrvlStyles = pgLocStyleFix(tmpls)
+	endTrvlScrpit = pgEndScriptFix(tmpls)
 	gx.MustIndexMap(&gxtTrvlFrame, needTemplate(tmpls, "topic"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtShipOpt, needTemplate(tmpls, "topic/shipopt"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtShipOptSel, needTemplate(tmpls, "topic/shipopt-sel"), idxMapNames.Convert)
@@ -458,7 +460,7 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 }
 
 func wuiTravel(w http.ResponseWriter, r *http.Request) {
-	btEmit, btBind, hook := preparePage(dynTrvlStyles)
+	btEmit, btBind, hook := preparePage(dynTrvlStyles, endTrvlScrpit)
 	btFrame := gxtTrvlFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr

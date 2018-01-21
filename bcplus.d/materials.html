@@ -50,12 +50,12 @@ main .mdmnd {
 		<tr> 
 			<th>⌬</th><th>Material</th>
 			<th><select>
-				<option>All</option>
-				<option>All and</option>
-				<option>Have and</option>
-				<option>Have or</option>
-				<option>None and</option>
-				<option>None or</option>
+				<option value="alor">All</option>
+				<option value="alnd">All and</option>
+				<option value="hvnd">Have and</option>
+				<option value="hvor">Have or</option>
+				<option value="nond">None and</option>
+				<option value="noor">None or</option>
 			</select></th>
 			<th><input type="checkbox" name="shwnd" checked>Need</th>
 			<th colspan="2">Sorce</th>
@@ -68,11 +68,12 @@ main .mdmnd {
 		</tr>
 <!-- >>> sections <<< \-->
 <!-- >>> sec-title >>> -->
-		<tr class="sec-title">
+		<tr class="sec-title `cat`">
 			<th class="show" onclick="toggleCat(this, '`cat`')"></th>
 			<th>`category`</th><th class="right">`have`</th><th class="right">`need`</th>
 			<th colspan="2" class="left">Free: `free`</th>
-			<th colspan="`needs-no`"></th>
+			<th></th>
+<!-- >>> needs <<< \-->
 		</tr>
 
 <!-- <<< sec-title <<< \-->
@@ -101,21 +102,56 @@ main .mdmnd {
 
 <!-- <<< sec-row <<< \-->
 	</table>
-	<script type="text/javascript" >
+<!-- <<< topic <<< -->
+<!-- >>> end-script >>> -->
+	<script>
+function catSec(cat) {
+	var sec = document.querySelector('main tr.sec-title.'+cat);
+	return sec
+}
+function catBtn(cat) {
+	var sec = catSec(cat);
+	var res = sec.getElementsByTagName('th')[0];
+	return res;
+}
 function toggleCat(btn, cat) {
-	var rows = document.querySelectorAll('main tr.'+cat);
+	var rows = document.querySelectorAll('main tr:not(.sec-title).'+cat);
 	var vis = 'visible';
 	if (btn.classList.contains('show')) {
 		vis = 'collapse';
 	}
+	var rq = new Object();
+	rq.topic = "materials";
+	rq.op = "vis";
+	rq.cat = cat;
+	rq.vis = vis;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
 	btn.classList.toggle('show');
 	btn.classList.toggle('hide');
+	var i;
 	for (i = 0; i < rows.length; i++) {
 		rows[i].style.visibility = vis;
 	}
 }
+function hideCat(cat) {
+	var btn = catBtn(cat);
+	btn.classList.remove('show');
+	btn.classList.add('hide');	
+	var rows = document.querySelectorAll('main tr:not(.sec-title).'+cat);
+	var i;
+	for (i = 0; i < rows.length; i++) {
+		rows[i].style.visibility = 'collapse';		
+	}
+}
+<!-- >>> hide-cats <<< -->
+<!-- >>> hide-cat >>> -->
+hideCat('`cat`');
+<!-- <<< hide-cat <<< -->
+//document.addEventListener('DOMContentLoaded', hideCat('man'));
 	</script>
-<!-- <<< topic <<< -->
+
+<!-- <<< end-script <<< -->
   </main>
   </body>
 </html>

@@ -36,9 +36,11 @@ var offlinePage []byte
 
 var gxtPage struct {
 	*gx.Template
-	PgTitle []int `goxic:"title"`
-	Styles  []int `goxic:"dyn-styles"`
-	PgBody  []int `goxic:"body"`
+	PgTitle   []int `goxic:"title"`
+	Version   []int
+	Styles    []int `goxic:"dyn-styles"`
+	PgBody    []int `goxic:"body"`
+	ScriptEnd []int
 }
 
 var gxtTitle struct {
@@ -105,6 +107,7 @@ func loadTmpls() {
 
 func prepareOfflinePage(title *gx.Template, body *gx.Template) {
 	btOffline := gxtPage.NewBounT()
+	btOffline.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
 	if stat, ok := title.Static(); !ok {
 		glog.Fatal("no offline title")
 	} else {
@@ -116,12 +119,12 @@ func prepareOfflinePage(title *gx.Template, body *gx.Template) {
 		glog.Fatal("no offline body")
 	}
 	btOffline.Bind(gxtPage.Styles, gx.Empty)
-	if fix, err := btOffline.Fixate(); err != nil {
-		panic("cannot fixate offline page: " + err.Error())
-	} else if stat, ok := fix.Static(); ok {
+	btOffline.Bind(gxtPage.ScriptEnd, gx.Empty)
+	fix := btOffline.Fixate()
+	if stat, ok := fix.Static(); ok {
 		offlinePage = stat
 	} else {
-		panic("offline page not static: " + err.Error())
+		panic("offline page not static")
 	}
 }
 
@@ -155,7 +158,7 @@ func nmapU8(nm *namemap.FromTo, rank uint8) gx.Content {
 	return gx.Print{str}
 }
 
-func pageLocalStyle(tmpls map[string]*gx.Template) (res gx.Content) {
+func pgLocStyleFix(tmpls map[string]*gx.Template) (res gx.Content) {
 	if lsty, ok := tmpls["local-style"]; ok {
 		if raw, ok := lsty.Static(); ok {
 			res = gx.Data(raw)
@@ -168,6 +171,24 @@ func pageLocalStyle(tmpls map[string]*gx.Template) (res gx.Content) {
 	return res
 }
 
+func pgEndScriptFix(tmpls map[string]*gx.Template) (res gx.Content) {
+	if escr, ok := tmpls["end-script"]; ok {
+		if raw, ok := escr.Static(); ok {
+			res = gx.Data(raw)
+		} else {
+			res = gx.Empty
+		}
+	} else {
+		res = gx.Empty
+	}
+	return res
+}
+
+func pgEndScript(tmpls map[string]*gx.Template) *gx.Template {
+	escr, _ := tmpls["end-script"]
+	return escr
+}
+
 func emitNavItems(wr io.Writer) (n int) {
 	btNavi := gxtNavItem.NewBounT()
 	for _, ln := range webGuiTopics {
@@ -178,12 +199,13 @@ func emitNavItems(wr io.Writer) (n int) {
 	return n
 }
 
-func preparePage(styles gx.Content) (emit, bindto *gx.BounT, hook []int) {
+func preparePage(styles, endScript gx.Content) (emit, bindto *gx.BounT, hook []int) {
 	cmdr := &theGame.Cmdr
 	cmdrNameEsc := gxw.HtmlEsc(cmdr.Name)
 	btPage := gxtPage.NewBounT()
 
 	btTitle := gxtTitle.NewBounT()
+	btPage.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
 	btPage.Bind(gxtPage.PgTitle, btTitle)
 	btPage.Bind(gxtPage.Styles, styles)
 	btTitle.BindP(gxtTitle.CmdrName, cmdrNameEsc)
@@ -191,6 +213,7 @@ func preparePage(styles gx.Content) (emit, bindto *gx.BounT, hook []int) {
 	//	btFrame := gxtFrame.NewInitBounT(gx.Empty)
 	btFrame := gxtFrame.NewBounT()
 	btPage.Bind(gxtPage.PgBody, btFrame)
+	btPage.Bind(gxtPage.ScriptEnd, endScript)
 	btFrame.BindP(gxtFrame.CmdrName, cmdrNameEsc)
 	// TODO "golang.org/x/text/message"
 	btFrame.Bind(gxtFrame.Credits, gxw.EscHtml{gxm.Msg(wuiL7d, "%d", cmdr.Credits)})

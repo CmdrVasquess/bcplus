@@ -41,8 +41,9 @@ main tr:nth-of-type(even) {
   <main>
 </select>
 <!-- >>> topic >>> -->
-<p>Plan with ship: <select name="shipopt" onchange="selShip(value)">
-                           <!--onchange="showStatus(value+' / '+name+' / '+document.URL)"-->
+	<h1>Destinations</h1>
+Plan with <select name="shipopt" onchange="selShip(value)">
+<!--onchange="showStatus(value+' / '+name+' / '+document.URL)"-->
 <!-- onchange="showStatus(value+" "+text)"-->
 <!-- >>> shipopts <<< \-->
 <!-- >>> shipopt >>> -->
@@ -53,8 +54,7 @@ main tr:nth-of-type(even) {
 <option value="`id`" selected="selected">`ship` – `jump` Ly</option>
 
 <!-- <<< shipopt-sel <<< \-->
-</select></p>
-	<h1>Destinations: max=`lypj-max` / avg=`lypj-avg` Ly/Jump</h1>
+</select>: max=`lypj-max` / avg=`lypj-avg` Ly/Jump
 <!--	Filter <fieldset id="tagf">
 	  <input type="radio" id="tfall" name="tagf" value="all">
 	  <label for="tfall">all</label>

@@ -117,6 +117,16 @@ func saveState() {
 		} else {
 			glog.Logf(l.Error, "cannot save game status to '%s': %s", fnm, err)
 		}
+		if theGame.creds != nil {
+			if len(credsKey) == 0 {
+				glog.Log(l.Error, "not credential masterkey to save credentials")
+			} else {
+				err := theGame.creds.Write(theGame.Cmdr.Name, credsKey)
+				if err != nil {
+					glog.Log(l.Error, "saving credentials", err)
+				}
+			}
+		}
 	}
 	theGalaxy.Close()
 }
@@ -130,6 +140,18 @@ func loadState(cmdrNm string) bool {
 	} else if err == nil {
 		defer r.Close()
 		theGame.load(r)
+		if len(credsKey) > 0 {
+			if theGame.creds == nil {
+				theGame.creds = &CmdrCreds{}
+			} else {
+				theGame.creds.Clear()
+			}
+			err := theGame.creds.Read(cmdrNm, credsKey)
+			if err != nil {
+				glog.Logf(l.Warn, "failed to read credentials for %s: %s", cmdrNm, err)
+				theGame.creds = nil
+			}
+		}
 		return true
 	} else {
 		panic("load commander: " + err.Error())
@@ -172,6 +194,7 @@ func main() {
 	verybose := flag.Bool("vv", false, "very verbose logging")
 	flag.BoolVar(&acceptHistory, "hist", false, "accept historic events")
 	loadCmdr := flag.String("cmdr", "", "preload commander")
+	promptKey := flag.Bool("pmk", false, "prompt for credential master key")
 	showHelp := flag.Bool("h", false, "show help")
 	flag.Parse()
 	if *showHelp {
@@ -188,6 +211,9 @@ func main() {
 	glog.Logf(l.Info, "Bordcomputer+ running on: %s\n", runtime.GOOS)
 	glog.Logf(l.Info, "data    : %s\n", dataDir)
 	var err error
+	if *promptKey {
+		credsKey = promptCredsKey()
+	}
 	if _, err = os.Stat(dataDir); os.IsNotExist(err) {
 		glog.Fatal("data dir does not exist")
 	}
