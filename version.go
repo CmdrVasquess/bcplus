@@ -11,7 +11,7 @@ import (
 const (
 	BCpMajor  uint16 = 0
 	BCpMinor  uint16 = 4
-	BCpBugfix uint16 = 1
+	BCpBugfix uint16 = 2
 	BCpDate   string = "dev"
 )
 

@@ -235,7 +235,10 @@ func main() {
 		credsKey = promptCredsKey()
 	}
 	if _, err = os.Stat(dataDir); os.IsNotExist(err) {
-		glog.Fatal("data dir does not exist")
+		err = os.MkdirAll(dataDir, 0777)
+		if err != nil {
+			glog.Fatal("cannot create data dir: %s", err.Error())
+		}
 	}
 	glog.Logf(l.Info, "journals: %s\n", jrnlDir)
 	theGalaxy, err = gxy.OpenGalaxy(
