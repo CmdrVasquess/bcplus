@@ -16,7 +16,7 @@ CMDR `cmdr-name`
   <body>
 <!-- >>> body <<< -->
 <!-- >>> body-offline >>> -->
-    <header style="display:block;" class="center">
+   <header style="display:block;" class="center">
 	  <h1>…offline…</h1>
 	</header>
 	<main class="center">
@@ -48,8 +48,13 @@ CMDR `cmdr-name`
 		<div><p>CQC: `rnk-cqc`</p><p>`rlvl-cqc`/8 +`rprg-cqc`%</p></div>
 	</div>
 	<div class="locinfo">
-		<div><p><pan title="Bookmark – NYI!" onclick="togglebm(this)"
-		             style="cursor: pointer"><!--★-->☆</span> `location`</p><p>`locx` / `locy` / `locz`</p></div>
+		<div style="text-align:center">
+			<img class="inlico btn" src="s/img/`home-flag`Home.png" title="Toggle Home System"
+			     onclick="tglHome()"><br>
+		   <img class="inlico btn" src="s/img/`dest-flag`Dest.png" title="Toggle Destination"
+		        onclick="tglDest()">
+		</div>&nbsp;
+		<div><p>`location`</p><p>`locx` / `locy` / `locz`</p></div>
 		<div style="margin-left:1em"><p>Home: `home`</p><p>→ `homedist` Ly</p></div>
 	</div>
 	<div class="rank" style="justify-content: center">
@@ -75,7 +80,7 @@ CMDR `cmdr-name`
 <!-- >>> topic <<< -->
 	</main>
 <!-- <<< body-online <<< \-->
-	<footer id="status">&nbsp;</footer>
+	<footer id="status" title="`full-version`">&nbsp;</footer>
 	<script>
 var statLine = document.getElementById("status");
 function showStatus(msg) {
@@ -105,6 +110,20 @@ function startWs() {
 	     	showStatus('Event: ['+evt.data+']');
 	   }
 	}	   
+}
+function tglHome() {
+	var rq = new Object()
+	rq.topic = "all";
+	rq.op = "tglhome";
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
+}
+function tglDest() {
+	var rq = new Object()
+	rq.topic = "all";
+	rq.op = "tgldest";
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
 }
 document.addEventListener('DOMContentLoaded', function () {
 	if (window["WebSocket"]) {

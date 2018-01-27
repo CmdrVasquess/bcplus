@@ -6,10 +6,6 @@
     <link rel="stylesheet" href="s/css/bcp.css">
 <!-- >>> local-style >>> -->
 	<style>
-main table {	
-	/*float: left;*/
-	display: inline;
-}
 main th.show, main th.hide {
 	cursor: pointer;
 }
@@ -25,17 +21,8 @@ main tr.engh {
 main tr.miss {
 	color: var(--colBad)
 }
-main tr:nth-of-type(odd) {
-	background-color: var(--tblOdd);
-}
-main tr:nth-of-type(even) {
-	background-color: var(--tblEvn);
-}
 main tr.sec-title th {
 	background-color: var(--colSec);
-}
-main img.matgrd {
-	height: 1em;
 }
 main .mdmnd {
 	max-width: 4em;
@@ -49,7 +36,7 @@ main .mdmnd {
 	<table>
 		<tr> 
 			<th>⌬</th><th>Material</th>
-			<th><select>
+			<th><select id="flt-have" onchange="reFilter()">
 				<option value="alor">All</option>
 				<option value="alnd">All and</option>
 				<option value="hvnd">Have and</option>
@@ -57,7 +44,8 @@ main .mdmnd {
 				<option value="nond">None and</option>
 				<option value="noor">None or</option>
 			</select></th>
-			<th><input type="checkbox" name="shwnd" checked>Need</th>
+			<th><input id="flt-need" type="checkbox" name="shwnd" checked
+			           onchange="reFilter()">Need</th>
 			<th colspan="2">Sorce</th>
 			<th>Manual<br>Demand</th>
 <!-- >>> th-needs <<< \-->
@@ -70,7 +58,7 @@ main .mdmnd {
 <!-- >>> sec-title >>> -->
 		<tr class="sec-title `cat`">
 			<th class="show" onclick="toggleCat(this, '`cat`')"></th>
-			<th>`category`</th><th class="right">`have`</th><th class="right">`need`</th>
+			<th>`category`</th><th class="right">`have`</th><th class="right">?</th>
 			<th colspan="2" class="left">Free: `free`</th>
 			<th></th>
 <!-- >>> needs <<< \-->
@@ -78,14 +66,15 @@ main .mdmnd {
 
 <!-- <<< sec-title <<< \-->
 <!-- >>> sec-row >>> -->
-		<tr class="`demand`">
- 	  		<td class="center"><img class="matgrd" src="s/mat/g`mat-grade`.png"></td>			
+		<tr class="`cat`" id="`mat-id`">
+ 	  		<td class="center"><img class="inlico" src="s/mat/g`mat-grade`.png"></td>			
  	  		<td><a target="BCPxref"
  	  		       href="http://elite-dangerous.wikia.com/wiki/`xref`">`name`</a></td>
  	  		<td class="right">`have`</td>
  	  		<td class="right">`need`</td>
 <!-- >>> source <<< \-->
-			<td class="right"><input class="mdmnd" type="number" min="0" value="`need`"></td>
+			<td class="right"><input class="mdmnd" type="number" min="0" value="`need`"
+			                   onchange="setMdmnd(this,value,5+`man-idx`)"></td>
 <!-- >>> src1 >>> -->
  	  		<td colspan="2">`value`</td>
 
@@ -97,60 +86,25 @@ main .mdmnd {
 <!-- >>> needs <<< \-->
 <!-- >>> need >>> -->
 			<td>`count`</td>
-<!-- <<< need <<< \--> 	  		
+<!-- <<< need <<< \--> 	  
 		</tr>
 
 <!-- <<< sec-row <<< \-->
 	</table>
+	<script>
+var initFilterHave = '`flt-have`';
+var initFilterNeed = `flt-need`;
+	</script>
 <!-- <<< topic <<< -->
 <!-- >>> end-script >>> -->
+	<script src="s/js/materials.js"></script>
 	<script>
-function catSec(cat) {
-	var sec = document.querySelector('main tr.sec-title.'+cat);
-	return sec
-}
-function catBtn(cat) {
-	var sec = catSec(cat);
-	var res = sec.getElementsByTagName('th')[0];
-	return res;
-}
-function toggleCat(btn, cat) {
-	var rows = document.querySelectorAll('main tr:not(.sec-title).'+cat);
-	var vis = 'visible';
-	if (btn.classList.contains('show')) {
-		vis = 'collapse';
-	}
-	var rq = new Object();
-	rq.topic = "materials";
-	rq.op = "vis";
-	rq.cat = cat;
-	rq.vis = vis;
-	var msg = JSON.stringify(rq);
-	wsock.send(msg);
-	btn.classList.toggle('show');
-	btn.classList.toggle('hide');
-	var i;
-	for (i = 0; i < rows.length; i++) {
-		rows[i].style.visibility = vis;
-	}
-}
-function hideCat(cat) {
-	var btn = catBtn(cat);
-	btn.classList.remove('show');
-	btn.classList.add('hide');	
-	var rows = document.querySelectorAll('main tr:not(.sec-title).'+cat);
-	var i;
-	for (i = 0; i < rows.length; i++) {
-		rows[i].style.visibility = 'collapse';		
-	}
-}
-<!-- >>> hide-cats <<< -->
+<!-- >>> hide-cats <<< \-->
+	</script>
 <!-- >>> hide-cat >>> -->
 hideCat('`cat`');
-<!-- <<< hide-cat <<< -->
-//document.addEventListener('DOMContentLoaded', hideCat('man'));
-	</script>
 
+<!-- <<< hide-cat <<< -->
 <!-- <<< end-script <<< -->
   </main>
   </body>

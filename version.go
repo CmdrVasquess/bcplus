@@ -3,14 +3,15 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 )
 
 const (
 	BCpMajor  uint16 = 0
-	BCpMinor  uint16 = 1
-	BCpBugfix uint16 = 3
+	BCpMinor  uint16 = 4
+	BCpBugfix uint16 = 1
 	BCpDate   string = "dev"
 )
 
@@ -20,4 +21,10 @@ func BCpDescribe(wr io.Writer) {
 		BCpMinor,
 		BCpBugfix,
 		BCpDate)
+}
+
+func BCpDescStr() string {
+	buf := bytes.NewBuffer(nil)
+	BCpDescribe(buf)
+	return buf.String()
 }

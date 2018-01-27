@@ -39,6 +39,8 @@ input {
 input[type=number] {
 	text-align: center;
 }
+img.inlico { height: 1em; }
+img.btn { cursor: pointer; }
 select {
 	color: var(--colFrg);
 	background-color: var(--tblOdd);
@@ -151,4 +153,10 @@ main table th {
 main table td {
 	padding-left: .3em;
 	padding-right: .3em;
+}
+main tr:nth-of-type(odd) {
+	background-color: var(--tblOdd);
+}
+main tr:nth-of-type(even) {
+	background-color: var(--tblEvn);
 }

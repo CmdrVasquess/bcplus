@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="s/css/bcp.css">
+<!-- >>> local-style >>> -->
+    <style>
+main h1::before {
+	content: "▾ ";
+}
+main h1.hide::before {
+	content: "▸ ";
+}
+main table.hide {
+	visibility: collapse;
+}
+main th { vertical-align: top; }
+main th.mat { background-color:var(--colSec); }
+main td.good { color: var(--colGood); }
+main td.need { color: var(--colBad); }
+main .mdmnd {
+	max-width: 4em;
+}
+    </style>
+<!-- <<< local-style <<< -->
+  </head>
+  <body>
+  <main>
+<!-- >>> topic >>> -->
+<!-- >>> recipes <<< \-->
+<!-- >>> recipe >>> -->
+	<h1 class="hide" onclick="rcpToggle(this, `rcp-id`)">`name` – Improves: `imprv` [`builds`]</h1>
+<!-- >>> build0 >>> -->
+`count`
+<!-- <<< build0 <<< \-->
+<!-- >>> buildN >>> -->
+ / `count`
+<!-- <<< buildN <<< \-->
+	<table id="`rcp-id`" class="hide">
+	<tr>
+		<th>Level</th>
+		<th>Bonus</th>
+		<th>Have</th>
+		<th>Need</th>
+<!-- >>> materials <<< \-->
+<!-- >>> material >>> -->
+		<th class="mat">`name`<br><img class="inlico" src="s/mat/g`mat-grade`-black.png"> `have`</th>
+
+<!-- <<< material <<< \-->
+	</tr>
+<!-- >>> levels <<< \-->
+<!-- >>> level >>> -->
+	<tr>
+		<td class="center">`level`</td>
+		<td class="right">`bonus`</td>
+		<td class="right">`have`</td>
+		<td class="right"><input class="mdmnd" type="number" min="0" value="`need`"
+										 onchange="setMdmnd(this,value)"></td>
+<!-- >>> materials <<< \-->
+<!-- >>> mat-none >>> -->
+		<td class="center"></td>
+
+<!-- <<< mat-none <<< \-->
+<!-- >>> mat-good >>> -->
+		<td class="good center">`count`</td>
+
+<!-- <<< mat-good <<< \-->
+<!-- >>> mat-need >>> -->
+		<td class="need center">`count`</td>
+
+<!-- <<< mat-need <<< \-->
+	</tr>
+
+<!-- <<< level <<< \-->
+	</table>
+<!-- <<< recipe <<< \-->
+	<script>
+function rcpToggle(hdr, rcptab) {
+	hdr.classList.toggle('hide');
+	var tab = document.getElementById(rcptab);
+	tab.classList.toggle('hide');
+}
+function setMdmnd(ctrl, dmnd) {
+	var row = ctrl.parentElement.parentElement;
+	var lvl = row.getElementsByTagName('td')[0].innerHTML
+	var rcp = row.parentElement.parentElement.id;
+	var rq = new Object();
+	rq.topic = "synth";
+	rq.op = "mdmnd";
+	rq.rcpid = parseInt(rcp);
+	rq.level = parseInt(lvl);
+	rq.count = parseInt(dmnd);
+	var msg = JSON.stringify(rq);
+	showStatus(msg);
+	wsock.send(msg);
+}
+	</script>
+<!-- <<< topic <<< \-->
+  </main>
+  </body>
+</html>

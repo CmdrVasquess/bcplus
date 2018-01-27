@@ -1,0 +1,35 @@
+default namespace = "https://fractalqb.de/ed/ship-types/2.4"
+
+core-modules = "powerplant" | "thrusters" | "fsd" | "life-support"
+ | "power-distributor" | "scanner"
+
+manufacturer = "Core Dynamics" | "Faulcon DeLacy" | "Gutamaya"
+ | "Lakon" | "Saud Kruger" | "Zorgon Peterson"
+
+start =
+   element ship-types {
+      element ship {
+         attribute jname { xsd:NCName },
+         attribute crew { xsd:positiveInteger },
+         attribute price { xsd:positiveInteger },
+         attribute size { "small" | "medium" | "large" },
+         attribute manf { manufacturer },
+         element hardpoints {
+            attribute small { xsd:nonNegativeInteger }?,
+            attribute medium { xsd:nonNegativeInteger }?,
+            attribute large { xsd:nonNegativeInteger }?,
+            attribute huge { xsd:nonNegativeInteger }?
+         },
+         element utilitiy {
+            attribute mounts { xsd:positiveInteger }
+         },
+         element core {
+            attribute module { core-modules },
+            attribute class { xsd:positiveInteger }
+         }*,
+         element internal {
+            attribute size { xsd:positiveInteger },
+            attribute count { xsd:nonNegativeInteger }
+         }*
+      }*
+   }

@@ -8,6 +8,7 @@ import (
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	gx "github.com/fractalqb/goxic"
 	gxw "github.com/fractalqb/goxic/web"
+	l "github.com/fractalqb/qblog"
 )
 
 type MatFilter struct {
@@ -19,6 +20,8 @@ var gxtRescFrame struct {
 	*gx.Template
 	ThNeeds  []int
 	Sections []int
+	FltHave  []int
+	FltNeed  []int
 }
 
 var gxtThNeed struct {
@@ -31,14 +34,14 @@ var gxtSecTitle struct {
 	Cat      []int
 	Category []int
 	Have     []int
-	Need     []int
 	Free     []int
 	Needs    []int
 }
 
 var gxtSecRow struct {
 	*gx.Template
-	Demand   []int
+	Cat      []int
+	MatId    []int
 	MatGrade []int
 	Xref     []int
 	Name     []int
@@ -46,6 +49,7 @@ var gxtSecRow struct {
 	Need     []int
 	Source   []int
 	Needs    []int
+	ManIdx   []int
 }
 
 var gxtRowSrc1 struct {
@@ -106,14 +110,6 @@ var rawSorted []string
 var manSorted []string
 var encSorted []string
 
-func cmprMatByL7d(jnms []string, i, j int) bool {
-	si := jnms[i]
-	si, _ = nmMats.Map(si)
-	sj := jnms[j]
-	sj, _ = nmMats.Map(sj)
-	return si < sj
-}
-
 func sortMats() {
 	if len(rawSorted) > 0 && len(manSorted) > 0 && len(encSorted) > 0 {
 		return
@@ -166,7 +162,9 @@ func emitRawMats(wr io.Writer, bt *gx.BounT, mats CmdrsMats) (n int) {
 	}
 	btSrc := gxtRowSrc2.NewBounT()
 	bt.Bind(gxtSecRow.Source, btSrc)
+	bt.BindP(gxtSecRow.ManIdx, 1)
 	for _, mat := range rawSorted {
+		bt.Bind(gxtSecRow.MatId, nmap(&nmMatsId, mat))
 		if m, ok := theGalaxy.Materials[mat]; !ok || m.Commons < 0 {
 			bt.BindP(gxtSecRow.MatGrade, "_")
 		} else {
@@ -181,19 +179,14 @@ func emitRawMats(wr io.Writer, bt *gx.BounT, mats CmdrsMats) (n int) {
 			} else {
 				bt.BindP(gxtSecRow.Have, cmdrmat.Have)
 			}
+			bt.BindP(gxtSecRow.Cat, "raw")
 			if cmdrmat.Need == 0 {
-				bt.BindP(gxtSecRow.Demand, "raw")
 				bt.Bind(gxtSecRow.Need, gx.Empty)
 			} else {
-				if cmdrmat.Have >= cmdrmat.Need {
-					bt.BindP(gxtSecRow.Demand, "raw engh")
-				} else {
-					bt.BindP(gxtSecRow.Demand, "raw miss")
-				}
 				bt.BindP(gxtSecRow.Need, cmdrmat.Need)
 			}
 		} else {
-			bt.BindP(gxtSecRow.Demand, "raw")
+			bt.BindP(gxtSecRow.Cat, "raw")
 			bt.Bind(gxtSecRow.Have, gx.Empty)
 			bt.Bind(gxtSecRow.Need, gx.Empty)
 		}
@@ -211,7 +204,9 @@ func emitRawMats(wr io.Writer, bt *gx.BounT, mats CmdrsMats) (n int) {
 
 func emitMatLs(wr io.Writer, bt, src *gx.BounT, cat string, mats []string, cMat CmdrsMats) (n int) {
 	src.Bind(gxtRowSrc1.Value, webGuiTBD)
+	bt.BindP(gxtSecRow.ManIdx, 0)
 	for _, mat := range mats {
+		bt.Bind(gxtSecRow.MatId, nmap(&nmMatsId, mat))
 		if m, ok := theGalaxy.Materials[mat]; !ok || m.Commons < 0 {
 			bt.BindP(gxtSecRow.MatGrade, "_")
 		} else {
@@ -226,19 +221,14 @@ func emitMatLs(wr io.Writer, bt, src *gx.BounT, cat string, mats []string, cMat 
 			} else {
 				bt.BindP(gxtSecRow.Have, cmdrmat.Have)
 			}
+			bt.BindP(gxtSecRow.Cat, cat)
 			if cmdrmat.Need == 0 {
-				bt.BindP(gxtSecRow.Demand, cat)
 				bt.Bind(gxtSecRow.Need, gx.Empty)
 			} else {
-				if cmdrmat.Have >= cmdrmat.Need {
-					bt.BindP(gxtSecRow.Demand, cat+" engh")
-				} else {
-					bt.BindP(gxtSecRow.Demand, cat+" miss")
-				}
 				bt.BindP(gxtSecRow.Need, cmdrmat.Need)
 			}
 		} else {
-			bt.BindP(gxtSecRow.Demand, cat)
+			bt.BindP(gxtSecRow.Cat, cat)
 			bt.Bind(gxtSecRow.Need, gx.Empty)
 			bt.Bind(gxtSecRow.Have, gx.Empty)
 		}
@@ -252,7 +242,6 @@ func secTitle(bt *gx.BounT, wr io.Writer, cat string, have, need, free, needs in
 	bt.BindP(gxtSecTitle.Cat, cat)
 	bt.Bind(gxtSecTitle.Category, gxw.EscHtml{gx.Print{catNm}})
 	bt.BindP(gxtSecTitle.Have, have)
-	bt.BindP(gxtSecTitle.Need, need)
 	bt.BindP(gxtSecTitle.Free, free)
 	bt.Bind(gxtSecTitle.Needs, gx.Empty)
 	n += bt.Emit(wr)
@@ -282,6 +271,13 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 	//	btThNeed := gxtThNeed.NewBounT()
 	//	btThNeed.Bind(gxtThNeed.Need, webGuiNOC)
 	btFrame.Bind(gxtRescFrame.ThNeeds, gx.Empty)
+	if len(theGame.MatFlt.Have) > 0 {
+		btFrame.BindP(gxtRescFrame.FltHave, theGame.MatFlt.Have)
+		btFrame.BindP(gxtRescFrame.FltNeed, theGame.MatFlt.Need)
+	} else {
+		btFrame.BindP(gxtRescFrame.FltHave, "alor")
+		btFrame.BindP(gxtRescFrame.FltNeed, true)
+	}
 	btSec := gxtSecTitle.NewBounT()
 	btRow := gxtSecRow.NewBounT()
 	btRow.Bind(gxtSecRow.Needs, gx.Empty)
@@ -298,4 +294,59 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 		return n
 	})
 	btEmit.Emit(w)
+}
+
+var matUsrOps = map[string]userHanlder{
+	"vis":   matUsrOpCatVis,
+	"mdmnd": matUsrOpMdmnd,
+	"mflt":  matUsrFilter,
+}
+
+func matUsrOpCatVis(gstat *GmState, evt map[string]interface{}) (reload bool) {
+	cat, ok := attStr(evt, "cat")
+	if !ok {
+		eulog.Log(l.Error, "materials visibility changes has no category")
+		return false
+	}
+	vis, ok := attStr(evt, "vis")
+	if !ok {
+		eulog.Log(l.Error, "materials visibility changes has no visibility")
+		return false
+	}
+	gstat.MatCatHide[cat] = vis == "collapse"
+	return false
+}
+
+func matUsrOpMdmnd(gstat *GmState, evt map[string]interface{}) (reload bool) {
+	mat, _ := attStr(evt, "matid")
+	mat, _ = nmMatsIdRev.Map(mat)
+	count, _ := attInt(evt, "count")
+	eulog.Logf(l.Debug, "materials set manual demand: %s=%d", mat, count)
+	cmdr := &gstat.Cmdr
+	var matMap CmdrsMats
+	switch theGalaxy.Materials[mat].Category {
+	case gxy.Raw:
+		matMap = cmdr.MatsRaw
+	case gxy.Man:
+		matMap = cmdr.MatsMan
+	case gxy.Enc:
+		matMap = cmdr.MatsEnc
+	}
+	cmat, _ := matMap[mat]
+	if cmat == nil {
+		cmat = &Material{
+			Have: 0,
+			Need: int16(count),
+		}
+		matMap[mat] = cmat
+	} else {
+		cmat.Need = int16(count)
+	}
+	return false
+}
+
+func matUsrFilter(gstat *GmState, evt map[string]interface{}) (reload bool) {
+	gstat.MatFlt.Have, _ = attStr(evt, "have")
+	gstat.MatFlt.Need, _ = attBool(evt, "need")
+	return false
 }

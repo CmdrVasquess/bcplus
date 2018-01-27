@@ -197,14 +197,7 @@ func (lr *LocRef) UnmarshalJSON(json []byte) error {
 	if jstr == "-" {
 		lr.Location = nil
 	} else {
-		if sep := strings.IndexRune(jstr, ':'); sep > 0 {
-			// TODO migration code
-			sysNm := strings.Trim(jstr[:sep], " \t")
-			ssys := theGalaxy.GetSystem(sysNm)
-			stnNm := strings.Trim(jstr[sep+1:], " \t")
-			stn := ssys.GetStation(stnNm)
-			lr.Location = stn
-		} else if sep := strings.IndexRune(jstr, gxy.SepStation); sep > 0 {
+		if sep := strings.IndexRune(jstr, gxy.SepStation); sep > 0 {
 			sysNm := strings.Trim(jstr[sep+sepStatSz:], " \t")
 			ssys := theGalaxy.GetSystem(sysNm)
 			stnNm := strings.Trim(jstr[:sep], " \t")
@@ -272,9 +265,55 @@ type Destination struct {
 	Note string   `json:",omitempty"`
 }
 
+func (dst *Destination) HasTag(tag string) bool {
+	for _, t := range dst.Tags {
+		if t == tag {
+			return true
+		}
+	}
+	return false
+}
+
+func (dst *Destination) Tag(tags ...string) {
+	for _, t := range tags {
+		if !dst.HasTag(t) {
+			dst.Tags = append(dst.Tags, t)
+		}
+	}
+}
+
+func (dst *Destination) Untag(tags ...string) {
+	ntgs := make([]string, 0, len(dst.Tags)-len(tags))
+NextHaveTag:
+	for _, ht := range dst.Tags {
+		for _, rt := range tags {
+			if ht == rt {
+				continue NextHaveTag
+			}
+		}
+		ntgs = append(ntgs, ht)
+	}
+	dst.Tags = ntgs
+}
+
+type SynthRef string
+
+func synthRef(syn *gxy.Synthesis, level uint) SynthRef {
+	glog.Logf(l.Info, "*synr: %s %d", syn.Name, level)
+	return SynthRef(fmt.Sprintf("%d:%s", level, syn.Name))
+}
+
+func (sr SynthRef) Split() (name string, level uint) {
+	sep := strings.IndexRune(string(sr), ':')
+	name = string(sr)[sep+1:]
+	lvl, _ := strconv.Atoi(string(sr)[:sep])
+	return name, uint(lvl)
+}
+
 type Material struct {
-	Have int16
-	Need int16
+	Have  int16
+	Need  int16
+	Synth map[SynthRef]uint `json:",omitempty"`
 }
 
 type Commander struct {
@@ -302,6 +341,26 @@ func NewCommander() *Commander {
 	return &res
 }
 
+func (cmdr *Commander) NeedSynth(syn *gxy.Synthesis, lvl uint, count uint) {
+	for mat, dmnd := range syn.Levels[lvl].Demand {
+		cmat := cmdr.Material(mat)
+		if cmat == nil {
+			cmat := &Material{
+				Synth: make(map[SynthRef]uint),
+			}
+			switch theGalaxy.MatCategory(mat) {
+			case gxy.Raw:
+				cmdr.MatsRaw[mat] = cmat
+			}
+		}
+		if cmat.Synth == nil {
+			cmat.Synth = make(map[SynthRef]uint)
+		}
+		key := synthRef(syn, lvl)
+		cmat.Synth[key] = count * dmnd
+	}
+}
+
 func (cmdr *Commander) ShipById(shipId int) *Ship {
 	for _, ship := range cmdr.Ships {
 		if ship.ID == shipId {
@@ -323,6 +382,52 @@ func (cmdr *Commander) SellShip(ship *Ship, t Timestamp) {
 
 func (cmdr *Commander) SellShipId(shipId int, t Timestamp) {
 	cmdr.SellShip(cmdr.ShipById(shipId), t)
+}
+
+func (cmdr *Commander) Material(jName string) *Material {
+	switch theGalaxy.MatCategory(jName) {
+	case gxy.Raw:
+		return cmdr.MatsRaw[jName]
+	case gxy.Man:
+		return cmdr.MatsMan[jName]
+	case gxy.Enc:
+		return cmdr.MatsEnc[jName]
+	default:
+		return nil
+	}
+}
+
+func (cmdr *Commander) FindDest(loc gxy.Location) *Destination {
+	for _, dst := range cmdr.Dests {
+		if dst.Loc.Location.String() == loc.String() {
+			return dst
+		}
+	}
+	return nil
+}
+
+func (cmdr *Commander) GetDest(loc gxy.Location) (res *Destination) {
+	res = cmdr.FindDest(loc)
+	if res == nil {
+		res = &Destination{
+			Loc: LocRef{loc},
+		}
+		cmdr.Dests = append(cmdr.Dests, res)
+	}
+	return res
+}
+
+func (cmdr *Commander) RmDest(loc gxy.Location) (res bool) {
+	ndst := make([]*Destination, 0, len(cmdr.Dests)-1)
+	for _, d := range cmdr.Dests {
+		if d.Loc.Location.String() != loc.String() {
+			ndst = append(ndst, d)
+		} else {
+			res = true
+		}
+	}
+	cmdr.Dests = ndst
+	return res
 }
 
 type CmdrsMats map[string]*Material

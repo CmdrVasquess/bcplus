@@ -19,6 +19,7 @@ type Galaxy struct {
 	glxyfile  string
 	sysByName map[string]*StarSys
 	Materials map[string]Material
+	Synth     []Synthesis
 }
 
 func OpenGalaxy(filename string, refData string) (res *Galaxy, err error) {
@@ -58,6 +59,7 @@ func weaveGalaxy(g *Galaxy) {
 
 func loadRefData(g *Galaxy, dir string) (err error) {
 	g.Materials, err = loadMaterials(dir)
+	err = loadSynth(dir, &g.Synth)
 	return err
 }
 
@@ -103,6 +105,15 @@ func (g *Galaxy) MatCategory(jname string) MatCategory {
 	} else {
 		return MCatUndef
 	}
+}
+
+func (g *Galaxy) Synthesis(name string) *Synthesis {
+	for i, _ := range g.Synth {
+		if g.Synth[i].Name == name {
+			return &g.Synth[i]
+		}
+	}
+	return nil
 }
 
 type Location interface {

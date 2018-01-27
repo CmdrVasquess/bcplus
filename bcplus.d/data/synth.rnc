@@ -7,7 +7,7 @@ start =
          attribute improves { text },
          element quality {
             attribute level { xsd:nonNegativeInteger },
-            attribute bonus { xsd:nonNegativeInteger }?,
+            attribute bonus { text }?,
             element use {
                attribute count { xsd:integer }?,
                attribute material { xsd:NCName }

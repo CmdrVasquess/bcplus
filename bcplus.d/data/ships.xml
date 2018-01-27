@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ship-types xmlns="https://fractalqb.de/ed/ship-types/2.4">
+  <ship jname="adder" size="small" crew="2" price="87810"
+		manf="Zorgon Peterson">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="2"/>
+  </ship>
+  
+  <ship jname="anaconda" size="large" crew="3" price="146969450"
+		manf="Faulcon DeLacy">
+	<hardpoints small="2" medium="2" large="3" huge="1"/>
+	<utilitiy mounts="8"/>
+	<core module="powerplant" class="8"/>
+	<core module="thrusters" class="7"/>
+	<core module="fsd" class="6"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="8"/>
+	<core module="scanner" class="8"/>
+	<internal size="2" count="1"/>
+	<internal size="4" count="3"/>
+	<internal size="5" count="4"/>
+	<internal size="6" count="3"/>
+	<internal size="7" count="1"/>
+  </ship>
+
+  <ship jname="asp" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+  <ship jname="" size="" crew="" price=""
+		manf="">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="2"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="3"/>
+	<internal size="1" count="1"/>
+  </ship>
+
+</ship-types>

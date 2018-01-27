@@ -5,31 +5,39 @@
   <xsl:strip-space elements="*"/>
 
   <xsl:template match="/">
-	<xsl:apply-templates/>
+	<xsl:text>[</xsl:text>
+	<xsl:apply-templates select="//s:synth"/>
+	<xsl:text>]</xsl:text>
   </xsl:template>
 
   <xsl:template match="s:synth">
-	<xsl:text>{"name":"</xsl:text>
+	<xsl:if test="position()&gt;1">
+	  <xsl:text>,</xsl:text>
+	</xsl:if>
+	<xsl:text>{"Name":"</xsl:text>
 	<xsl:value-of select="@id"/>
-	<xsl:text>","improves":"</xsl:text>
+	<xsl:text>","Improves":"</xsl:text>
 	<xsl:value-of select="@improves"/>
-	<xsl:text>","levels":[</xsl:text>
+	<xsl:text>","Levels":[</xsl:text>
 	<xsl:for-each select="s:quality">
 	  <xsl:sort select="@level" data-type="number"/>
 	  <xsl:if test="position()&gt;1">
 		<xsl:text>,</xsl:text>
 	  </xsl:if>
-	  <xsl:text>{"%":</xsl:text>
+	  <xsl:text>{"Bonus":"</xsl:text>
 	  <xsl:choose>
 		<xsl:when test="@bonus">
 		  <xsl:value-of select="@bonus"/>
 		</xsl:when>
 		<xsl:otherwise>
-		  <xsl:text>0</xsl:text>
+		  <xsl:text>–</xsl:text>
 		</xsl:otherwise>
 	  </xsl:choose>
+	  <xsl:text>","Demand":{</xsl:text>
 	  <xsl:for-each select="s:use">
-		<xsl:text>,</xsl:text>
+		<xsl:if test="position()&gt;1">
+		  <xsl:text>,</xsl:text>
+		</xsl:if>
 		<xsl:text>"</xsl:text>
 		<xsl:value-of select="@material"/>
 		<xsl:text>":</xsl:text>
@@ -42,7 +50,7 @@
 		  </xsl:otherwise>
 		</xsl:choose>
 	  </xsl:for-each>
-	  <xsl:text>}</xsl:text>
+	  <xsl:text>}}</xsl:text>
 	</xsl:for-each>
 	<xsl:text>]}
 </xsl:text>

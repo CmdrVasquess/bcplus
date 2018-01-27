@@ -65,6 +65,8 @@ func init() {
 		To(false, "lang:").
 		Verify("materials", "std → lang:")
 	nmMatsXRef = nmMats.Base().FromStd().To(false, "wikia")
+	nmMatsId = nmMats.Base().FromStd().To(false, "id")
+	nmMatsIdRev = nmMats.Base().From("id", false).To(true)
 	nmBdyCats = namemap.MustLoad(assetPath("nm/body-cats.xsx")).
 		FromStd().
 		To(false, "lang:").
@@ -95,6 +97,8 @@ var nmShipType namemap.FromTo
 var nmMatType namemap.FromTo
 var nmMats namemap.FromTo
 var nmMatsXRef namemap.FromTo
+var nmMatsId namemap.FromTo
+var nmMatsIdRev namemap.FromTo
 var nmBdyCats namemap.FromTo
 
 func saveState() {
@@ -175,9 +179,23 @@ func eventLoop() {
 	for e := range eventq {
 		switch e.source {
 		case esrcJournal:
-			DispatchJournal(&theStateLock, theGame, e.data.([]byte))
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						glog.Logf(l.Error, "journal event error: %s", r)
+					}
+				}()
+				DispatchJournal(&theStateLock, theGame, e.data.([]byte))
+			}()
 		case esrcUsr:
-			DispatchUser(&theStateLock, theGame, e.data.(map[string]interface{}))
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						glog.Logf(l.Error, "user event error: %s", r)
+					}
+				}()
+				DispatchUser(&theStateLock, theGame, e.data.(map[string]interface{}))
+			}()
 		}
 	}
 }
@@ -208,7 +226,9 @@ func main() {
 	} else if *verbose {
 		glog.SetLevel(l.Debug)
 	}
-	glog.Logf(l.Info, "Bordcomputer+ running on: %s\n", runtime.GOOS)
+	glog.Logf(l.Info, "Bordcomputer+ (%d.%.d.%d %s) on: %s\n",
+		BCpMajor, BCpMinor, BCpBugfix, BCpDate,
+		runtime.GOOS)
 	glog.Logf(l.Info, "data    : %s\n", dataDir)
 	var err error
 	if *promptKey {

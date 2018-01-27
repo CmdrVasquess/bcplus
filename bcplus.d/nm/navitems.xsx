@@ -1,4 +1,6 @@
 [\link lang:]
-(dashboard "Dashboard")
-(materials "Materials")
-(travel "Travel")
+(dashboard Dashboard)
+(materials Materials)
+(ships Ships)
+(synth Synthesis)
+(travel Travel)

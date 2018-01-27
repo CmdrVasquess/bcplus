@@ -649,9 +649,11 @@ func matDiscard(gstat *GmState, evt map[string]interface{}, t time.Time) {
 
 func synthesis(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
-	used := evt["Materials"].(map[string]interface{})
-	for mat, jNo := range used {
-		matNo := int16(jNo.(float64))
+	used := evt["Materials"].([]interface{})
+	for _, use1 := range used {
+		userec := use1.(map[string]interface{})
+		mat, _ := attStr(userec, "Name")
+		matNo, _ := attInt16(userec, "Count")
 		switch theGalaxy.MatCategory(mat) {
 		case gxy.Raw:
 			sumMat(cmdr, "Raw", mat, -matNo)

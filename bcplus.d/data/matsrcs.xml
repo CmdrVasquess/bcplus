@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<material-sources xmlns="https://fractalqb.de/ed/matsrcs/2.4">
+  <material name="basicconductors" cat="m">
+	<source short="Slv">Ship Salvage (Transport Ships)</source>
+	<source short="Sig">Signal Sources</source>
+  </material>
+  <material name="biotechconductors" cat="m">
+	<source short="Msn">Mission Reward</source>
+  </material>
+</material-sources>

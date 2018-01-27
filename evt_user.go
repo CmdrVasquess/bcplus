@@ -19,16 +19,20 @@ func DispatchUser(lock *sync.RWMutex, state *GmState, event map[string]interface
 	var handler userHanlder = nil
 	if hasTopic {
 		switch topic {
+		case "all":
+			handler, _ = allUsrOps[oprtn]
 		case "travel":
 			handler = travelPlanShip
 		case "materials":
-			handler = matsVis
+			handler, _ = matUsrOps[oprtn]
+		case "synth":
+			handler, _ = synUsrOps[oprtn]
 		}
 	}
 	if handler == nil {
 		eulog.Logf(l.Warn, "no handler for user event: topic=%v; op=%s", topic, oprtn)
 	} else {
-		eulog.Log(l.Info, "handling event:", event)
+		eulog.Log(l.Debug, "handling event:", event)
 		lock.Lock()
 		reload := handler(state, event)
 		lock.Unlock() // TODO do we need defer here?
@@ -69,17 +73,51 @@ func travelPlanShip(gstat *GmState, evt map[string]interface{}) (reload bool) {
 	return reload
 }
 
-func matsVis(gstat *GmState, evt map[string]interface{}) (reload bool) {
-	cat, ok := attStr(evt, "cat")
-	if !ok {
-		eulog.Log(l.Error, "materials visibility changes has no category")
-		return false
+var allUsrOps = map[string]userHanlder{
+	"tglhome": allTglHome,
+	"tgldest": allTglDest,
+}
+
+const (
+	tagHome  = "Home"
+	tagAbndn = "abandoned"
+)
+
+func allTglHome(gstat *GmState, evt map[string]interface{}) (reload bool) {
+	cmdr := &gstat.Cmdr
+	if cmdr.Home.Nil() {
+		cmdr.Home = cmdr.Loc
+		dest := cmdr.GetDest(cmdr.Home)
+		dest.Tag(tagHome)
+		dest.Untag(tagAbndn)
+		reload = true
+	} else if cmdr.Loc != cmdr.Home {
+		dest := cmdr.GetDest(cmdr.Home)
+		dest.Tag(tagHome, tagAbndn)
+		cmdr.Home = cmdr.Loc
+		dest = cmdr.GetDest(cmdr.Home)
+		dest.Tag(tagHome)
+		dest.Untag(tagAbndn)
+		reload = true
+	} else if cmdr.Loc == cmdr.Home {
+		dest := cmdr.GetDest(cmdr.Home)
+		dest.Tag(tagHome, tagAbndn)
+		cmdr.Home.Location = nil
+		reload = true
 	}
-	vis, ok := attStr(evt, "vis")
-	if !ok {
-		eulog.Log(l.Error, "materials visibility changes has no visibility")
-		return false
+	return reload
+}
+
+func allTglDest(gstat *GmState, evt map[string]interface{}) (reload bool) {
+	cmdr := &gstat.Cmdr
+	dest := cmdr.FindDest(cmdr.Loc)
+	if dest == nil {
+		dest = cmdr.GetDest(cmdr.Loc)
+		if !cmdr.Home.Nil() && dest.Loc.Location.String() == cmdr.Home.Location.String() {
+			dest.Tag(tagHome)
+		}
+	} else {
+		cmdr.RmDest(cmdr.Loc)
 	}
-	gstat.MatCatHide[cat] = vis == "collapse"
-	return false
+	return true
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,6 +24,14 @@ var idxMapNames = nmconv.Conversion{
 	Denorm: nmconv.SepX(strings.ToLower, "-"),
 }
 
+func cmprMatByL7d(jnms []string, i, j int) bool {
+	si := jnms[i]
+	si, _ = nmMats.Map(si)
+	sj := jnms[j]
+	sj, _ = nmMats.Map(sj)
+	return si < sj
+}
+
 func needTemplate(tmap map[string]*gx.Template, path string) *gx.Template {
 	if t, ok := tmap[path]; !ok {
 		glog.Fatalf("missing template: '%s'", path)
@@ -36,11 +45,12 @@ var offlinePage []byte
 
 var gxtPage struct {
 	*gx.Template
-	PgTitle   []int `goxic:"title"`
-	Version   []int
-	Styles    []int `goxic:"dyn-styles"`
-	PgBody    []int `goxic:"body"`
-	ScriptEnd []int
+	PgTitle     []int `goxic:"title"`
+	Version     []int
+	Styles      []int `goxic:"dyn-styles"`
+	PgBody      []int `goxic:"body"`
+	FullVersion []int
+	ScriptEnd   []int
 }
 
 var gxtTitle struct {
@@ -53,6 +63,8 @@ var gxtFrame struct {
 	CmdrName   []int
 	Credits    []int
 	Loan       []int
+	HomeFlag   []int
+	DestFlag   []int
 	RnkCombat  []int
 	RnkTrade   []int
 	RnkExplor  []int `goxic:"rnk-explorer"`
@@ -103,11 +115,18 @@ func loadTmpls() {
 	gx.MustIndexMap(&gxtNavItem, needTemplate(tmpls, "body-online/nav-item"), idxMapNames.Convert)
 	loadRescTemplates()
 	loadTrvlTemplates()
+	loadSynTemplates()
+	loadShpTemplates()
 }
 
 func prepareOfflinePage(title *gx.Template, body *gx.Template) {
 	btOffline := gxtPage.NewBounT()
-	btOffline.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
+	if BCpBugfix == 0 {
+		btOffline.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
+	} else {
+		btOffline.BindFmt(gxtPage.Version, "%d.%d.%d", BCpMajor, BCpMinor, BCpBugfix)
+	}
+	btOffline.BindP(gxtPage.FullVersion, BCpDescStr())
 	if stat, ok := title.Static(); !ok {
 		glog.Fatal("no offline title")
 	} else {
@@ -205,7 +224,12 @@ func preparePage(styles, endScript gx.Content) (emit, bindto *gx.BounT, hook []i
 	btPage := gxtPage.NewBounT()
 
 	btTitle := gxtTitle.NewBounT()
-	btPage.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
+	if BCpBugfix == 0 {
+		btPage.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
+	} else {
+		btPage.BindFmt(gxtPage.Version, "%d.%d.%d", BCpMajor, BCpMinor, BCpBugfix)
+	}
+	btPage.BindP(gxtPage.FullVersion, BCpDescStr())
 	btPage.Bind(gxtPage.PgTitle, btTitle)
 	btPage.Bind(gxtPage.Styles, styles)
 	btTitle.BindP(gxtTitle.CmdrName, cmdrNameEsc)
@@ -218,6 +242,16 @@ func preparePage(styles, endScript gx.Content) (emit, bindto *gx.BounT, hook []i
 	// TODO "golang.org/x/text/message"
 	btFrame.Bind(gxtFrame.Credits, gxw.EscHtml{gxm.Msg(wuiL7d, "%d", cmdr.Credits)})
 	btFrame.Bind(gxtFrame.Loan, gxw.EscHtml{gxm.Msg(wuiL7d, "%d", cmdr.Loan)})
+	if cmdr.Loc == cmdr.Home {
+		btFrame.Bind(gxtFrame.HomeFlag, gx.Empty)
+	} else {
+		btFrame.BindP(gxtFrame.HomeFlag, "not")
+	}
+	if cmdr.FindDest(cmdr.Loc.Location) != nil {
+		btFrame.Bind(gxtFrame.DestFlag, gx.Empty)
+	} else {
+		btFrame.BindP(gxtFrame.DestFlag, "no")
+	}
 
 	btFrame.Bind(gxtFrame.RnkCombat, nmapU8(&nmRnkCombat, cmdr.Ranks[RnkCombat]))
 	btFrame.BindP(gxtFrame.RLvlCombat, cmdr.Ranks[RnkCombat])
@@ -295,8 +329,20 @@ func runWebGui() {
 	go wscHub()
 	http.HandleFunc("/ws", serveWs)
 	setupTopic("dashboard", wuiDashboard)
-	setupTopic("materials", wuiMats)
+	setupTopic("ships", wuiShp)
 	setupTopic("travel", wuiTravel)
+	setupTopic("materials", wuiMats)
+	setupTopic("synth", wuiSyn)
 	glog.Logf(l.Info, "Starting web GUI on port %d", webGuiPort)
 	go http.ListenAndServe(fmt.Sprintf(":%d", webGuiPort), nil)
+	ifaddrs, _ := net.InterfaceAddrs()
+	for _, addr := range ifaddrs {
+		if nip, ok := addr.(*net.IPNet); ok && !nip.IP.IsLoopback() && nip.IP.To4() != nil {
+			glog.Logf(l.Info,
+				"for web GUI open 'http://%s:%d/' in your browser",
+				nip.IP.String(),
+				webGuiPort)
+			break
+		}
+	}
 }

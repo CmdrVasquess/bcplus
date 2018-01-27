@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<material-sources xmlns="https://fractalqb.de/ed/materials/2.4">
+  <material cat="m" jname="basicconductors" commonness="1">
+	<source short="Slv">
+	  <desc>Ship Salvage (Transport Ships)</desc>
+	</source>
+	<source short="Sig">
+	  <desc>Signal Sources</desc>
+	  <desc lang="de">Signalquellen</desc>
+	</source>
+  </material>
+</material-sources>

@@ -2,6 +2,7 @@ package galaxy
 
 import (
 	"bufio"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -30,12 +31,15 @@ type Material struct {
 	Commons  int8
 }
 
-type MatDemand map[string]int
+type SynthLevel struct {
+	Bonus  string
+	Demand map[string]uint
+}
 
 type Synthesis struct {
-	Name      string
-	Improves  string
-	LvlDemand []MatDemand
+	Name     string
+	Improves string
+	Levels   []SynthLevel
 }
 
 func loadMaterials(dataDir string) (res map[string]Material, err error) {
@@ -92,4 +96,20 @@ func loadMaterials(dataDir string) (res map[string]Material, err error) {
 	}
 	log.Logf(l.Info, "loaded %d materials", len(res))
 	return res, nil
+}
+
+func loadSynth(dataDir string, res *([]Synthesis)) (err error) {
+	synFile := filepath.Join(dataDir, "synth.json")
+	log.Logf(l.Info, "loading synthesis from: %s", synFile)
+	inf, err := os.Open(synFile)
+	if err != nil {
+		return err
+	}
+	defer inf.Close()
+	jdec := json.NewDecoder(inf)
+	err = jdec.Decode(res)
+	if err == nil {
+		log.Logf(l.Info, "loaded %d synthesis recipes", len(*res))
+	}
+	return err
 }
