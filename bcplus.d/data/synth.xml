@@ -122,7 +122,7 @@
 	  <use material="sulphur" count="2"/>
 	</quality>
 	<quality level="2" bonus="+15%">
-	  <use material="tim" count="2"/>
+	  <use material="tin" count="2"/>
 	  <use material="zinc" count="3"/>
 	  <use material="phosphorus" count="3"/>
 	  <use material="arsenic" count="1"/>

@@ -9,8 +9,8 @@ import (
 const (
 	BCpMajor  uint16 = 0
 	BCpMinor  uint16 = 4
-	BCpBugfix uint16 = 2
-	BCpDate   string = "Sa 27. Jan 13:52:18 CET 2018"
+	BCpBugfix uint16 = 3
+	BCpDate   string = "Mo 29. Jan 21:02:58 CET 2018"
 )
 
 func BCpDescribe(wr io.Writer) {

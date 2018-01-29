@@ -102,6 +102,12 @@ var gxtNavItem struct {
 	Title []int
 }
 
+var gxtNavActv struct {
+	*gx.Template
+	Link  []int
+	Title []int
+}
+
 func loadTmpls() {
 	tmpls := make(map[string]*gx.Template)
 	if err := gxw.ParseHtmlTemplate(assetPath("appframe.html"), "frame", tmpls); err != nil {
@@ -113,10 +119,12 @@ func loadTmpls() {
 	gx.MustIndexMap(&gxtTitle, needTemplate(tmpls, "title-online"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtFrame, needTemplate(tmpls, "body-online"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtNavItem, needTemplate(tmpls, "body-online/nav-item"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtNavActv, needTemplate(tmpls, "body-online/nav-actv"), idxMapNames.Convert)
 	loadRescTemplates()
 	loadTrvlTemplates()
 	loadSynTemplates()
 	loadShpTemplates()
+	loadSysTemplates()
 }
 
 func prepareOfflinePage(title *gx.Template, body *gx.Template) {
@@ -208,17 +216,24 @@ func pgEndScript(tmpls map[string]*gx.Template) *gx.Template {
 	return escr
 }
 
-func emitNavItems(wr io.Writer) (n int) {
+func emitNavItems(wr io.Writer, active string) (n int) {
 	btNavi := gxtNavItem.NewBounT()
+	btNava := gxtNavActv.NewBounT()
+	var bt *gx.BounT
 	for _, ln := range webGuiTopics {
-		btNavi.BindP(gxtNavItem.Link, ln)
-		btNavi.Bind(gxtNavItem.Title, gxw.EscHtml{nmap(&nmNavItem, ln)})
-		n += btNavi.Emit(wr)
+		if ln == active {
+			bt = btNava
+		} else {
+			bt = btNavi
+		}
+		bt.BindP(gxtNavItem.Link, ln)
+		bt.Bind(gxtNavItem.Title, gxw.EscHtml{nmap(&nmNavItem, ln)})
+		n += bt.Emit(wr)
 	}
 	return n
 }
 
-func preparePage(styles, endScript gx.Content) (emit, bindto *gx.BounT, hook []int) {
+func preparePage(styles, endScript gx.Content, active string) (emit, bindto *gx.BounT, hook []int) {
 	cmdr := &theGame.Cmdr
 	cmdrNameEsc := gxw.HtmlEsc(cmdr.Name)
 	btPage := gxtPage.NewBounT()
@@ -308,7 +323,9 @@ func preparePage(styles, endScript gx.Content) (emit, bindto *gx.BounT, hook []i
 		btFrame.Bind(gxtFrame.HomeDist,
 			gxm.Msg(wuiL7d, "%.2f", gxy.Dist(cmdr.Home, cmdr.Loc)))
 	}
-	btFrame.BindGen(gxtFrame.NavItems, emitNavItems)
+	btFrame.BindGen(gxtFrame.NavItems, func(wr io.Writer) int {
+		return emitNavItems(wr, active)
+	})
 
 	return btPage, btFrame, gxtFrame.Topic
 }
@@ -318,6 +335,12 @@ func setupTopic(link string, handler func(http.ResponseWriter, *http.Request)) {
 		offline(w, r, handler)
 	})
 	webGuiTopics = append(webGuiTopics, link)
+}
+
+func activeTopic(r *http.Request) (res string) {
+	res = r.URL.Path[1:]
+	glog.Logf(l.Trace, "web ui: active topic '%s'", res)
+	return res
 }
 
 func runWebGui() {
@@ -331,6 +354,7 @@ func runWebGui() {
 	setupTopic("dashboard", wuiDashboard)
 	setupTopic("ships", wuiShp)
 	setupTopic("travel", wuiTravel)
+	setupTopic("system", wuiSys)
 	setupTopic("materials", wuiMats)
 	setupTopic("synth", wuiSyn)
 	glog.Logf(l.Info, "Starting web GUI on port %d", webGuiPort)

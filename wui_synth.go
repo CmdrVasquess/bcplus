@@ -102,7 +102,11 @@ func emitLevels(matLs []string, rcp *gxy.Synthesis, builds []int, wr io.Writer) 
 		} else {
 			btLvl.Bind(gxtMatLvl.Have, gx.Empty)
 		}
-		btLvl.Bind(gxtMatLvl.Need, webGuiTBD)
+		if need, _ := cmdr.Synth[synthRef(rcp, i)]; need == 0 {
+			btLvl.Bind(gxtMatLvl.Need, gx.Empty)
+		} else {
+			btLvl.BindP(gxtMatLvl.Need, need)
+		}
 		btLvl.BindGen(gxtMatLvl.Materials, func(wr io.Writer) (n int) {
 			for _, mat := range matLs {
 				var btMat *gx.BounT
@@ -155,7 +159,7 @@ func recipeBuilds(recipe *gxy.Synthesis) (res []int) {
 
 func wuiSyn(w http.ResponseWriter, r *http.Request) {
 	cmdr := &theGame.Cmdr
-	btEmit, btBind, hook := preparePage(dynSynStyles, gx.Empty)
+	btEmit, btBind, hook := preparePage(dynSynStyles, gx.Empty, activeTopic(r))
 	btFrame := gxtSynFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	btFrame.BindGen(gxtSynFrame.Recipes, func(wr io.Writer) (n int) {

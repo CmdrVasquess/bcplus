@@ -62,15 +62,16 @@ var gxtTrvlAvgVal2 struct {
 
 var gxtTrvlDestRow struct {
 	*gx.Template
-	Name []int
-	Dist []int
-	ETD  []int `goxic:"etd"`
-	EJD  []int `goxic:"ejd"`
-	CooX []int `goxic:"coox"`
-	CooY []int `goxic:"cooy"`
-	CooZ []int `goxic:"cooz"`
-	Note []int
-	Tags []int
+	Name     []int
+	HomeFlag []int
+	Dist     []int
+	ETD      []int `goxic:"etd"`
+	EJD      []int `goxic:"ejd"`
+	CooX     []int `goxic:"coox"`
+	CooY     []int `goxic:"cooy"`
+	CooZ     []int `goxic:"cooz"`
+	Note     []int
+	Tags     []int
 }
 
 var dynTrvlStyles gx.Content
@@ -434,6 +435,11 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			dstLoc := dst.Loc.Location
 			dist2 := gxy.Dist(dstLoc, cmdr.Loc)
 			btDest.BindP(gxtTrvlDestRow.Name, dst.Loc.String())
+			if cmdr.Home.Nil() || dst.Loc.Location != cmdr.Home.Location {
+				btDest.BindP(gxtTrvlDestRow.HomeFlag, "not")
+			} else {
+				btDest.Bind(gxtTrvlDestRow.HomeFlag, gx.Empty)
+			}
 			btDest.Bind(gxtTrvlDestRow.Dist, gxm.Msg(wuiL7d, "%.2f", dist2))
 			djAvg := int(math.Ceil(dist2 / dpjAvg))
 			djMin := int(math.Ceil(dist2 / dpjMax))
@@ -460,7 +466,7 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 }
 
 func wuiTravel(w http.ResponseWriter, r *http.Request) {
-	btEmit, btBind, hook := preparePage(dynTrvlStyles, endTrvlScrpit)
+	btEmit, btBind, hook := preparePage(dynTrvlStyles, endTrvlScrpit, activeTopic(r))
 	btFrame := gxtTrvlFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr

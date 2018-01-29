@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="s/css/bcp.css">
+  </head>
+  <body>
+  <main>
+<!-- >>> topic >>> -->
+	<h1>Local System Bodies</h1>
+	<table>
+		<tr>
+			<th>Type</th>
+			<th>Name</th>
+			<th>Dist</th>
+			<th>Details</th>
+		</tr>
+<!-- >>> bodies <<< \-->
+<!-- >>> bdy-none >>> -->
+		<tr><td colspan="4">No body scans to display</td></tr>
+<!-- <<< bdy-none <<< -->
+<!-- >>> bdy-star >>> -->
+		<tr>
+			<td class="center" title="Star">☼</td>
+			<td>`name`</td>
+			<td class="right">`dist` ls</td>
+		</tr>		
+<!-- <<< bdy-star <<< \-->
+<!-- >>> bdy-planet >>> -->
+		<tr>
+			<td class="center" title="Planet">❍</td><!-- ○ ⏣ -->
+			<td>`name`</td>
+			<td class="right">`dist` ls</td>
+			<td>Land: `land`, Radius: `r`<br>Materials: `mats`</td>
+		</tr>
+<!-- >>> mat0 >>> -->
+`name`: `frac`
+<!-- <<< mat0 <<< -->
+<!-- >>> mat1 >>> -->
+, `name`: `frac`
+<!-- <<< mat1 <<< -->
+<!-- <<< bdy-planet <<< \-->
+<!-- >>> bdy-belt >>> -->
+		<tr>
+			<td class="center" title="Belt">∵</td>
+			<td>`name`</td>
+			<td class="right">`dist` ls</td>
+		</tr>		
+<!-- <<< bdy-belt <<< \-->
+	</table>
+<!-- <<< topic <<< -->
+  </main>
+  </body>
+</html>

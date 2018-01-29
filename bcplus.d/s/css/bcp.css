@@ -103,12 +103,17 @@ nav a {
 	margin: 0px 2px;
 	color: var(--colBkg);
 	background-color: var(--navBtn);
+	box-shadow: 0 0 6px 0px black inset;
 	font-weight: bolder;
 	text-decoration: none;
-  border-radius: 3px;
+  	border-radius: 3px;
+}
+nav a.active {
+	box-shadow: none;
 }
 nav a:hover {
-	box-shadow: 0 0 20px var(--colFrg);
+	background-color: var(--colGood);	
+	/*box-shadow: 0 0 20px var(--colFrg);*/
 }
 footer {
 	position: fixed;

@@ -298,22 +298,27 @@ NextHaveTag:
 
 type SynthRef string
 
-func synthRef(syn *gxy.Synthesis, level uint) SynthRef {
-	glog.Logf(l.Info, "*synr: %s %d", syn.Name, level)
+func synthRef(syn *gxy.Synthesis, level int) SynthRef {
 	return SynthRef(fmt.Sprintf("%d:%s", level, syn.Name))
 }
 
-func (sr SynthRef) Split() (name string, level uint) {
+func (sr SynthRef) split() (name string, level int) {
 	sep := strings.IndexRune(string(sr), ':')
 	name = string(sr)[sep+1:]
 	lvl, _ := strconv.Atoi(string(sr)[:sep])
-	return name, uint(lvl)
+	return name, lvl
+}
+
+func (sr SynthRef) Get() (synth *gxy.Synthesis, level int) {
+	var snm string
+	snm, level = sr.split()
+	synth = theGalaxy.Synthesis(snm)
+	return synth, level
 }
 
 type Material struct {
-	Have  int16
-	Need  int16
-	Synth map[SynthRef]uint `json:",omitempty"`
+	Have int16
+	Need int16
 }
 
 type Commander struct {
@@ -327,37 +332,30 @@ type Commander struct {
 	CurShip ShipRef
 	Home    LocRef
 	Loc     LocRef
-	MatsRaw CmdrsMats      `json:",omitempty"`
-	MatsMan CmdrsMats      `json:",omitempty"`
-	MatsEnc CmdrsMats      `json:",omitempty"`
-	Dests   []*Destination `json:"Destinations,omitempty"`
+	MatsRaw CmdrsMats         `json:",omitempty"`
+	MatsMan CmdrsMats         `json:",omitempty"`
+	MatsEnc CmdrsMats         `json:",omitempty"`
+	Dests   []*Destination    `json:"Destinations,omitempty"`
+	Synth   map[SynthRef]uint `json:",omitempty"`
 }
 
 func NewCommander() *Commander {
 	res := Commander{
 		MatsRaw: make(map[string]*Material),
 		MatsMan: make(map[string]*Material),
-		MatsEnc: make(map[string]*Material)}
+		MatsEnc: make(map[string]*Material),
+		Synth:   make(map[SynthRef]uint),
+	}
 	return &res
 }
 
 func (cmdr *Commander) NeedSynth(syn *gxy.Synthesis, lvl uint, count uint) {
-	for mat, dmnd := range syn.Levels[lvl].Demand {
-		cmat := cmdr.Material(mat)
-		if cmat == nil {
-			cmat := &Material{
-				Synth: make(map[SynthRef]uint),
-			}
-			switch theGalaxy.MatCategory(mat) {
-			case gxy.Raw:
-				cmdr.MatsRaw[mat] = cmat
-			}
-		}
-		if cmat.Synth == nil {
-			cmat.Synth = make(map[SynthRef]uint)
-		}
-		key := synthRef(syn, lvl)
-		cmat.Synth[key] = count * dmnd
+	key := synthRef(syn, int(lvl))
+	if count == 0 {
+		delete(cmdr.Synth, key)
+	} else {
+		glog.Logf(l.Info, "set syref %s = %d", string(key), count)
+		cmdr.Synth[key] = count
 	}
 }
 

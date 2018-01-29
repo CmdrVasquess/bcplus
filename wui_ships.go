@@ -47,7 +47,7 @@ func loadShpTemplates() {
 }
 
 func wuiShp(w http.ResponseWriter, r *http.Request) {
-	btEmit, btBind, hook := preparePage(gx.Empty, gx.Empty)
+	btEmit, btBind, hook := preparePage(gx.Empty, gx.Empty, activeTopic(r))
 	btFrame := gxtShpFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	btCShip := gxtCShip.NewBounT()

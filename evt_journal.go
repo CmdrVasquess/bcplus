@@ -566,7 +566,12 @@ func scEntry(gstat *GmState, evt map[string]interface{}, t time.Time) {
 
 func stripSystemName(sysNm, bodyNm string) string {
 	if str.HasPrefix(str.ToUpper(bodyNm), sysNm) {
-		res := bodyNm[len(sysNm):]
+		var res string
+		if len(bodyNm) == len(sysNm) {
+			res = bodyNm
+		} else {
+			res = bodyNm[len(sysNm):]
+		}
 		return str.TrimLeft(res, " ")
 	} else {
 		return bodyNm

@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"strings"
 	str "strings"
 
 	l "github.com/fractalqb/qblog"
@@ -266,8 +267,13 @@ type SysBody struct {
 	ssys     *StarSys
 	Name     string
 	Cat      BodyCat `json:"Category"`
-	Dist     float32
 	stations []*StationPos
+	Dist     float32
+	TLock    bool
+	Mass     float32
+	Radius   float32
+	Grav     float32
+	Temprt   float32
 	Landable bool
 	Mats     map[string]float32 `json:"Materials,omitempty"`
 }
@@ -280,6 +286,10 @@ func (b *SysBody) String() string {
 
 func (b *SysBody) GCoos() *Vec3D {
 	return &b.ssys.Coos
+}
+
+func (b *SysBody) IsBelt() bool {
+	return strings.Contains(b.Name, " Belt ")
 }
 
 func (b *SysBody) System() *StarSys {

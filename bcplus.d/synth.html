@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="s/css/bcp.css">
 <!-- >>> local-style >>> -->
     <style>
+main h1 { cursor: pointer; }
 main h1::before {
 	content: "▾ ";
 }
@@ -92,7 +93,6 @@ function setMdmnd(ctrl, dmnd) {
 	rq.level = parseInt(lvl);
 	rq.count = parseInt(dmnd);
 	var msg = JSON.stringify(rq);
-	showStatus(msg);
 	wsock.send(msg);
 }
 	</script>
