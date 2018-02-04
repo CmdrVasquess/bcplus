@@ -4,9 +4,12 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"strconv"
+	"strings"
 	str "strings"
 	"time"
 
+	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	gx "github.com/fractalqb/goxic"
 	gxm "github.com/fractalqb/goxic/textmessage"
@@ -62,6 +65,7 @@ var gxtTrvlAvgVal2 struct {
 
 var gxtTrvlDestRow struct {
 	*gx.Template
+	DstId    []int
 	Name     []int
 	HomeFlag []int
 	Dist     []int
@@ -418,9 +422,9 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			} else {
 				btShipOpt.BindP(gxtShipOpt.Id, ship.ID)
 				btShipOpt.BindFmt(gxtShipOpt.Ship, "%s: %s / %s",
-					shTy,
-					ship.Name,
-					ship.Ident)
+					gxw.HtmlEsc(shTy),
+					gxw.HtmlEsc(ship.Name),
+					gxw.HtmlEsc(ship.Ident))
 				btShipOpt.BindFmt(gxtShipOpt.Jump, "%.2f", ship.Jump.DistMax)
 				n += btShipOpt.Emit(wr)
 			}
@@ -431,11 +435,12 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 	btFrame.BindFmt(gxtTrvlFrame.LypjAvg, "%.2f", dpjAvg)
 	btDest := gxtTrvlDestRow.NewBounT()
 	btFrame.BindGen(gxtTrvlFrame.Dests, func(wr io.Writer) (n int) {
-		for _, dst := range cmdr.Dests {
-			dstLoc := dst.Loc.Location
-			dist2 := gxy.Dist(dstLoc, cmdr.Loc)
-			btDest.BindP(gxtTrvlDestRow.Name, dst.Loc.String())
-			if cmdr.Home.Nil() || dst.Loc.Location != cmdr.Home.Location {
+		for i, dst := range cmdr.Dests {
+			dstLoc := dst.Loc.Ref
+			dist2 := gxy.Dist(dstLoc, cmdr.Loc.Ref)
+			btDest.BindP(gxtTrvlDestRow.DstId, i)
+			btDest.Bind(gxtTrvlDestRow.Name, CntLoc{dst.Loc.Ref})
+			if cmdr.Home.Nil() || dst.Loc.Ref != cmdr.Home.Ref {
 				btDest.BindP(gxtTrvlDestRow.HomeFlag, "not")
 			} else {
 				btDest.Bind(gxtTrvlDestRow.HomeFlag, gx.Empty)
@@ -457,8 +462,9 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			btDest.Bind(gxtTrvlDestRow.CooX, gxm.Msg(wuiL7d, "%.2f", dstLoc.GCoos()[gxy.Xk]))
 			btDest.Bind(gxtTrvlDestRow.CooY, gxm.Msg(wuiL7d, "%.2f", dstLoc.GCoos()[gxy.Yk]))
 			btDest.Bind(gxtTrvlDestRow.CooZ, gxm.Msg(wuiL7d, "%.2f", dstLoc.GCoos()[gxy.Zk]))
-			btDest.BindP(gxtTrvlDestRow.Note, dst.Note)
-			btDest.BindP(gxtTrvlDestRow.Tags, str.Join(dst.Tags, ", "))
+			btDest.BindP(gxtTrvlDestRow.Note, gxw.HtmlEsc(dst.Note))
+			btDest.BindP(gxtTrvlDestRow.Tags,
+				gxw.HtmlEsc(str.Join(dst.Tags, ", ")))
 			n += btDest.Emit(wr)
 		}
 		return n
@@ -471,7 +477,7 @@ func wuiTravel(w http.ResponseWriter, r *http.Request) {
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr
 	if len(cmdr.Dests) == 0 && !cmdr.Home.Nil() { // TODO not very well placed here!!!
-		home := &Destination{Loc: cmdr.Home}
+		home := &c.Destination{Loc: cmdr.Home}
 		home.Tags = append(home.Tags, "Home")
 		cmdr.Dests = append(cmdr.Dests, home)
 	}
@@ -479,4 +485,99 @@ func wuiTravel(w http.ResponseWriter, r *http.Request) {
 	emitJumpStats(btFrame, times, paths, dists)
 	emitDests(btFrame, times, paths, dists)
 	btEmit.Emit(w)
+}
+
+var trvlUsrOps = map[string]userHanlder{
+	"planShip":  trvlPlanShip,
+	"tglHomeId": trvlTglHmid,
+	"addDst":    trvlAddDest,
+	"delDst":    trvlDelDest,
+}
+
+func trvlPlanShip(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	jshid, ok := evt["shipId"]
+	if ok {
+		shid := int(jshid.(float64))
+		var ship *c.Ship = nil
+		if shid >= 0 {
+			ship = gstat.Cmdr.ShipById(shid)
+			if ship == nil {
+				eulog.Logf(l.Warn, "cannot find ship with id %d", shid)
+			}
+		}
+		reload = (gstat.TrvlPlanShip.Ship != ship)
+		eulog.Logf(l.Trace, "plan ship: %v → %v => %t",
+			gstat.TrvlPlanShip.Ship,
+			ship,
+			reload)
+		gstat.TrvlPlanShip.Ship = ship
+	} else {
+		eulog.Logf(l.Error, "missing ship id in travel/plan-ship")
+	}
+	return reload
+}
+
+func trvlTglHmid(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	cmdr := &gstat.Cmdr
+	dstIdx, _ := attInt(evt, "id")
+	newHome := cmdr.Dests[dstIdx].Loc
+	if newHome == cmdr.Home {
+		cmdr.Home.Ref = nil
+	} else {
+		cmdr.Home = newHome
+	}
+	return true
+}
+
+func trvlAddDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	locStr, _ := attStr(evt, "nm")
+	loc, _ := gxy.ParseLoc(locStr, theGalaxy)
+	if loc == nil {
+		// TODO no silent fail!
+		return false
+	} else {
+		note, _ := attStr(evt, "note")
+		tags, _ := attStr(evt, "tags")
+		coos, _ := attStr(evt, "coo")
+		cmdr := &gstat.Cmdr
+		dst := cmdr.FindDest(loc)
+		if dst == nil {
+			dst = &c.Destination{
+				Loc: c.LocRef{loc},
+			}
+			cmdr.Dests = append(cmdr.Dests, dst)
+		}
+		if len(coos) > 0 {
+			ctxt := strings.Split(coos, "/")
+			num := 3
+			if len(ctxt) < num {
+				num = len(ctxt)
+			}
+			sys := loc.System()
+			for i := 0; i < num; i++ {
+				glog.Logf(l.Trace, "parse dest coo %d = %s", i, ctxt[i])
+				if f, err := strconv.ParseFloat(strings.TrimSpace(ctxt[i]), 64); err == nil {
+					sys.Coos[i] = f
+				} else {
+					sys.Coos[i] = math.NaN()
+				}
+			}
+		}
+		dst.Note = note
+		dst.Tags = strings.Split(tags, ",")
+		for i, tag := range dst.Tags {
+			dst.Tags[i] = strings.TrimSpace(tag)
+		}
+		return true
+	}
+}
+
+func trvlDelDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	cmdr := &gstat.Cmdr
+	dstIdx, _ := attInt(evt, "id")
+	if dstIdx >= 0 && dstIdx < len(cmdr.Dests) {
+		loc := cmdr.Dests[dstIdx].Loc.Ref
+		cmdr.RmDest(loc)
+	}
+	return true
 }

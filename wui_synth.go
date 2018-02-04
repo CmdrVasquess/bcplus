@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 
+	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	gx "github.com/fractalqb/goxic"
 	gxw "github.com/fractalqb/goxic/web"
@@ -30,12 +31,13 @@ var gxtRecipe struct {
 var gxtRcpBuild0 struct {
 	*gx.Template
 	Count []int
+	Class []int
 }
 
 var gxtRcpBuildN struct {
 	*gx.Template
-	Level []int
 	Count []int
+	Class []int
 }
 
 var gxtHdrMat struct {
@@ -96,13 +98,13 @@ func emitLevels(matLs []string, rcp *gxy.Synthesis, builds []int, wr io.Writer) 
 	btMatNd := gxtLvlMatNeed.NewBounT()
 	for i, lvl := range rcp.Levels {
 		btLvl.BindP(gxtMatLvl.Level, i+1)
-		btLvl.BindP(gxtMatLvl.Bonus, lvl.Bonus)
+		btLvl.BindP(gxtMatLvl.Bonus, gxw.HtmlEsc(lvl.Bonus))
 		if builds[i] > 0 {
 			btLvl.BindP(gxtMatLvl.Have, builds[i])
 		} else {
 			btLvl.Bind(gxtMatLvl.Have, gx.Empty)
 		}
-		if need, _ := cmdr.Synth[synthRef(rcp, i)]; need == 0 {
+		if need, _ := cmdr.Synth[c.MkSynthRef(rcp, i)]; need == 0 {
 			btLvl.Bind(gxtMatLvl.Need, gx.Empty)
 		} else {
 			btLvl.BindP(gxtMatLvl.Need, need)
@@ -180,19 +182,26 @@ func wuiSyn(w http.ResponseWriter, r *http.Request) {
 			sort.Slice(matLs,
 				func(i, j int) bool { return cmprMatByL7d(matLs, i, j) })
 			btRcp.BindP(gxtRecipe.RcpId, rcpid)
-			btRcp.BindP(gxtRecipe.Name, recipe.Name)
-			btRcp.BindP(gxtRecipe.Imprv, recipe.Improves)
+			btRcp.BindP(gxtRecipe.Name, gxw.HtmlEsc(recipe.Name))
+			btRcp.BindP(gxtRecipe.Imprv, gxw.HtmlEsc(recipe.Improves))
 			builds := recipeBuilds(&recipe)
 			btRcp.BindGen(gxtRecipe.Builds, func(wr io.Writer) (n int) {
 				btBld0 := gxtRcpBuild0.NewBounT()
 				btBldN := gxtRcpBuildN.NewBounT()
 				for i, b := range builds {
+					var cls string
+					if need, _ := cmdr.Synth[c.MkSynthRef(&recipe, i)]; need == 0 {
+						cls = ""
+					} else {
+						cls = "demand"
+					}
 					if i == 0 {
 						btBld0.BindP(gxtRcpBuild0.Count, b)
+						btBld0.BindP(gxtRcpBuild0.Class, cls)
 						n += btBld0.Emit(wr)
 					} else {
-						btBldN.BindP(gxtRcpBuildN.Level, i+1)
 						btBldN.BindP(gxtRcpBuildN.Count, b)
+						btBldN.BindP(gxtRcpBuildN.Class, cls)
 						n += btBldN.Emit(wr)
 					}
 				}
@@ -205,7 +214,7 @@ func wuiSyn(w http.ResponseWriter, r *http.Request) {
 						cmns = fmt.Sprintf("%d", gxmat.Commons)
 					}
 					name, _ := nmMats.Map(mat)
-					btHdrMat.BindP(gxtHdrMat.Name, name)
+					btHdrMat.BindP(gxtHdrMat.Name, gxw.HtmlEsc(name))
 					if cmat := cmdr.Material(mat); cmat == nil || cmat.Have == 0 {
 						btHdrMat.BindP(gxtHdrMat.Have, 0)
 						btHdrMat.BindP(gxtHdrMat.MatGrade, cmns)
@@ -231,7 +240,7 @@ var synUsrOps = map[string]userHanlder{
 	"mdmnd": synUsrOpMdmnd,
 }
 
-func synUsrOpMdmnd(gstat *GmState, evt map[string]interface{}) (reload bool) {
+func synUsrOpMdmnd(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	rcpid, _ := attInt(evt, "rcpid")
 	lvl, _ := attInt(evt, "level")
 	count, _ := attInt(evt, "count")

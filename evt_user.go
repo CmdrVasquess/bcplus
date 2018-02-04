@@ -3,12 +3,14 @@ package main
 import (
 	"sync"
 
+	c "github.com/CmdrVasquess/BCplus/cmdr"
 	l "github.com/fractalqb/qblog"
+	robi "github.com/go-vgo/robotgo"
 )
 
-type userHanlder func(*GmState, map[string]interface{}) (reload bool)
+type userHanlder func(*c.GmState, map[string]interface{}) (reload bool)
 
-func DispatchUser(lock *sync.RWMutex, state *GmState, event map[string]interface{}) {
+func DispatchUser(lock *sync.RWMutex, state *c.GmState, event map[string]interface{}) {
 	topic, hasTopic := attStr(event, "topic")
 	oprtn, hasOp := attStr(event, "op")
 	if !hasOp {
@@ -22,7 +24,7 @@ func DispatchUser(lock *sync.RWMutex, state *GmState, event map[string]interface
 		case "all":
 			handler, _ = allUsrOps[oprtn]
 		case "travel":
-			handler = travelPlanShip
+			handler, _ = trvlUsrOps[oprtn]
 		case "materials":
 			handler, _ = matUsrOps[oprtn]
 		case "synth":
@@ -50,30 +52,8 @@ func DispatchUser(lock *sync.RWMutex, state *GmState, event map[string]interface
 	}
 }
 
-func travelPlanShip(gstat *GmState, evt map[string]interface{}) (reload bool) {
-	jshid, ok := evt["shipId"]
-	if ok {
-		shid := int(jshid.(float64))
-		var ship *Ship = nil
-		if shid >= 0 {
-			ship = gstat.Cmdr.ShipById(shid)
-			if ship == nil {
-				eulog.Logf(l.Warn, "cannot find ship with id %d", shid)
-			}
-		}
-		reload = (gstat.TrvlPlanShip.Ship != ship)
-		eulog.Logf(l.Trace, "plan ship: %v → %v => %t",
-			gstat.TrvlPlanShip.Ship,
-			ship,
-			reload)
-		gstat.TrvlPlanShip.Ship = ship
-	} else {
-		eulog.Logf(l.Error, "missing ship id in travel/plan-ship")
-	}
-	return reload
-}
-
 var allUsrOps = map[string]userHanlder{
+	"skbd":    allSkbd,
 	"tglhome": allTglHome,
 	"tgldest": allTglDest,
 }
@@ -83,41 +63,48 @@ const (
 	tagAbndn = "abandoned"
 )
 
-func allTglHome(gstat *GmState, evt map[string]interface{}) (reload bool) {
+func allTglHome(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	cmdr := &gstat.Cmdr
 	if cmdr.Home.Nil() {
 		cmdr.Home = cmdr.Loc
-		dest := cmdr.GetDest(cmdr.Home)
+		dest := cmdr.GetDest(cmdr.Home.Ref)
 		dest.Tag(tagHome)
 		dest.Untag(tagAbndn)
 		reload = true
 	} else if cmdr.Loc != cmdr.Home {
-		dest := cmdr.GetDest(cmdr.Home)
+		dest := cmdr.GetDest(cmdr.Home.Ref)
 		dest.Tag(tagHome, tagAbndn)
 		cmdr.Home = cmdr.Loc
-		dest = cmdr.GetDest(cmdr.Home)
+		dest = cmdr.GetDest(cmdr.Home.Ref)
 		dest.Tag(tagHome)
 		dest.Untag(tagAbndn)
 		reload = true
 	} else if cmdr.Loc == cmdr.Home {
-		dest := cmdr.GetDest(cmdr.Home)
+		dest := cmdr.GetDest(cmdr.Home.Ref)
 		dest.Tag(tagHome, tagAbndn)
-		cmdr.Home.Location = nil
+		cmdr.Home.Ref = nil
 		reload = true
 	}
 	return reload
 }
 
-func allTglDest(gstat *GmState, evt map[string]interface{}) (reload bool) {
+func allTglDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	cmdr := &gstat.Cmdr
-	dest := cmdr.FindDest(cmdr.Loc)
+	dest := cmdr.FindDest(cmdr.Loc.Ref)
 	if dest == nil {
-		dest = cmdr.GetDest(cmdr.Loc)
-		if !cmdr.Home.Nil() && dest.Loc.Location.String() == cmdr.Home.Location.String() {
+		dest = cmdr.GetDest(cmdr.Loc.Ref)
+		if !cmdr.Home.Nil() && dest.Loc.String() == cmdr.Home.Ref.String() {
 			dest.Tag(tagHome)
 		}
 	} else {
-		cmdr.RmDest(cmdr.Loc)
+		cmdr.RmDest(cmdr.Loc.Ref)
 	}
 	return true
+}
+
+func allSkbd(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	txt, _ := attStr(evt, "str")
+	eulog.Logf(l.Trace, "sending as keyboard input: [%s]", txt)
+	robi.TypeStr(txt)
+	return false
 }

@@ -59,17 +59,17 @@ func wuiShp(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			shTy, _ := nmShipType.Map(ship.Type)
-			btCShip.BindP(gxtCShip.Ident, ship.Ident)
-			btCShip.BindP(gxtCShip.Name, ship.Name)
-			btCShip.BindP(gxtCShip.Type, shTy)
+			btCShip.BindP(gxtCShip.Ident, gxw.HtmlEsc(ship.Ident))
+			btCShip.BindP(gxtCShip.Name, gxw.HtmlEsc(ship.Name))
+			btCShip.BindP(gxtCShip.Type, gxw.HtmlEsc(shTy))
 			btCShip.BindFmt(gxtCShip.Jump, "%.2f", ship.Jump.DistMax)
 			if ship.Loc.Nil() {
 				btCShip.Bind(gxtCShip.Loc, webGuiNOC)
 				btCShip.Bind(gxtCShip.Dist, webGuiNOC)
 			} else {
-				btCShip.BindP(gxtCShip.Loc, ship.Loc.String())
+				btCShip.BindP(gxtCShip.Loc, gxw.HtmlEsc(ship.Loc.String()))
 				btCShip.Bind(gxtCShip.Dist,
-					gxm.Msg(wuiL7d, "%.2f", gxy.Dist(ship.Loc, cmdr.Loc)))
+					gxm.Msg(wuiL7d, "%.2f", gxy.Dist(ship.Loc.Ref, cmdr.Loc.Ref)))
 			}
 			n += btCShip.Emit(wr)
 		}

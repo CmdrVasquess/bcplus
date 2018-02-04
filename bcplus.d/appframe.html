@@ -21,14 +21,14 @@ CMDR `cmdr-name`
 	</header>
 	<main class="center">
 	<p>Please boot up your main board computer systems to connect.</p>
-	<img src="s/img/EDLoader.svg" alt="loading…" style="margin-top:5em">
+	<img src="s/img/EDLoader.svg" alt="loading…" style="margin-top:5em;">
 	</main>
 <!-- <<< body-offline <<< \-->
 <!-- >>> body-online >>> -->
 	<header>
 	<div id="base">
 	<p>CMDR `cmdr-name`<p>
-	<p>`credits` €</p>
+	<p>`credits` Cr</p>
 	<p>`ship-name` / `ship-ident`</p>
 	<p>`ship-type`</p>
 	</div>
@@ -56,7 +56,7 @@ CMDR `cmdr-name`
 		        onclick="tglDest()">
 		</div>&nbsp;
 		<div><p>`location`</p><p>`locx` / `locy` / `locz`</p></div>
-		<div style="margin-left:1em"><p>Home: `home`</p><p>→ `homedist` Ly</p></div>
+		<div style="margin-left:1em;"><p>Home: `home`</p><p>→ `homedist` Ly</p></div>
 	</div>
 	<div class="rank" style="justify-content: center">
 		<img class="logo" src="s/fctn/feds.png" alt="Feds">
@@ -130,12 +130,48 @@ function tglDest() {
 	var msg = JSON.stringify(rq);
 	wsock.send(msg);
 }
+function send2kbd(e) {
+	var txt = e.target.parentElement.innerText.trim();
+	var rq = new Object();
+	rq.topic = "all";
+	rq.op = "skbd";
+	rq.str = txt;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
+
+}
+function higltSkbd(e) {
+	var span = e.target.parentElement;
+	span.classList.add("glow");
+}
+function lowltSkbd(e) {
+	var span = e.target.parentElement;
+	span.classList.remove("glow");
+}
+function decoSkbd(skbd) {
+	skbd.appendChild(document.createTextNode(" "));
+	var img = document.createElement("img")
+	img.src = "s/img/Kbd.png";
+	img.title = "Send as keyboard input";
+	img.classList.add("skbd");
+	img.addEventListener("click", send2kbd)
+	img.addEventListener("mouseover", higltSkbd);
+	img.addEventListener("mouseout", lowltSkbd);
+	skbd.appendChild(img);
+}
+function decoAllSkbd() {
+	var i, skbds = document.querySelectorAll("span.skbd");
+	for (i = 0; i < skbds.length; i++) {
+		decoSkbd(skbds[i])
+	}
+}
 document.addEventListener('DOMContentLoaded', function () {
 	if (window["WebSocket"]) {
 		startWs()
 	} else {
 		alert("Your browser does not support WebSockets.")
 	}
+	decoAllSkbd();
 })
 	</script>
 <!-- >>> script-end <<< \-->

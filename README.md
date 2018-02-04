@@ -1,6 +1,8 @@
 # BCplus
 **Board Computer Plus for E:D**
 
+[Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases)
+
 --------------------
 
 BC+ evaluates the player's journal and serves web pages with useful

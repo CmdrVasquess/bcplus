@@ -1,49 +1,48 @@
-package main
+package cmdr
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
-	"path/filepath"
 
-	l "github.com/fractalqb/qblog"
+<<<<<<< HEAD:cmdr/creds.go
+	"github.com/CmdrVasquess/goEDSM"
+=======
+>>>>>>> 6b3d21a03a3be78f0a8f853727125968c4eb6bfb:cmdr/creds.go
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var credsKey []byte
-
 const prompt = "credentials masterkey: "
 
-func promptCredsKey() []byte {
+func PromptCredsKey() []byte {
 	fmt.Print("enter credentials masterkey: ")
 	res, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
 	return res
 }
 
 type CmdrCreds struct {
-	CmpnjUser  string `json:",omitempty"`
-	CmpnjPass  string `json:",omitempty"`
-	EdsmApiKey string `json:",omitempty"`
+	Edsm edsm.Credentials `json:",omitempty"`
 }
 
 func (cc *CmdrCreds) Clear() {
 	if cc != nil {
-		cc.EdsmApiKey = ""
+		cc.Edsm.Clear()
 	}
 }
 
-func (cc *CmdrCreds) Write(cmdr string, key []byte) error {
-	glog.Logf(l.Info, "save credentials to %s/%s.pgp", dataDir, cmdr)
-	filenm := filepath.Join(dataDir, cmdr+".pgp~")
-	f, err := os.Create(filenm)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	arm, err := armor.Encode(f, "PGP MESSAGE", nil)
+func (cc *CmdrCreds) Write(wr io.Writer, key []byte) error {
+	//	log.Logf(l.Info, "save credentials to %s/%s.pgp", dataDir, cmdr)
+	//	filenm := filepath.Join(dataDir, cmdr+".pgp~")
+	//	f, err := os.Create(filenm)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	defer f.Close()
+	arm, err := armor.Encode(wr, "PGP MESSAGE", nil)
 	if err != nil {
 		return err
 	}
@@ -55,24 +54,12 @@ func (cc *CmdrCreds) Write(cmdr string, key []byte) error {
 	jenc.Encode(cc)
 	cwr.Close()
 	arm.Close()
-	f.Close()
-	os.Rename(filenm, filepath.Join(dataDir, cmdr+".pgp"))
+	//	os.Rename(filenm, filepath.Join(dataDir, cmdr+".pgp"))
 	return nil
 }
 
-func (cc *CmdrCreds) Read(cmdr string, key []byte) error {
-	filenm := filepath.Join(dataDir, cmdr+".pgp")
-	glog.Logf(l.Info, "load credentials from %s", filenm)
-	if _, err := os.Stat(filenm); os.IsNotExist(err) {
-		glog.Logf(lNotice, "commander %s's credentials do not exists", cmdr)
-		return nil
-	}
-	f, err := os.Open(filenm)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	arm, err := armor.Decode(f)
+func (cc *CmdrCreds) Read(rd io.Reader, key []byte) error {
+	arm, err := armor.Decode(rd)
 	if err != nil {
 		return err
 	}

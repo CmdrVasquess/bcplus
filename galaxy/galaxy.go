@@ -9,12 +9,19 @@ import (
 	"os"
 	"strings"
 	str "strings"
+	"unicode/utf8"
 
 	l "github.com/fractalqb/qblog"
 )
 
 var log = l.Std("BC+gxy:")
 var LogConfig = l.Package(log)
+
+func init() {
+	dummy := make([]byte, 4)
+	sepStatSz = utf8.EncodeRune(dummy, SepStation)
+	sepBodySz = utf8.EncodeRune(dummy, SepBody)
+}
 
 type Galaxy struct {
 	glxyfile  string
@@ -121,6 +128,34 @@ type Location interface {
 	String() string
 	GCoos() *Vec3D
 	System() *StarSys
+}
+
+func ParseLoc(str string, galaxy *Galaxy) (res Location, err error) {
+	if str == "-" {
+		return nil, nil
+	} else {
+		if sep := strings.IndexRune(str, SepStation); sep > 0 {
+			sysNm := strings.Trim(str[sep+sepStatSz:], " \t")
+			ssys := galaxy.GetSystem(sysNm)
+			stnNm := strings.Trim(str[:sep], " \t")
+			stn := ssys.GetStation(stnNm)
+			res = stn
+		} else if sep := strings.IndexRune(str, SepBody); sep > 0 {
+			sysNm := strings.Trim(str[:sep], " \t")
+			ssys := galaxy.GetSystem(sysNm)
+			bdyNm := strings.Trim(str[sep+sepBodySz:], " \t")
+			bdy := ssys.GetBody(bdyNm)
+			res = bdy
+		} else {
+			str = strings.Trim(str, " \t")
+			ssys := galaxy.GetSystem(str)
+			res = ssys
+		}
+		if res == nil {
+			return nil, fmt.Errorf("unmarshal LocRef: cannot resolve '%s'", str)
+		}
+		return res, nil
+	}
 }
 
 func Dist(from, to Location) float64 {
@@ -278,7 +313,9 @@ type SysBody struct {
 	Mats     map[string]float32 `json:"Materials,omitempty"`
 }
 
-const SepBody = '•'
+const SepBody = ':'
+
+var sepBodySz int
 
 func (b *SysBody) String() string {
 	return fmt.Sprintf("%s %c %s", b.ssys.Name(), SepBody, b.Name)
@@ -348,6 +385,8 @@ func (s *Station) GCoos() *Vec3D {
 }
 
 const SepStation = '/'
+
+var sepStatSz int
 
 func (s *Station) String() string {
 	return fmt.Sprintf("%s %c %s", s.Name, SepStation, s.ssys.Name())

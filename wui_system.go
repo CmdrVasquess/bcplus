@@ -92,21 +92,21 @@ func emitBodies(wr io.Writer) (n int) {
 		for _, bdy := range bdys {
 			switch bdy.Cat {
 			case gxy.Star:
-				btStar.BindP(gxtSysStar.Name, bdy.Name)
+				btStar.BindP(gxtSysStar.Name, gxw.HtmlEsc(bdy.Name))
 				btStar.Bind(gxtSysStar.Dist, gxm.Msg(wuiL7d, "%.2f", bdy.Dist))
 				n += btStar.Emit(wr)
 			case gxy.Planet:
 				if bdy.IsBelt() {
-					btBelt.BindP(gxtSysBelt.Name, bdy.Name)
+					btBelt.BindP(gxtSysBelt.Name, gxw.HtmlEsc(bdy.Name))
 					btBelt.Bind(gxtSysBelt.Dist, gxm.Msg(wuiL7d, "%.2f", bdy.Dist))
 					n += btBelt.Emit(wr)
 				} else {
 					emitPlanet(wr, btPlnt, btMat0, btMat1, bdy)
 				}
 			default:
-				btPlnt.BindP(gxtSysPlanet.Name, bdy.Name)
-				btPlnt.Bind(gxtSysPlanet.Dist, gxm.Msg(wuiL7d, "%.2f", bdy.Dist))
-				n += btPlnt.Emit(wr)
+				glog.Logf(l.Warn,
+					"body without category in system %s",
+					cmdr.Loc.System().Name())
 			}
 		}
 	}
@@ -114,7 +114,7 @@ func emitBodies(wr io.Writer) (n int) {
 }
 
 func emitPlanet(wr io.Writer, bt, btM0, btM1 *gx.BounT, p *gxy.SysBody) (n int) {
-	bt.BindP(gxtSysPlanet.Name, p.Name)
+	bt.BindP(gxtSysPlanet.Name, gxw.HtmlEsc(p.Name))
 	bt.Bind(gxtSysPlanet.Dist, gxm.Msg(wuiL7d, "%.2f", p.Dist))
 	bt.BindP(gxtSysPlanet.Land, p.Landable)
 	bt.Bind(gxtSysPlanet.R, gxm.Msg(wuiL7d, "%.2f", p.Radius))
@@ -125,12 +125,12 @@ func emitPlanet(wr io.Writer, bt, btM0, btM1 *gx.BounT, p *gxy.SysBody) (n int) 
 			first := true
 			for nm, f := range p.Mats {
 				if first {
-					btM0.BindP(gxtSysPMat0.Name, nm)
+					btM0.BindP(gxtSysPMat0.Name, gxw.HtmlEsc(nm))
 					btM0.Bind(gxtSysPMat0.Frac, gxm.Msg(wuiL7d, "%.2f", f))
 					n += btM0.Emit(wr)
 					first = false
 				} else {
-					btM1.BindP(gxtSysPMat1.Name, nm)
+					btM1.BindP(gxtSysPMat1.Name, gxw.HtmlEsc(nm))
 					btM1.Bind(gxtSysPMat1.Frac, gxm.Msg(wuiL7d, "%.2f", f))
 					n += btM1.Emit(wr)
 				}

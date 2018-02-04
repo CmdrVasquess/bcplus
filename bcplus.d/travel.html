@@ -6,6 +6,16 @@
     <link rel="stylesheet" href="s/css/bcp.css">
 <!-- >>> local-style >>> -->
 	<style>
+main span.btn { cursor: pointer; }
+main span.addest {
+	background-color: var(--tblOdd);
+	padding-left: .5em;
+	padding-right: .5em;
+	padding-top: .2em;
+	padding-bottom: .2em;
+	border-radius: 3px;
+	cursor: pointer;
+}
 main td {
 	padding-left: .3em;
 	padding-right: .3em;
@@ -34,6 +44,21 @@ main tr:nth-of-type(even) {
   border: none;
   margin: 0;
 }
+#dsthdr{ cursor: pointer; }
+#dsthdr::before {	content: "▾ "; }
+#dsthdr.hide::before { content: "▸ "; }
+#addest { margin-bottom: .5em; }
+#addest.hide { display: none; }
+#destnts {
+	width: 40em;
+	height: 5em;
+	color: var(--colFgr);
+	background-color: var(--colBkg);
+	border: 1px solid;
+	border-color: var(--colFgr);
+	padding: .2em;
+	vertical-align: top;
+}
 	</style>
 <!-- <<< local-style <<< -->
   </head>
@@ -41,10 +66,14 @@ main tr:nth-of-type(even) {
   <main>
 </select>
 <!-- >>> topic >>> -->
-	<h1>Destinations</h1>
+	<h1 id="dsthdr" class="hide" onclick="tglDstForm()">Destinations</h1>
+	<form id="addest" class="hide">
+		<label for="destnm"><span class="addest" onclick="addDst()">Add Destination</span>: <input type="text" id="destnm" size="20"></label>
+		<label for="destcoo">Coordinates: <input type="text" id="destcoo" size="24"></label>
+		<label for="desttags">Tags: <input type="text" id="desttags" size="30"></label>
+		<br><label for="destnts">Notes:<textarea id="destnts"></textarea></label>
+	</form>
 Plan with <select name="shipopt" onchange="selShip(value)">
-<!--onchange="showStatus(value+' / '+name+' / '+document.URL)"-->
-<!-- onchange="showStatus(value+" "+text)"-->
 <!-- >>> shipopts <<< \-->
 <!-- >>> shipopt >>> -->
 <option value="`id`">`ship` – `jump` Ly</option>
@@ -67,7 +96,7 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 </datalist -->	
 	<table id="dests" style="width:100%">
 		<thead><tr>
-			<th>Destination</th>
+			<th colspan="2">Destination</th>
 			<th>Distance</th>
 			<th>ETD</th>
 			<th>EJD</th>
@@ -78,9 +107,18 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 		<tbody>
 <!-- >>> destinations <<< \-->
 <!-- >>> dest >>> -->
-		<tr>
-			<td><img class="inlico btn" src="s/img/`home-flag`Home.png" title="NYI: Toggle Home System"
-			     > `name`</td>
+		<tr id="dst`dst-id`">
+			<td><img class="inlico btn" src="s/img/`home-flag`Home.png"
+			         title="Toggle Home System"
+			         onclick="tglHomeId(`dst-id`)">
+			    `name`</td>
+			<td class="center"> 
+			   <span class="btn" onclick="editDst(this)">✍</span>
+			   &nbsp;
+				<img class="inlico btn" src="s/img/Trash.png"
+			        title="Double-click to Delete"
+			        ondblclick="delDst(`dst-id`)">
+			</td>
 			<td class="right">`dist` Ly</td>
 			<td class="right">`etd`</td>
 			<td class="center">`ejd`</td>
@@ -130,6 +168,51 @@ function selShip(shId) {
 	rq.shipId = parseInt(shId);
 	var msg = JSON.stringify(rq);
 	wsock.send(msg);
+}
+function tglHomeId(hId) {
+	var rq = new Object();
+	rq.topic = "travel";
+	rq.op = "tglHomeId";
+	rq.id = hId;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);	
+}
+function tglDstForm() {
+	var hdr = document.getElementById("dsthdr");
+	var frm = document.getElementById("addest");
+	hdr.classList.toggle("hide");
+	frm.classList.toggle("hide");
+}
+function editDst(btn) {
+	var edNm = document.getElementById("destnm");
+	var edCoos = document.getElementById("destcoo");
+	var edNts = document.getElementById("destnts");
+	var edTags = document.getElementById("desttags");
+	var dst = btn.parentElement.parentElement.getElementsByTagName("td");
+	showStatus(dst[0].innerText);
+	edNm.value = dst[0].innerText;
+	edCoos.value = dst[5].innerText;
+	edNts.value = dst[6].innerText;
+	edTags.value = dst[7].innerText;
+}
+function addDst() {
+	var rq = new Object();
+	rq.topic = "travel";
+	rq.op = "addDst";
+	rq.nm = document.getElementById("destnm").value;
+	rq.coo = document.getElementById("destcoo").value;
+	rq.note = document.getElementById("destnts").value;
+	rq.tags = document.getElementById("desttags").value;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);		
+}
+function delDst(dId) {
+	var rq = new Object();
+	rq.topic = "travel";
+	rq.op = "delDst";
+	rq.id = dId;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);	
 }
 	</script>
 <!-- <<< topic <<< -->

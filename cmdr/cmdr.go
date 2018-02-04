@@ -1,19 +1,27 @@
-package main
+package cmdr
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
-	"unicode/utf8"
 
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	l "github.com/fractalqb/qblog"
 )
+
+var log = l.Std("BC+cdr:")
+var LogConfig = l.Package(log)
+
+var theGalaxy *gxy.Galaxy
+
+func SetTheGalaxy(galaxy *gxy.Galaxy) {
+	theGalaxy = galaxy
+}
 
 //go:generate stringer -type=RankType
 type RankType int
@@ -29,15 +37,6 @@ const (
 )
 
 type Timestamp time.Time
-
-var sepStatSz int
-var sepBodySz int
-
-func init() {
-	dummy := make([]byte, 4)
-	sepStatSz = utf8.EncodeRune(dummy, gxy.SepStation)
-	sepBodySz = utf8.EncodeRune(dummy, gxy.SepBody)
-}
 
 func (t *Timestamp) MarshalJSON() (res []byte, err error) {
 	str := (*time.Time)(t).Format(time.RFC3339)
@@ -56,6 +55,11 @@ func (t *Timestamp) UnmarshalJSON(json []byte) (err error) {
 	return nil
 }
 
+type MatFilter struct {
+	Have string
+	Need bool
+}
+
 type GmState struct {
 	T            Timestamp
 	IsBeta       bool
@@ -65,12 +69,12 @@ type GmState struct {
 	JumpHist     []*Jump         `json:",omitempty"`
 	MatCatHide   map[string]bool `json:",omitempty"`
 	MatFlt       MatFilter
-	evtBacklog   []map[string]interface{}
-	next1stJump  bool
-	creds        *CmdrCreds
+	EvtBacklog   []map[string]interface{} `json:-`
+	Next1stJump  bool                     `json:-`
+	Creds        *CmdrCreds
 }
 
-func (g *GmState) isOffline() bool {
+func (g *GmState) IsOffline() bool {
 	return len(g.Cmdr.Name) == 0
 }
 
@@ -107,12 +111,12 @@ type Jump struct {
 	Arrive Timestamp
 }
 
-func (stat *GmState) addJump(ssys *gxy.StarSys, t Timestamp) {
+func (stat *GmState) AddJump(ssys *gxy.StarSys, t Timestamp) {
 	if ssys == nil {
 		panic("new jump in history without star system")
 	}
 	hist := append(stat.JumpHist, nil)
-	newJump := &Jump{stat.next1stJump, SysRef{ssys}, t}
+	newJump := &Jump{stat.Next1stJump, SysRef{ssys}, t}
 	i := len(hist) - 2
 	for i >= 0 {
 		if !time.Time(t).Before(time.Time(hist[i].Arrive)) {
@@ -122,7 +126,7 @@ func (stat *GmState) addJump(ssys *gxy.StarSys, t Timestamp) {
 		i--
 	}
 	if i >= 0 && !time.Time(t).After(time.Time(hist[i].Arrive)) {
-		glog.Log(l.Warn, "duplicate jump in history: ", time.Time(t), ssys.Name)
+		log.Log(l.Warn, "duplicate jump in history: ", time.Time(t), ssys.Name)
 	}
 	hist[i+1] = newJump
 	if len(hist) > jumpHistMax {
@@ -140,85 +144,84 @@ func NewGmState() *GmState {
 	res := GmState{
 		Cmdr:        *NewCommander(),
 		MatCatHide:  make(map[string]bool),
-		next1stJump: true,
+		Next1stJump: true,
 	}
 	return &res
 }
 
-func (s *GmState) clear() {
+func (s *GmState) Clear() {
 	s.Cmdr.clear()
 	s.JumpHist = nil
-	s.evtBacklog = nil
-	s.next1stJump = true
-	s.creds.Clear()
+	s.EvtBacklog = nil
+	s.Next1stJump = true
+	s.Creds.Clear()
 }
 
-func (s *GmState) save(w io.Writer) error {
+func (s *GmState) Save(w io.Writer) error {
 	je := json.NewEncoder(w)
 	je.SetIndent("", "  ")
 	err := je.Encode(s)
 	return err
 }
 
-func (s *GmState) load(r io.Reader) {
+var jsonHelper *GmState
+var loadMutex sync.Mutex
+
+func (s *GmState) Load(r io.Reader) {
+	loadMutex.Lock()
+	defer loadMutex.Unlock()
+	jsonHelper = s
 	jd := json.NewDecoder(r)
 	if err := jd.Decode(s); err != nil {
 		log.Printf("faild to load: %s", err)
-		s.clear()
+		s.Clear()
 	} else { // TODO just debugging
 		for i, j := range s.JumpHist {
 			if j.Sys.StarSys == nil {
-				glog.Fatalf("loaded jump #%d/%d with nil system", i, len(s.JumpHist))
+				log.Fatalf("loaded jump #%d/%d with nil system", i, len(s.JumpHist))
 			}
 		}
 	}
 }
 
 type LocRef struct {
-	gxy.Location
+	Ref gxy.Location
+}
+
+func (lr LocRef) String() string {
+	if lr.Nil() {
+		return ""
+	} else {
+		return lr.Ref.String()
+	}
+}
+
+func (lr LocRef) System() *gxy.StarSys {
+	if lr.Nil() {
+		return nil
+	} else {
+		return lr.Ref.System()
+	}
 }
 
 func (lr LocRef) Nil() bool {
-	return lr.Location == nil
+	return lr.Ref == nil
 }
 
 func (lr LocRef) MarshalJSON() (res []byte, err error) {
-	if lr.Location == nil {
+	if lr.Ref == nil {
 		res, err = json.Marshal("-")
 	} else {
-		res, err = json.Marshal(lr.String())
+		res, err = json.Marshal(lr.Ref.String())
 	}
 	return res, err
 }
 
-func (lr *LocRef) UnmarshalJSON(json []byte) error {
+func (lr *LocRef) UnmarshalJSON(json []byte) (err error) {
 	jstr := string(json)
 	jstr = jstr[1 : len(jstr)-1]
-	if jstr == "-" {
-		lr.Location = nil
-	} else {
-		if sep := strings.IndexRune(jstr, gxy.SepStation); sep > 0 {
-			sysNm := strings.Trim(jstr[sep+sepStatSz:], " \t")
-			ssys := theGalaxy.GetSystem(sysNm)
-			stnNm := strings.Trim(jstr[:sep], " \t")
-			stn := ssys.GetStation(stnNm)
-			lr.Location = stn
-		} else if sep := strings.IndexRune(jstr, gxy.SepBody); sep > 0 {
-			sysNm := strings.Trim(jstr[:sep], " \t")
-			ssys := theGalaxy.GetSystem(sysNm)
-			bdyNm := strings.Trim(jstr[sep+sepBodySz:], " \t")
-			bdy := ssys.GetBody(bdyNm)
-			lr.Location = bdy
-		} else {
-			jstr = strings.Trim(jstr, " \t")
-			ssys := theGalaxy.GetSystem(jstr)
-			lr.Location = ssys
-		}
-		if lr.Location == nil {
-			glog.Logf(l.Error, "unmarshal LocRef: cannot resolve '%s'", jstr)
-		}
-	}
-	return nil
+	lr.Ref, err = gxy.ParseLoc(jstr, theGalaxy)
+	return err
 }
 
 type ShipRef struct {
@@ -246,13 +249,13 @@ func (shr *ShipRef) UnmarshalJSON(json []byte) error {
 	} else {
 		match := shipRefRgx.FindStringSubmatch(jstr)
 		if match == nil {
-			glog.Logf(l.Error, "cannot resolve ship-ref: '%s'", jstr)
+			log.Logf(l.Error, "cannot resolve ship-ref: '%s'", jstr)
 			shr.Ship = nil
 		} else {
 			shipId, _ := strconv.Atoi(match[1])
-			shr.Ship = theGame.Cmdr.ShipById(shipId)
+			shr.Ship = jsonHelper.Cmdr.ShipById(shipId)
 			if shr.Ship == nil {
-				glog.Logf(l.Error, "json unmarshal: cannot resolve ship-id %d", shipId)
+				log.Logf(l.Error, "json unmarshal: cannot resolve ship-id %d", shipId)
 			}
 		}
 	}
@@ -298,11 +301,11 @@ NextHaveTag:
 
 type SynthRef string
 
-func synthRef(syn *gxy.Synthesis, level int) SynthRef {
+func MkSynthRef(syn *gxy.Synthesis, level int) SynthRef {
 	return SynthRef(fmt.Sprintf("%d:%s", level, syn.Name))
 }
 
-func (sr SynthRef) split() (name string, level int) {
+func (sr SynthRef) Split() (name string, level int) {
 	sep := strings.IndexRune(string(sr), ':')
 	name = string(sr)[sep+1:]
 	lvl, _ := strconv.Atoi(string(sr)[:sep])
@@ -311,7 +314,7 @@ func (sr SynthRef) split() (name string, level int) {
 
 func (sr SynthRef) Get() (synth *gxy.Synthesis, level int) {
 	var snm string
-	snm, level = sr.split()
+	snm, level = sr.Split()
 	synth = theGalaxy.Synthesis(snm)
 	return synth, level
 }
@@ -350,11 +353,11 @@ func NewCommander() *Commander {
 }
 
 func (cmdr *Commander) NeedSynth(syn *gxy.Synthesis, lvl uint, count uint) {
-	key := synthRef(syn, int(lvl))
+	key := MkSynthRef(syn, int(lvl))
 	if count == 0 {
 		delete(cmdr.Synth, key)
 	} else {
-		glog.Logf(l.Info, "set syref %s = %d", string(key), count)
+		log.Logf(l.Info, "set syref %s = %d", string(key), count)
 		cmdr.Synth[key] = count
 	}
 }
@@ -397,7 +400,7 @@ func (cmdr *Commander) Material(jName string) *Material {
 
 func (cmdr *Commander) FindDest(loc gxy.Location) *Destination {
 	for _, dst := range cmdr.Dests {
-		if dst.Loc.Location.String() == loc.String() {
+		if dst.Loc.String() == loc.String() {
 			return dst
 		}
 	}
@@ -418,7 +421,7 @@ func (cmdr *Commander) GetDest(loc gxy.Location) (res *Destination) {
 func (cmdr *Commander) RmDest(loc gxy.Location) (res bool) {
 	ndst := make([]*Destination, 0, len(cmdr.Dests)-1)
 	for _, d := range cmdr.Dests {
-		if d.Loc.Location.String() != loc.String() {
+		if d.Loc.String() != loc.String() {
 			ndst = append(ndst, d)
 		} else {
 			res = true
@@ -440,7 +443,7 @@ func (cm CmdrsMats) SetHave(mat string, n int16) {
 	}
 }
 
-func (cm CmdrsMats) clearHave() {
+func (cm CmdrsMats) ClearHave() {
 	for m, hn := range cm {
 		if hn.Need == 0 {
 			delete(cm, m)
@@ -457,8 +460,8 @@ func (cmdr *Commander) clear() {
 	cmdr.Friends = nil
 	cmdr.Ships = nil
 	cmdr.CurShip.Ship = nil
-	cmdr.Home.Location = nil
-	cmdr.Loc.Location = nil
+	cmdr.Home.Ref = nil
+	cmdr.Loc.Ref = nil
 	cmdr.MatsRaw = make(CmdrsMats)
 	cmdr.MatsMan = make(CmdrsMats)
 	cmdr.MatsEnc = make(CmdrsMats)

@@ -7,13 +7,14 @@ import (
 	"sync"
 	"time"
 
+	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	l "github.com/fractalqb/qblog"
 )
 
 type event = map[string]interface{}
 
-type journalHanlder func(*GmState, map[string]interface{}, time.Time)
+type journalHanlder func(*c.GmState, map[string]interface{}, time.Time)
 
 var dispatch = map[string]journalHanlder{
 	"Fileheader":        fileheader,
@@ -56,7 +57,7 @@ func eventTime(evt map[string]interface{}) (time.Time, error) {
 
 var acceptHistory = false
 
-func DispatchJournal(lock *sync.RWMutex, state *GmState, event []byte) {
+func DispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 	if len(event) == 0 {
 		ejlog.Logf(l.Warn, "empty journal event")
 		return
@@ -79,16 +80,16 @@ func DispatchJournal(lock *sync.RWMutex, state *GmState, event []byte) {
 			ejlog.Log(l.Error, err)
 		}
 		var cmdrSwitch = evt == "Fileheader" || evt == "LoadGame"
-		if state.isOffline() && !cmdrSwitch {
+		if state.IsOffline() && !cmdrSwitch {
 			ejlog.Logf(l.Info, "retain event: %s @%s", evt, t)
-			state.evtBacklog = append(state.evtBacklog, jsonEvt)
+			state.EvtBacklog = append(state.EvtBacklog, jsonEvt)
 		} else if acceptHistory || !t.Before(time.Time(state.T)) {
 			ejlog.Logf(l.Info, "process event: %s @%s", evt, t)
 			lock.Lock()
 			defer lock.Unlock()
 			hdlr(state, jsonEvt, t)
 			if !cmdrSwitch {
-				state.T = Timestamp(t)
+				state.T = c.Timestamp(t)
 			}
 			select {
 			case wscSendTo <- true:
@@ -249,11 +250,11 @@ func attF32(e event, name string) (float32, bool) {
 	return float32(v), ok
 }
 
-func fileheader(gstat *GmState, evt map[string]interface{}, t time.Time) {
-	if !gstat.isOffline() {
-		saveState()
+func fileheader(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	if !gstat.IsOffline() {
+		saveState(gstat.IsBeta)
 	}
-	gstat.clear()
+	gstat.Clear()
 	if gvers, ok := attStr(evt, "gameversion"); ok {
 		gstat.IsBeta = str.Contains(str.ToLower(gvers), "beta")
 	} else {
@@ -262,7 +263,7 @@ func fileheader(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func loadout(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func loadout(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shipId, ok := attInt(evt, "ShipID")
 	if !ok {
@@ -271,7 +272,7 @@ func loadout(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 	ship := cmdr.ShipById(shipId)
 	if ship == nil {
-		ship = &Ship{ID: shipId}
+		ship = &c.Ship{ID: shipId}
 		cmdr.Ships = append(cmdr.Ships, ship)
 	}
 	setStr(evt, "Ship", &ship.Type)
@@ -281,26 +282,26 @@ func loadout(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	ship.Ident = str.ToUpper(ship.Ident)
 }
 
-func loadGame(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func loadGame(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdrNm, ok := attStr(evt, "Commander")
-	if !gstat.isOffline() {
-		saveState()
+	if !gstat.IsOffline() {
+		saveState(gstat.IsBeta)
 		if cmdrNm == gstat.Cmdr.Name {
-			gstat.next1stJump = true
+			gstat.Next1stJump = true
 			return
 		} else {
 			ejlog.Logf(l.Error, "switched cmdrs in non-offline state: '%s' → '%s'",
 				gstat.Cmdr.Name,
 				cmdrNm)
-			gstat.clear()
+			gstat.Clear()
 		}
 	}
-	eventBacklog := gstat.evtBacklog
-	gstat.evtBacklog = nil
+	eventBacklog := gstat.EvtBacklog
+	gstat.EvtBacklog = nil
 	if !ok {
 		ejlog.Fatalf("load game without commander in %s", evt)
 	}
-	loadState(cmdrNm)
+	loadState(cmdrNm, gstat.IsBeta)
 	gstat.Cmdr.Name = cmdrNm
 	if eventBacklog != nil {
 		blc := 0
@@ -322,7 +323,7 @@ func loadGame(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	shipId := int(evt["ShipID"].(float64))
 	cmdr.CurShip.Ship = cmdr.ShipById(shipId)
 	if cmdr.CurShip.Ship == nil {
-		ship := &Ship{
+		ship := &c.Ship{
 			ID:    shipId,
 			Type:  str.ToLower(optStr(evt, "Ship", "")),
 			Name:  optStr(evt, "ShipName", ""),
@@ -330,32 +331,32 @@ func loadGame(gstat *GmState, evt map[string]interface{}, t time.Time) {
 		cmdr.CurShip.Ship = ship
 		cmdr.Ships = append(cmdr.Ships, ship)
 	}
-	cmdr.CurShip.Loc.Location = nil
+	cmdr.CurShip.Loc.Ref = nil
 }
 
-func rank(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func rank(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	rnks := &gstat.Cmdr.Ranks
-	setUint8(evt, "Combat", &rnks[RnkCombat])
-	setUint8(evt, "Trade", &rnks[RnkTrade])
-	setUint8(evt, "Explore", &rnks[RnkExplore])
-	setUint8(evt, "CQC", &rnks[RnkCqc])
-	setUint8(evt, "Empire", &rnks[RnkImp])
-	setUint8(evt, "Federation", &rnks[RnkFed])
+	setUint8(evt, "Combat", &rnks[c.RnkCombat])
+	setUint8(evt, "Trade", &rnks[c.RnkTrade])
+	setUint8(evt, "Explore", &rnks[c.RnkExplore])
+	setUint8(evt, "CQC", &rnks[c.RnkCqc])
+	setUint8(evt, "Empire", &rnks[c.RnkImp])
+	setUint8(evt, "Federation", &rnks[c.RnkFed])
 }
 
-func progress(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func progress(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	prgs := &gstat.Cmdr.RnkPrgs
-	setUint8(evt, "Combat", &prgs[RnkCombat])
-	setUint8(evt, "Trade", &prgs[RnkTrade])
-	setUint8(evt, "Explore", &prgs[RnkExplore])
-	setUint8(evt, "CQC", &prgs[RnkCqc])
-	setUint8(evt, "Empire", &prgs[RnkImp])
-	setUint8(evt, "Federation", &prgs[RnkFed])
+	setUint8(evt, "Combat", &prgs[c.RnkCombat])
+	setUint8(evt, "Trade", &prgs[c.RnkTrade])
+	setUint8(evt, "Explore", &prgs[c.RnkExplore])
+	setUint8(evt, "CQC", &prgs[c.RnkCqc])
+	setUint8(evt, "Empire", &prgs[c.RnkImp])
+	setUint8(evt, "Federation", &prgs[c.RnkFed])
 }
 
-func materials(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func materials(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
-	cmdr.MatsRaw.clearHave()
+	cmdr.MatsRaw.ClearHave()
 	if mats, ok := attArray(evt, "Raw"); ok {
 		for _, m := range mats {
 			mat := m.(map[string]interface{})
@@ -364,7 +365,7 @@ func materials(gstat *GmState, evt map[string]interface{}, t time.Time) {
 			cmdr.MatsRaw.SetHave(matNm, matNo)
 		}
 	}
-	cmdr.MatsMan.clearHave()
+	cmdr.MatsMan.ClearHave()
 	if mats, ok := attArray(evt, "Manufactured"); ok {
 		for _, m := range mats {
 			mat := m.(map[string]interface{})
@@ -373,7 +374,7 @@ func materials(gstat *GmState, evt map[string]interface{}, t time.Time) {
 			cmdr.MatsMan.SetHave(matNm, matNo)
 		}
 	}
-	cmdr.MatsEnc.clearHave()
+	cmdr.MatsEnc.ClearHave()
 	if mats, ok := attArray(evt, "Encoded"); ok {
 		for _, m := range mats {
 			mat := m.(map[string]interface{})
@@ -384,14 +385,14 @@ func materials(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func fsdjump(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func fsdjump(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	spos := evt["StarPos"].([]interface{})
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
 	ssys := theGalaxy.GetSystem(snm)
 	ssys.Coos.Set(spos[0].(float64), spos[1].(float64), spos[2].(float64))
-	gstat.addJump(ssys, Timestamp(t))
-	gstat.next1stJump = false
+	gstat.AddJump(ssys, c.Timestamp(t))
+	gstat.Next1stJump = false
 	if lji := len(gstat.JumpHist) - 1; lji > 0 {
 		lj := gstat.JumpHist[lji]
 		if !lj.First {
@@ -405,7 +406,7 @@ func fsdjump(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 	_, boost := evt["BoostUsed"]
 	cmdr := &gstat.Cmdr
-	cmdr.Loc.Location = ssys
+	cmdr.Loc.Ref = ssys
 	if ship := cmdr.CurShip.Ship; ship != nil {
 		jd := float32(evt["JumpDist"].(float64))
 		if boost {
@@ -421,13 +422,13 @@ func fsdjump(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func location(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func location(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	spos := evt["StarPos"].([]interface{})
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
 	ssys := theGalaxy.GetSystem(snm)
 	ssys.Coos.Set(spos[0].(float64), spos[1].(float64), spos[2].(float64))
-	gstat.Cmdr.Loc.Location = ssys
+	gstat.Cmdr.Loc.Ref = ssys
 	var body *gxy.SysBody
 	if bodyNm, ok := attStr(evt, "Body"); ok {
 		body = ssys.GetBody(bodyNm)
@@ -441,13 +442,13 @@ func location(gstat *GmState, evt map[string]interface{}, t time.Time) {
 			port.SetBody(body)
 		}
 	} else if body == nil {
-		gstat.Cmdr.Loc.Location = body
+		gstat.Cmdr.Loc.Ref = body
 	} else {
-		gstat.Cmdr.Loc.Location = ssys
+		gstat.Cmdr.Loc.Ref = ssys
 	}
 }
 
-func docked(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func docked(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
@@ -455,15 +456,15 @@ func docked(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	portNm, _ := attStr(evt, "StationName")
 	port := ssys.GetStation(portNm)
 	if port != nil {
-		cmdr.Loc.Location = port
+		cmdr.Loc.Ref = port
 	} else {
-		cmdr.Loc.Location = ssys
+		cmdr.Loc.Ref = ssys
 	}
 }
 
-func shipXfer(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func shipXfer(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
-	if cmdr.Loc.Location == nil {
+	if cmdr.Loc.Ref == nil {
 		return
 	}
 	shId, _ := attInt(evt, "ShipID")
@@ -475,12 +476,12 @@ func shipXfer(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	if ship == nil {
 		shTy, _ := attStr(evt, "ShipType")
 		shTy = str.ToLower(shTy)
-		ship = &Ship{ID: shId, Type: shTy}
+		ship = &c.Ship{ID: shId, Type: shTy}
 	}
 	ship.Loc = cmdr.Loc
 }
 
-func shipBuy(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func shipBuy(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	mny, _ := attInt64(evt, "ShipPrice")
 	cmdr.Credits -= mny
@@ -488,32 +489,32 @@ func shipBuy(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	if ok {
 		cmdr.Credits += mny
 		if oldId, ok := attInt(evt, "SellShipID"); ok {
-			cmdr.SellShipId(oldId, Timestamp(t))
+			cmdr.SellShipId(oldId, c.Timestamp(t))
 		}
 	}
 }
 
-func shipNew(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func shipNew(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shId, _ := attInt(evt, "ShipID")
 	ship := cmdr.ShipById(shId)
 	if ship == nil {
-		ship = &Ship{ID: shId}
+		ship = &c.Ship{ID: shId}
 		cmdr.Ships = append(cmdr.Ships, ship)
 		setStr(evt, "ShipType", &ship.Type)
 		ship.Type = str.ToLower(ship.Type)
 	}
-	ship.Bought = (*Timestamp)(&t)
+	ship.Bought = (*c.Timestamp)(&t)
 	if cmdr.CurShip.Ship != ship {
 		if cmdr.CurShip.Ship != nil {
 			cmdr.CurShip.Ship.Loc = cmdr.Loc
 		}
 		cmdr.CurShip.Ship = ship
-		ship.Loc.Location = nil
+		ship.Loc.Ref = nil
 	}
 }
 
-func shipSell(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func shipSell(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shId, ok := attInt(evt, "SellShipID")
 	if !ok {
@@ -524,10 +525,10 @@ func shipSell(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	} else {
 		ejlog.Log(l.Warn, "selling a ship without a price")
 	}
-	cmdr.SellShipId(shId, Timestamp(t))
+	cmdr.SellShipId(shId, c.Timestamp(t))
 }
 
-func shipSwap(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func shipSwap(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	oldId, ok := attInt(evt, "StoreShipID")
 	if !ok {
@@ -535,7 +536,7 @@ func shipSwap(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 	oldShip := cmdr.ShipById(oldId)
 	if oldShip == nil {
-		oldShip = &Ship{
+		oldShip = &c.Ship{
 			ID:   oldId,
 			Type: str.ToLower(optStr(evt, "StoreOldShip", ""))}
 		cmdr.Ships = append(cmdr.Ships, oldShip)
@@ -546,22 +547,22 @@ func shipSwap(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 	newShip := cmdr.ShipById(newId)
 	if newShip == nil {
-		newShip = &Ship{
+		newShip = &c.Ship{
 			ID:   newId,
 			Type: str.ToLower(optStr(evt, "ShipType", ""))}
 		cmdr.Ships = append(cmdr.Ships, newShip)
 	}
 	cmdr.CurShip.Ship = newShip
-	newShip.Loc.Location = nil
+	newShip.Loc.Ref = nil
 	oldShip.Loc = cmdr.Loc
 }
 
-func scEntry(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func scEntry(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
 	ssys := theGalaxy.GetSystem(snm)
-	cmdr.Loc.Location = ssys
+	cmdr.Loc.Ref = ssys
 }
 
 func stripSystemName(sysNm, bodyNm string) string {
@@ -578,12 +579,12 @@ func stripSystemName(sysNm, bodyNm string) string {
 	}
 }
 
-func scan(gstat *GmState, evt map[string]interface{}, t time.Time) {
-	if gstat.Cmdr.Loc.Location == nil {
+func scan(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	if gstat.Cmdr.Loc.Ref == nil {
 		ejlog.Log(lNotice, "scan event without known star-system")
 		return
 	}
-	ssys := gstat.Cmdr.Loc.System()
+	ssys := gstat.Cmdr.Loc.Ref.System()
 	if ssys == nil {
 		ejlog.Log(l.Error, "commander's location has no system")
 		return
@@ -612,8 +613,8 @@ func scan(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func sumMat(cmdr *Commander, cat, name string, d int16) {
-	var mats CmdrsMats
+func sumMat(cmdr *c.Commander, cat, name string, d int16) {
+	var mats c.CmdrsMats
 	switch cat {
 	case "Raw":
 		mats = cmdr.MatsRaw
@@ -624,21 +625,21 @@ func sumMat(cmdr *Commander, cat, name string, d int16) {
 	}
 	cmat, _ := mats[name]
 	if cmat == nil {
-		cmat = &Material{Have: d, Need: 0}
+		cmat = &c.Material{Have: d, Need: 0}
 		mats[name] = cmat
 	} else {
 		cmat.Have += d
 	}
 }
 
-func matCollect(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func matCollect(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	matCat, _ := attStr(evt, "Category")
 	matNm, _ := attStr(evt, "Name")
 	matNo, _ := attInt16(evt, "Count")
 	sumMat(&gstat.Cmdr, matCat, matNm, matNo)
 }
 
-func matDiscard(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func matDiscard(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	matCat, _ := attStr(evt, "Category")
 	matNm, _ := attStr(evt, "Name")
 	matNo, _ := attInt16(evt, "Count")
@@ -652,7 +653,7 @@ func matDiscard(gstat *GmState, evt map[string]interface{}, t time.Time) {
 //	// Do NOT sum discoNo! It's ~an ID
 //}
 
-func synthesis(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func synthesis(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	used := evt["Materials"].([]interface{})
 	for _, use1 := range used {
@@ -672,7 +673,7 @@ func synthesis(gstat *GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func engyCraft(gstat *GmState, evt map[string]interface{}, t time.Time) {
+func engyCraft(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	used := evt["Ingredients"].([]interface{})
 	for _, i := range used {

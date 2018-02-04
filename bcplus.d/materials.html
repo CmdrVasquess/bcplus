@@ -35,8 +35,8 @@ main .mdmnd {
 <!-- >>> topic >>> -->
 	<table>
 		<tr> 
-			<th>⌬</th><th>Material</th>
-			<th><select id="flt-have" onchange="reFilter()">
+			<th rowspan="2">⌬</th><th rowspan="2">Material</th>
+			<th rowspan="2"><select id="flt-have" onchange="reFilter()">
 				<option value="alor">All</option>
 				<option value="alnd">All and</option>
 				<option value="hvnd">Have and</option>
@@ -44,15 +44,22 @@ main .mdmnd {
 				<option value="nond">None and</option>
 				<option value="noor">None or</option>
 			</select></th>
-			<th><input id="flt-need" type="checkbox" name="shwnd" checked
-			           onchange="reFilter()">Need</th>
-			<th colspan="2">Sorce</th>
-			<th>Manual<br>Demand</th>
-<!-- >>> th-needs <<< \-->
-<!-- >>> th-need >>> -->
-			<th>`need`<br>`count`&times;</th>
+			<th rowspan="2"><input id="flt-need" type="checkbox" name="shwnd" checked
+			                       onchange="reFilter()">Need</th>
+			<th rowspan="2" colspan="2">Sorce</th>
+			<th rowspan="2">Manual<br>Demand</th>
+<!-- >>> th-synrcps <<< \-->
+<!-- >>> th-synrcp >>> -->
+			<th colspan="`repeat`">`name`</th>
 
-<!-- <<< th-need <<< \-->
+<!-- <<< th-synrcp <<< \-->
+		</tr>
+		<tr>
+<!-- >>> th-synlvls <<< \-->
+<!-- >>> th-synlvl >>> -->
+			<th>`count`&times;`level`</th>
+
+<!-- <<< th-synlvl <<< \-->			
 		</tr>
 <!-- >>> sections <<< \-->
 <!-- >>> sec-title >>> -->

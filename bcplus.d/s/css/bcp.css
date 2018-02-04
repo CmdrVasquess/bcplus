@@ -1,20 +1,20 @@
 :root {
-   --colBkg: #000;
-	--colFrg: #ff7000;
-	--colSec: #CC5A00;
-	--colGood: #00a6ea;
-	--colBad: #FD0406;
-	--tblOdd: #522400;
-	--tblEvn: #2f1500;
-	--navBtn: #0080FF;
-/*	--colBkg: #eee;
-	--colFrg: #000;
-	--colSec: #555;
-	--colGood: #070;
-	--colBad: #700;
-	--tblOdd: #ccc;
-	--tblEvn: #ddd;
-	--navBtn: #888;*/
+  --colBkg: #000;
+  --colFrg: #ff7000;
+  --colSec: #CC5A00;
+  --colGood: #00a6ea;
+  --colBad: #FD0406;
+  --tblOdd: #522400;
+  --tblEvn: #2f1500;
+  --navBtn: #0080FF;
+/*  --colBkg: #eee;
+  --colFrg: #000;
+  --colSec: #555;
+  --colGood: #070;
+  --colBad: #700;
+  --tblOdd: #ccc;
+  --tblEvn: #ddd;
+  --navBtn: #888;*/
 }
 .left {
 	text-align: left;
@@ -41,6 +41,13 @@ input[type=number] {
 }
 img.inlico { height: 1em; }
 img.btn { cursor: pointer; }
+img.skbd {
+	cursor: pointer;
+	height: .8em;
+}
+.glow {
+	text-shadow: 0 0 5px #ff0;
+}
 select {
 	color: var(--colFrg);
 	background-color: var(--tblOdd);

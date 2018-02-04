@@ -6,7 +6,7 @@ import "strconv"
 
 const (
 	_MatCategory_name_0 = "RawManEnc"
-	_MatCategory_name_1 = "Undef"
+	_MatCategory_name_1 = "MCatUndef"
 )
 
 var (
@@ -15,8 +15,7 @@ var (
 
 func (i MatCategory) String() string {
 	switch {
-	case 1 <= i && i <= 3:
-		i -= 1
+	case 0 <= i && i <= 2:
 		return _MatCategory_name_0[_MatCategory_index_0[i]:_MatCategory_index_0[i+1]]
 	case i == 255:
 		return _MatCategory_name_1

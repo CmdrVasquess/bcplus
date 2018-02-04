@@ -23,6 +23,7 @@ main td.need { color: var(--colBad); }
 main .mdmnd {
 	max-width: 4em;
 }
+main span.demand { color: var(--colFrg); }
     </style>
 <!-- <<< local-style <<< -->
   </head>
@@ -32,11 +33,12 @@ main .mdmnd {
 <!-- >>> recipes <<< \-->
 <!-- >>> recipe >>> -->
 	<h1 class="hide" onclick="rcpToggle(this, `rcp-id`)">`name` – Improves: `imprv` [`builds`]</h1>
+<!-- TODO: Adjust class highliting when demand counter changes -->
 <!-- >>> build0 >>> -->
-`count`
+<span class="`class`">`count`</span>
 <!-- <<< build0 <<< \-->
 <!-- >>> buildN >>> -->
- / `count`
+ / <span class="`class`">`count`</span>
 <!-- <<< buildN <<< \-->
 	<table id="`rcp-id`" class="hide">
 	<tr>

@@ -4,30 +4,35 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strconv"
 
+	"github.com/CmdrVasquess/BCplus/cmdr"
+	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	gx "github.com/fractalqb/goxic"
 	gxw "github.com/fractalqb/goxic/web"
 	l "github.com/fractalqb/qblog"
 )
 
-type MatFilter struct {
-	Have string
-	Need bool
-}
-
 var gxtRescFrame struct {
 	*gx.Template
-	ThNeeds  []int
-	Sections []int
-	FltHave  []int
-	FltNeed  []int
+	ThSynrcps []int
+	ThSynlvls []int
+	Sections  []int
+	FltHave   []int
+	FltNeed   []int
 }
 
-var gxtThNeed struct {
+var gxtThSynRcp struct {
 	*gx.Template
-	Need  []int
+	Name   []int
+	Repeat []int
+}
+
+var gxtThSynLvl struct {
+	*gx.Template
 	Count []int
+	Level []int
 }
 
 var gxtSecTitle struct {
@@ -90,7 +95,8 @@ func loadRescTemplates() {
 	dynRescStyles = pgLocStyleFix(tmpls)
 	endRescScript = pgEndScript(tmpls)
 	gx.MustIndexMap(&gxtRescFrame, needTemplate(tmpls, "topic"), idxMapNames.Convert)
-	gx.MustIndexMap(&gxtThNeed, needTemplate(tmpls, "topic/th-need"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtThSynRcp, needTemplate(tmpls, "topic/th-synrcp"), idxMapNames.Convert)
+	gx.MustIndexMap(&gxtThSynLvl, needTemplate(tmpls, "topic/th-synlvl"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtSecTitle, needTemplate(tmpls, "topic/sec-title"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtSecNeed, needTemplate(tmpls, "topic/sec-title/need"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtSecRow, needTemplate(tmpls, "topic/sec-row"), idxMapNames.Convert)
@@ -100,7 +106,7 @@ func loadRescTemplates() {
 	gx.MustIndexMap(&gxtHideCat, needTemplate(tmpls, "end-script/hide-cat"), idxMapNames.Convert)
 }
 
-func resourceCount(rescs CmdrsMats) (have, need int) {
+func resourceCount(rescs cmdr.CmdrsMats) (have, need int) {
 	for _, m := range rescs {
 		have += int(m.Have)
 		need += int(m.Need)
@@ -162,10 +168,10 @@ func bestRawMats(ssys *gxy.StarSys) map[string]bestRawMat {
 	return res
 }
 
-func emitRawMats(wr io.Writer, bt *gx.BounT, cmdr *Commander, ndSyn []SynthRef) (n int) {
+func emitRawMats(wr io.Writer, bt *gx.BounT, cmdr *cmdr.Commander, ndSyn []cmdr.SynthRef) (n int) {
 	mats := cmdr.MatsRaw
 	var best map[string]bestRawMat
-	if theGame.Cmdr.Loc.Location != nil {
+	if theGame.Cmdr.Loc.Ref != nil {
 		best = bestRawMats(theGame.Cmdr.Loc.System())
 	}
 	btSrc := gxtRowSrc2.NewBounT()
@@ -233,9 +239,9 @@ func emitMatLs(
 	bt, src *gx.BounT,
 	cat string,
 	mats []string,
-	cmdr *Commander,
-	cMat CmdrsMats,
-	ndSyn []SynthRef) (n int) {
+	cmdr *cmdr.Commander,
+	cMat cmdr.CmdrsMats,
+	ndSyn []cmdr.SynthRef) (n int) {
 	src.Bind(gxtRowSrc1.Value, webGuiTBD)
 	bt.BindP(gxtSecRow.ManIdx, 0)
 	btNeed := gxtRowNeed.NewBounT()
@@ -288,11 +294,11 @@ func emitMatLs(
 	return n
 }
 
-func cmdrNeedsSynths(cmdr *Commander) (res []SynthRef) {
+func cmdrNeedsSynths(cmdr *cmdr.Commander) (res []cmdr.SynthRef) {
 	for rIdx, _ := range theGalaxy.Synth {
 		recipe := &theGalaxy.Synth[rIdx]
 		for lvl := 0; lvl < len(recipe.Levels); lvl++ {
-			ndKey := synthRef(recipe, lvl)
+			ndKey := c.MkSynthRef(recipe, lvl)
 			if ndNo, _ := cmdr.Synth[ndKey]; ndNo > 0 {
 				res = append(res, ndKey)
 			}
@@ -301,14 +307,34 @@ func cmdrNeedsSynths(cmdr *Commander) (res []SynthRef) {
 	return res
 }
 
-func needsHdrs(wr io.Writer, cmdr *Commander, needSynths []SynthRef) (n int) {
-	btThNeed := gxtThNeed.NewBounT()
+func needsHdrs(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (n int) {
+	btThSyn := gxtThSynRcp.NewBounT()
+	var j int
+	for i := 0; i < len(needSynths); i = j {
+		snm, _ := needSynths[i].Split()
+		j = i + 1
+		for j < len(needSynths) {
+			enm, _ := needSynths[j].Split()
+			if enm != snm {
+				break
+			}
+			j++
+		}
+		btThSyn.BindP(gxtThSynRcp.Name, gxw.HtmlEsc(snm))
+		btThSyn.BindP(gxtThSynRcp.Repeat, j-i)
+		n += btThSyn.Emit(wr)
+	}
+	return n
+}
+
+func needsLvls(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (n int) {
+	btThLvl := gxtThSynLvl.NewBounT()
 	for _, sr := range needSynths {
 		count := cmdr.Synth[sr]
-		snm, slvl := sr.split()
-		btThNeed.BindFmt(gxtThNeed.Need, "%s %d", snm, slvl+1)
-		btThNeed.BindP(gxtThNeed.Count, count)
-		n += btThNeed.Emit(wr)
+		_, lvl := sr.Split()
+		btThLvl.BindP(gxtThSynLvl.Count, count)
+		btThLvl.Bind(gxtThSynLvl.Level, nmap(&nmSynthLvl, strconv.Itoa(lvl)))
+		n += btThLvl.Emit(wr)
 	}
 	return n
 }
@@ -352,8 +378,12 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 	haveEnc, needEnc := resourceCount(cmdr.MatsEnc)
 	sortMats()
 	needSynths := cmdrNeedsSynths(cmdr)
-	btFrame.BindGen(gxtRescFrame.ThNeeds, func(wr io.Writer) (n int) {
+	btFrame.BindGen(gxtRescFrame.ThSynrcps, func(wr io.Writer) (n int) {
 		n = needsHdrs(wr, cmdr, needSynths)
+		return n
+	})
+	btFrame.BindGen(gxtRescFrame.ThSynlvls, func(wr io.Writer) (n int) {
+		n = needsLvls(wr, cmdr, needSynths)
 		return n
 	})
 	if len(theGame.MatFlt.Have) > 0 {
@@ -386,7 +416,7 @@ var matUsrOps = map[string]userHanlder{
 	"mflt":  matUsrFilter,
 }
 
-func matUsrOpCatVis(gstat *GmState, evt map[string]interface{}) (reload bool) {
+func matUsrOpCatVis(gstat *cmdr.GmState, evt map[string]interface{}) (reload bool) {
 	cat, ok := attStr(evt, "cat")
 	if !ok {
 		eulog.Log(l.Error, "materials visibility changes has no category")
@@ -401,13 +431,13 @@ func matUsrOpCatVis(gstat *GmState, evt map[string]interface{}) (reload bool) {
 	return false
 }
 
-func matUsrOpMdmnd(gstat *GmState, evt map[string]interface{}) (reload bool) {
+func matUsrOpMdmnd(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	mat, _ := attStr(evt, "matid")
 	mat, _ = nmMatsIdRev.Map(mat)
 	count, _ := attInt(evt, "count")
 	eulog.Logf(l.Debug, "materials set manual demand: %s=%d", mat, count)
 	cmdr := &gstat.Cmdr
-	var matMap CmdrsMats
+	var matMap c.CmdrsMats
 	switch theGalaxy.Materials[mat].Category {
 	case gxy.Raw:
 		matMap = cmdr.MatsRaw
@@ -418,7 +448,7 @@ func matUsrOpMdmnd(gstat *GmState, evt map[string]interface{}) (reload bool) {
 	}
 	cmat, _ := matMap[mat]
 	if cmat == nil {
-		cmat = &Material{
+		cmat = &c.Material{
 			Have: 0,
 			Need: int16(count),
 		}
@@ -429,7 +459,7 @@ func matUsrOpMdmnd(gstat *GmState, evt map[string]interface{}) (reload bool) {
 	return false
 }
 
-func matUsrFilter(gstat *GmState, evt map[string]interface{}) (reload bool) {
+func matUsrFilter(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	gstat.MatFlt.Have, _ = attStr(evt, "have")
 	gstat.MatFlt.Need, _ = attBool(evt, "need")
 	return false

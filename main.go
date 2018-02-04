@@ -2,14 +2,17 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"runtime"
 	"sync"
 
+	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	"github.com/fractalqb/namemap"
 	l "github.com/fractalqb/qblog"
@@ -71,6 +74,10 @@ func init() {
 		FromStd().
 		To(false, "lang:").
 		Verify("materials", "std → lang:")
+	nmSynthLvl = namemap.MustLoad(assetPath("nm/synthlevel.xsx")).
+		FromStd().
+		To(false, "short:").
+		Verify("materials", "std → short:")
 }
 
 type bcEvent struct {
@@ -80,7 +87,8 @@ type bcEvent struct {
 
 var theStateLock = sync.RWMutex{}
 var theGalaxy *gxy.Galaxy
-var theGame = NewGmState()
+var theGame = c.NewGmState()
+var credsKey []byte
 var eventq = make(chan bcEvent, 128)
 
 var jrnlDir string
@@ -100,18 +108,40 @@ var nmMatsXRef namemap.FromTo
 var nmMatsId namemap.FromTo
 var nmMatsIdRev namemap.FromTo
 var nmBdyCats namemap.FromTo
+var nmSynthLvl namemap.FromTo
 
-func saveState() {
+//go:generate ./genversion.sh
+func BCpDescribe(wr io.Writer) {
+	fmt.Fprintf(wr, "CMDR Vasquess: BC+ v%d.%d.%d / %s (%s)",
+		BCpMajor,
+		BCpMinor,
+		BCpBugfix,
+		runtime.Version(),
+		BCpDate)
+}
+
+func BCpDescStr() string {
+	buf := bytes.NewBuffer(nil)
+	BCpDescribe(buf)
+	return buf.String()
+}
+
+func saveState(beta bool) {
 	if theGame.Cmdr.Name == "" {
 		glog.Logf(l.Info, "empty state, nothing to save")
 	} else {
-		fnm := theGame.Cmdr.Name + ".json"
+		var fnm string
+		if beta {
+			fnm = theGame.Cmdr.Name + "-beta.json"
+		} else {
+			fnm = theGame.Cmdr.Name + ".json"
+		}
 		fnm = filepath.Join(dataDir, fnm)
 		tnm := fnm + "~"
 		if w, err := os.Create(tnm); err == nil {
 			defer w.Close()
 			glog.Logf(l.Info, "save state to %s", fnm)
-			err := theGame.save(w)
+			err := theGame.Save(w)
 			w.Close()
 			if err != nil {
 				glog.Log(l.Error, err)
@@ -121,40 +151,53 @@ func saveState() {
 		} else {
 			glog.Logf(l.Error, "cannot save game status to '%s': %s", fnm, err)
 		}
-		if theGame.creds != nil {
-			if len(credsKey) == 0 {
-				glog.Log(l.Error, "not credential masterkey to save credentials")
-			} else {
-				err := theGame.creds.Write(theGame.Cmdr.Name, credsKey)
-				if err != nil {
-					glog.Log(l.Error, "saving credentials", err)
-				}
-			}
-		}
 	}
 	theGalaxy.Close()
 }
 
-func loadState(cmdrNm string) bool {
-	fnm := fmt.Sprintf("%s.json", cmdrNm)
+func loadCreds(cmdrNm string) error {
+	if theGame.Creds == nil {
+		theGame.Creds = &c.CmdrCreds{}
+	} else {
+		theGame.Creds.Clear()
+	}
+	filenm := filepath.Join(dataDir, cmdrNm+".pgp")
+	glog.Logf(l.Info, "load credentials from %s", filenm)
+	if _, err := os.Stat(filenm); os.IsNotExist(err) {
+		glog.Logf(l.Warn, "commander %s's credentials do not exists", cmdrNm)
+		return nil
+	}
+	f, err := os.Open(filenm)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	err = theGame.Creds.Read(f, credsKey)
+	if err != nil {
+		glog.Logf(l.Warn, "failed to read credentials for %s: %s", cmdrNm, err)
+		theGame.Creds = nil
+	}
+	return nil
+}
+
+func loadState(cmdrNm string, beta bool) bool {
+	var fnm string
+	if beta {
+		fnm = fmt.Sprintf("%s-beta.json", cmdrNm)
+		if _, err := os.Stat(fnm); os.IsNotExist(err) {
+			fnm = fmt.Sprintf("%s.json", cmdrNm)
+		}
+	} else {
+		fnm = fmt.Sprintf("%s.json", cmdrNm)
+	}
 	fnm = filepath.Join(dataDir, fnm)
 	glog.Logf(l.Info, "load state from %s", fnm)
 	if r, err := os.Open(fnm); os.IsNotExist(err) {
 		return false
 	} else if err == nil {
 		defer r.Close()
-		theGame.load(r)
+		theGame.Load(r)
 		if len(credsKey) > 0 {
-			if theGame.creds == nil {
-				theGame.creds = &CmdrCreds{}
-			} else {
-				theGame.creds.Clear()
-			}
-			err := theGame.creds.Read(cmdrNm, credsKey)
-			if err != nil {
-				glog.Logf(l.Warn, "failed to read credentials for %s: %s", cmdrNm, err)
-				theGame.creds = nil
-			}
 		}
 		return true
 	} else {
@@ -232,7 +275,7 @@ func main() {
 	glog.Logf(l.Info, "data    : %s\n", dataDir)
 	var err error
 	if *promptKey {
-		credsKey = promptCredsKey()
+		credsKey = c.PromptCredsKey()
 	}
 	if _, err = os.Stat(dataDir); os.IsNotExist(err) {
 		err = os.MkdirAll(dataDir, 0777)
@@ -247,8 +290,9 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+	c.SetTheGalaxy(theGalaxy)
 	if len(*loadCmdr) > 0 {
-		loadState(*loadCmdr)
+		loadState(*loadCmdr, false)
 	}
 	stopWatch := make(chan bool)
 	go WatchJournal(stopWatch, *pun, jrnlDir, func(line []byte) {
@@ -264,7 +308,7 @@ func main() {
 	stopWatch <- true
 	glog.Log(l.Info, "BC+ interrupted")
 	theStateLock.RLock()
-	saveState()
+	saveState(theGame.IsBeta)
 	theStateLock.RUnlock()
 	glog.Log(l.Info, "bye…")
 }
