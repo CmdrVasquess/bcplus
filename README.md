@@ -1,5 +1,5 @@
-# BCplus
-**Board Computer Plus for E:D**
+![Logo](bcplus.d/s/img/Logo.png)
+# BoardComputer+ for E:D
 
 [Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases)
 
@@ -13,12 +13,12 @@ Currnetly information for long distance tarvel is supported - I'm on
 the way to Beagle Point. It displays estimations based on the recent
 jump history:
 
-![Materials Screen](doc/imgs/screen-travel.jpg?raw=true)
+![Materials Screen](docs/imgs/screen-travel.jpg?raw=true)
 
 As well as the availability of raw materials on scanned bodies in the
 current system:
 
-![Travel Screen](doc/imgs/screen-mats.jpg?raw=true)
+![Travel Screen](docs/imgs/screen-mats.jpg?raw=true)
 
 ## Installation
 
