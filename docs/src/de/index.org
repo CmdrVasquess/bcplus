@@ -1,0 +1,12 @@
+#+TITLE: BC+ – BoardComputer+ Dokumentation
+-----
+[[file:../index.org][English]]
+-----
+
+* Download
+
+* Installation
+
+* Starten und Beenden
+
+* Deinstallation

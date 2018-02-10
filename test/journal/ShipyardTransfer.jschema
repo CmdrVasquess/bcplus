@@ -1,0 +1,39 @@
+{
+   "type": "object",
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "Distance",
+      "ShipID",
+      "ShipType",
+      "System",
+      "TransferPrice",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "Distance": {
+         "type": "number"
+      },
+      "ShipType": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "TransferTime": {
+         "type": "integer"
+      },
+      "TransferPrice": {
+         "type": "integer"
+      },
+      "System": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "ShipID": {
+         "type": "integer"
+      }
+   }
+}

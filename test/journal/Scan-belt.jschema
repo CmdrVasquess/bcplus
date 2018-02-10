@@ -1,0 +1,24 @@
+{
+   "type": "object",
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "BodyName": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "DistanceFromArrivalLS": {
+         "type": "number"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "BodyName",
+      "DistanceFromArrivalLS",
+      "event",
+      "timestamp"
+   ]
+}

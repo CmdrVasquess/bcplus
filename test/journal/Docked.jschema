@@ -1,0 +1,67 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "DistFromStarLS",
+      "StarSystem",
+      "StationEconomy",
+      "StationEconomy_Localised",
+      "StationFaction",
+      "StationGovernment",
+      "StationGovernment_Localised",
+      "StationName",
+      "StationType",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "properties": {
+      "StationGovernment_Localised": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "StationName": {
+         "type": "string"
+      },
+      "StationGovernment": {
+         "type": "string"
+      },
+      "StarSystem": {
+         "type": "string"
+      },
+      "FactionState": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "StationEconomy": {
+         "type": "string"
+      },
+      "StationType": {
+         "type": "string"
+      },
+      "StationServices": {
+         "type": "array",
+         "items": {
+            "type": "string"
+         }
+      },
+      "StationEconomy_Localised": {
+         "type": "string"
+      },
+      "StationFaction": {
+         "type": "string"
+      },
+      "StationState": {
+         "type": "string"
+      },
+      "DistFromStarLS": {
+         "type": "number"
+      },
+      "StationAllegiance": {
+         "type": "string"
+      }
+   }
+}

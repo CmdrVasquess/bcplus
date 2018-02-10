@@ -1,0 +1,20 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "ShieldsUp",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "ShieldsUp": {
+         "type": "boolean"
+      }
+   },
+   "type": "object"
+}

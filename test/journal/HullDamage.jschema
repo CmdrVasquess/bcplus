@@ -1,0 +1,27 @@
+{
+   "type": "object",
+   "required": [
+      "Health",
+      "PlayerPilot",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "Health": {
+         "type": "number"
+      },
+      "PlayerPilot": {
+         "type": "boolean"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Fighter": {
+         "type": "boolean"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#"
+}

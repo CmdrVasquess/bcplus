@@ -1,0 +1,32 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "required": [
+      "Cost",
+      "Count",
+      "Loadout",
+      "Type",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "Cost": {
+         "type": "integer"
+      },
+      "Type": {
+         "type": "string"
+      },
+      "Count": {
+         "type": "integer"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Loadout": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      }
+   }
+}

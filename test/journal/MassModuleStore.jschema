@@ -1,0 +1,43 @@
+{
+   "type": "object",
+   "properties": {
+      "event": {
+         "type": "string"
+      },
+      "ShipID": {
+         "type": "integer"
+      },
+      "Ship": {
+         "type": "string"
+      },
+      "Items": {
+         "type": "array",
+         "items": {
+            "type": "object",
+            "required": [
+               "Name",
+               "Slot"
+            ],
+            "properties": {
+               "Name": {
+                  "type": "string"
+               },
+               "Slot": {
+                  "type": "string"
+               }
+            }
+         }
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "Items",
+      "Ship",
+      "ShipID",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#"
+}

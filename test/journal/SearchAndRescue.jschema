@@ -1,0 +1,28 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "required": [
+      "Count",
+      "Name",
+      "Reward",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "Reward": {
+         "type": "integer"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Name": {
+         "type": "string"
+      },
+      "Count": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      }
+   }
+}

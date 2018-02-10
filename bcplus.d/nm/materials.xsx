@@ -1,4 +1,6 @@
 [id \journal lang: wikia]
+
+\(### RAW MATERIALS ###)
 (r1 antimony "Antimony" Antimony)
 (r2 arsenic "Arsenic" Arsenic)
 (r3 cadmium "Cadmium" Cadmium)
@@ -25,6 +27,7 @@
 (r24 zinc "Zinc" Zinc)
 (r25 zirconium "Zirconium" Zirconium)
 
+\(### MANUFACTURED MATERIALS ###)
 (m0 basicconductors "Basic Conductors" Basic_Conductors)
 (m1 biotechconductors "Biotech Conductors" Biotech_Conductors)
 (m2 chemicaldistillery "Chemical Distillery" Chemical_Distillery)
@@ -70,6 +73,7 @@
 (m42 unknownenergysource "Sensor Fragment" Sensor_Fragment)
 (m43 wornshieldemitters "Worn Shieldemitters" Worn_Shieldemitters)
 
+\(### ENCODED DATA ###)
 (e0 adaptiveencryptors "Adaptive Encryptors Capture" Materials)
 (e1 ancientbiologicaldata "?Ancient Biological Data" Materials)
 (e2 ancientculturaldata "?Ancient Cultural Data" Materials)

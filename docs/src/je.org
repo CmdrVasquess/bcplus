@@ -1,0 +1,130 @@
+#+TITLE: Implemented Journal Events
+
+| Event                | Prio | State             |
+|----------------------+------+-------------------|
+| Fileheader           |      | X                 |
+| Loadout              |      | X                 |
+| ClearSavedGame       |      |                   |
+| Materials            |      | X                 |
+| NewCommander         |      |                   |
+| LoadGame             |      | X (special impl.) |
+| [[http://edcodex.info/?m=doc#f.3.4][Progress]]             |      | X                 |
+| Rank                 |      | X                 |
+|----------------------+------+-------------------|
+| Docked               |      | X                 |
+| DockingCancelled     |      |                   |
+| DockingDenied        |      |                   |
+| DockingGranted       |      |                   |
+| DockingRequested     |      |                   |
+| DockingTimeout       |      |                   |
+| FSDJump              |      | X                 |
+| Liftoff              |      |                   |
+| Location             |      | X                 |
+| SupercruiseEntry     |      | X                 |
+| SupercruiseExit      |      |                   |
+| Touchdown            |      |                   |
+| Undocked             |      |                   |
+|----------------------+------+-------------------|
+| Bounty               |      |                   |
+| CapShipBond          |      |                   |
+| Died                 |      |                   |
+| EscapeInterdiction   |      |                   |
+| FactionKillBond      |      |                   |
+| HeatDamage           |      |                   |
+| HeatWarning          |      |                   |
+| HullDamage           |      |                   |
+| Interdicted          |      |                   |
+| Interdiction         |      |                   |
+| PVPKill              |      |                   |
+| ShieldState          |      |                   |
+|----------------------+------+-------------------|
+| Scan                 |      | X                 |
+| MaterialCollected    |      | X                 |
+| MaterialDiscarded    |      | X                 |
+| MaterialDiscovered   |      | -                 |
+| BuyExplorationData   |      | X                 |
+| SellExplorationData  |      | X                 |
+| Screenshot           |      |                   |
+|----------------------+------+-------------------|
+| BuyTradeData         |      | X                 |
+| CollectCargo         |      |                   |
+| EjectCargo           |      |                   |
+| MarketBuy            |      | X                 |
+| MarketSell           |      | X                 |
+| MiningRefined        |      |                   |
+|----------------------+------+-------------------|
+| BuyAmmo              |      | X                 |
+| BuyDrones            |      | X                 |
+| CommunityGoalDiscard |      |                   |
+| CommunityGoalJoin    |      |                   |
+| CommunityGoalReward  |      |                   |
+| CrewAssign           |      |                   |
+| CrewFire             |      |                   |
+| CrewHire             |      | X                 |
+| EngineerApply        |      |                   |
+| EngineerCraft        |      | X                 |
+| EngineerProgress     |      |                   |
+| FetchRemoteModule    |      | X                 |
+| MassModuleStorec     |      |                   |
+| MissionAbandonedc    |      |                   |
+| MissionAccepted      |      |                   |
+| MissionCompleted     |      | X                 |
+| MissionFailed        |      |                   |
+| ModuleBuy            |      | X                 |
+| ModuleRetrieve       |      | X                 |
+| ModuleSell           |      | X                 |
+| ModuleSellRemote     |      | X                 |
+| ModuleStore          |      | X                 |
+| ModuleSwap           |      |                   |
+| PayFines             |      | X                 |
+| PayLegacyFines       |      | X                 |
+| RedeemVoucher        |      | X                 |
+| RefuelAll            |      | X                 |
+| RefuelPartial        |      | X                 |
+| Repair               |      | X                 |
+| RepairAll            |      | X                 |
+| RestockVehicle       |      |                   |
+| ScientificResearch   |      |                   |
+| SellDrones           |      | X                 |
+| ShipyardBuy          |      | X                 |
+| ShipyardNew          |      | X                 |
+| ShipyardSell         |      | X                 |
+| ShipyardTransfer     |      | X                 |
+| ShipyardSwap         |      | X                 |
+|----------------------+------+-------------------|
+| PowerplayCollect     |      |                   |
+| PowerplayDefect      |      |                   |
+| PowerplayDeliver     |      |                   |
+| PowerplayFastTrack   |      | X                 |
+| PowerplayJoin        |      |                   |
+| PowerplayLeave       |      |                   |
+| PowerplaySalary      |      | X                 |
+| PowerplayVote        |      |                   |
+| PowerplayVoucher     |      |                   |
+|----------------------+------+-------------------|
+| ApproachSettlement   |      |                   |
+| CockpitBreached      |      |                   |
+| CommitCrime          |      |                   |
+| Continued            |      |                   |
+| DatalinkScan         |      |                   |
+| DatalinkVoucherc     |      |                   |
+| DataScanned          |      |                   |
+| DockFighte           |      |                   |
+| DockSRV              |      |                   |
+| FuelScoop            |      |                   |
+| JetConeBoost         |      |                   |
+| JetConeDamage        |      |                   |
+| LaunchFighter        |      |                   |
+| LaunchSRV            |      |                   |
+| Promotion            |      | X                 |
+| RebootRepair         |      |                   |
+| ReceiveText          |      |                   |
+| Resurrect            |      | X                 |
+| SelfDestruct         |      |                   |
+| SendText             |      |                   |
+| Synthesis            |      | X                 |
+| USSDrop              |      |                   |
+| VehicleSwitch        |      |                   |
+| WingAdd              |      |                   |
+| WingJoin             |      |                   |
+| WingLeave            |      |                   |

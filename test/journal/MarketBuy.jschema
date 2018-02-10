@@ -1,0 +1,32 @@
+{
+   "type": "object",
+   "required": [
+      "BuyPrice",
+      "Count",
+      "TotalCost",
+      "Type",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "BuyPrice": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      },
+      "TotalCost": {
+         "type": "integer"
+      },
+      "Type": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Count": {
+         "type": "integer"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#"
+}

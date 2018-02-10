@@ -1,0 +1,26 @@
+{
+   "type": "object",
+   "properties": {
+      "Latitude": {
+         "type": "number"
+      },
+      "Longitude": {
+         "type": "number"
+      },
+      "event": {
+         "type": "string"
+      },
+      "PlayerControlled": {
+         "type": "boolean"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "PlayerControlled",
+      "event",
+      "timestamp"
+   ]
+}

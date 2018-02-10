@@ -1,0 +1,165 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "DistanceFromArrivalLS": {
+         "type": "number"
+      },
+      "SemiMajorAxis": {
+         "type": "number"
+      },
+      "RotationPeriod": {
+         "type": "number"
+      },
+      "AbsoluteMagnitude": {
+         "type": "number"
+      },
+      "SurfaceTemperature": {
+         "type": "number"
+      },
+      "Periapsis": {
+         "type": "number"
+      },
+      "MassEM": {
+         "type": "number"
+      },
+      "TidalLock": {
+         "type": "boolean"
+      },
+      "event": {
+         "type": "string"
+      },
+      "SurfacePressure": {
+         "type": "number"
+      },
+      "OrbitalInclination": {
+         "type": "number"
+      },
+      "AxialTilt": {
+         "type": "number"
+      },
+      "StarType": {
+         "type": "string"
+      },
+      "PlanetClass": {
+         "type": "string"
+      },
+      "BodyName": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "StellarMass": {
+         "type": "number"
+      },
+      "SurfaceGravity": {
+         "type": "number"
+      },
+      "Eccentricity": {
+         "type": "number"
+      },
+      "Radius": {
+         "type": "number"
+      },
+      "Volcanism": {
+         "type": "string"
+      },
+      "ReserveLevel": {
+         "type": "string"
+      },
+      "TerraformState": {
+         "type": "string"
+      },
+      "Age_MY": {
+         "type": "integer"
+      },
+      "Luminosity": {
+         "type": "string"
+      },
+      "Landable": {
+         "type": "boolean"
+      },
+      "Materials": {
+         "items": {
+            "properties": {
+               "Percent": {
+                  "type": "number"
+               },
+               "Name": {
+                  "type": "string"
+               }
+            },
+            "required": [
+               "Name",
+               "Percent"
+            ],
+            "type": "object"
+         },
+         "type": "array"
+      },
+      "Rings": {
+         "items": {
+            "properties": {
+               "InnerRad": {
+                  "type": "number"
+               },
+               "MassMT": {
+                  "type": "number"
+               },
+               "RingClass": {
+                  "type": "string"
+               },
+               "OuterRad": {
+                  "type": "number"
+               },
+               "Name": {
+                  "type": "string"
+               }
+            },
+            "required": [
+               "InnerRad",
+               "MassMT",
+               "Name",
+               "OuterRad",
+               "RingClass"
+            ],
+            "type": "object"
+         },
+         "type": "array"
+      },
+      "OrbitalPeriod": {
+         "type": "number"
+      },
+      "Atmosphere": {
+         "type": "string"
+      },
+      "AtmosphereComposition": {
+         "items": {
+            "properties": {
+               "Percent": {
+                  "type": "number"
+               },
+               "Name": {
+                  "type": "string"
+               }
+            },
+            "required": [
+               "Name",
+               "Percent"
+            ],
+            "type": "object"
+         },
+         "type": "array"
+      },
+      "AtmosphereType": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "BodyName",
+      "DistanceFromArrivalLS",
+      "event",
+      "timestamp"
+   ],
+   "type": "object"
+}

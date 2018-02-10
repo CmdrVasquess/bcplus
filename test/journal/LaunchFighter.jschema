@@ -1,0 +1,24 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "required": [
+      "Loadout",
+      "PlayerControlled",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "PlayerControlled": {
+         "type": "boolean"
+      },
+      "Loadout": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   }
+}

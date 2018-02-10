@@ -1,0 +1,20 @@
+{
+   "properties": {
+      "StationName": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "StationName",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "$schema": "http://json-schema.org/schema#"
+}

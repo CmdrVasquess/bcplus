@@ -1,0 +1,38 @@
+{
+   "type": "object",
+   "properties": {
+      "Type": {
+         "type": "string"
+      },
+      "Engineer": {
+         "type": "string"
+      },
+      "Commodity": {
+         "type": "string"
+      },
+      "Material": {
+         "type": "string"
+      },
+      "TotalQuantity": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Quantity": {
+         "type": "integer"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "Engineer",
+      "Quantity",
+      "TotalQuantity",
+      "Type",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#"
+}

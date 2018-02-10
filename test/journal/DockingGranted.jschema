@@ -1,0 +1,24 @@
+{
+   "properties": {
+      "LandingPad": {
+         "type": "integer"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "StationName": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "LandingPad",
+      "StationName",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object"
+}

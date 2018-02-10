@@ -1,0 +1,24 @@
+{
+   "type": "object",
+   "properties": {
+      "Message": {
+         "type": "string"
+      },
+      "Message_Localised": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "Message",
+      "Message_Localised",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#"
+}

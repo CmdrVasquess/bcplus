@@ -1,0 +1,47 @@
+{
+   "properties": {
+      "ShipID": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Ship": {
+         "type": "string"
+      },
+      "ToItem_Localised": {
+         "type": "string"
+      },
+      "FromItem_Localised": {
+         "type": "string"
+      },
+      "ToItem": {
+         "type": "string"
+      },
+      "FromItem": {
+         "type": "string"
+      },
+      "FromSlot": {
+         "type": "string"
+      },
+      "ToSlot": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "FromItem",
+      "FromItem_Localised",
+      "FromSlot",
+      "Ship",
+      "ShipID",
+      "ToItem",
+      "ToSlot",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "$schema": "http://json-schema.org/schema#"
+}

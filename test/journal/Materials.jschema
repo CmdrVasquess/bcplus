@@ -1,0 +1,73 @@
+{
+   "properties": {
+      "Encoded": {
+         "items": {
+            "properties": {
+               "Count": {
+                  "type": "integer"
+               },
+               "Name": {
+                  "type": "string"
+               }
+            },
+            "type": "object",
+            "required": [
+               "Count",
+               "Name"
+            ]
+         },
+         "type": "array"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Raw": {
+         "items": {
+            "properties": {
+               "Count": {
+                  "type": "integer"
+               },
+               "Name": {
+                  "type": "string"
+               }
+            },
+            "type": "object",
+            "required": [
+               "Count",
+               "Name"
+            ]
+         },
+         "type": "array"
+      },
+      "Manufactured": {
+         "items": {
+            "properties": {
+               "Count": {
+                  "type": "integer"
+               },
+               "Name": {
+                  "type": "string"
+               }
+            },
+            "type": "object",
+            "required": [
+               "Count",
+               "Name"
+            ]
+         },
+         "type": "array"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "type": "object",
+   "required": [
+      "Encoded",
+      "Manufactured",
+      "Raw",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#"
+}

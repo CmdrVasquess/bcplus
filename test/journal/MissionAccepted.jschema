@@ -1,0 +1,90 @@
+{
+   "type": "object",
+   "required": [
+      "Faction",
+      "Influence",
+      "MissionID",
+      "Name",
+      "Reputation",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "TargetType_Localised": {
+         "type": "string"
+      },
+      "KillCount": {
+         "type": "integer"
+      },
+      "Target": {
+         "type": "string"
+      },
+      "Faction": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Commodity_Localised": {
+         "type": "string"
+      },
+      "Commodity": {
+         "type": "string"
+      },
+      "PassengerWanted": {
+         "type": "boolean"
+      },
+      "MissionID": {
+         "type": "integer"
+      },
+      "Name": {
+         "type": "string"
+      },
+      "PassengerVIPs": {
+         "type": "boolean"
+      },
+      "LocalisedName": {
+         "type": "string"
+      },
+      "Count": {
+         "type": "integer"
+      },
+      "DestinationSystem": {
+         "type": "string"
+      },
+      "PassengerCount": {
+         "type": "integer"
+      },
+      "Target_Localised": {
+         "type": "string"
+      },
+      "DestinationStation": {
+         "type": "string"
+      },
+      "PassengerType": {
+         "type": "string"
+      },
+      "TargetFaction": {
+         "type": "string"
+      },
+      "Reputation": {
+         "type": "string"
+      },
+      "Reward": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Expiry": {
+         "type": "string"
+      },
+      "TargetType": {
+         "type": "string"
+      },
+      "Influence": {
+         "type": "string"
+      }
+   }
+}

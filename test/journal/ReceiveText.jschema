@@ -1,0 +1,33 @@
+{
+   "required": [
+      "From",
+      "Message",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "From_Localised": {
+         "type": "string"
+      },
+      "Channel": {
+         "type": "string"
+      },
+      "From": {
+         "type": "string"
+      },
+      "Message_Localised": {
+         "type": "string"
+      },
+      "Message": {
+         "type": "string"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object"
+}

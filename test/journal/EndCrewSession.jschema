@@ -1,0 +1,20 @@
+{
+   "required": [
+      "OnCrime",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "properties": {
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "OnCrime": {
+         "type": "boolean"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#"
+}

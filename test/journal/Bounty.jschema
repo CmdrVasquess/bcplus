@@ -1,0 +1,60 @@
+{
+   "properties": {
+      "Rewards": {
+         "type": "array",
+         "items": {
+            "properties": {
+               "Faction": {
+                  "type": "string"
+               },
+               "Reward": {
+                  "type": "integer"
+               }
+            },
+            "required": [
+               "Faction",
+               "Reward"
+            ],
+            "type": "object"
+         }
+      },
+      "SharedWithOthers": {
+         "type": "integer"
+      },
+      "Faction": {
+         "type": "string"
+      },
+      "Reward": {
+         "type": "integer"
+      },
+      "Faction_Localised": {
+         "type": "string"
+      },
+      "TotalReward": {
+         "type": "integer"
+      },
+      "VictimFaction": {
+         "type": "string"
+      },
+      "Target": {
+         "type": "string"
+      },
+      "VictimFaction_Localised": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "required": [
+      "Target",
+      "VictimFaction",
+      "event",
+      "timestamp"
+   ]
+}

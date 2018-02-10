@@ -1,0 +1,24 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "properties": {
+      "Stolen": {
+         "type": "boolean"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Type": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "Stolen",
+      "Type",
+      "event",
+      "timestamp"
+   ]
+}

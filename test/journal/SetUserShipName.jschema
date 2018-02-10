@@ -1,0 +1,32 @@
+{
+   "properties": {
+      "ShipID": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "UserShipName": {
+         "type": "string"
+      },
+      "UserShipId": {
+         "type": "string"
+      },
+      "Ship": {
+         "type": "string"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "Ship",
+      "ShipID",
+      "UserShipId",
+      "UserShipName",
+      "event",
+      "timestamp"
+   ],
+   "type": "object"
+}

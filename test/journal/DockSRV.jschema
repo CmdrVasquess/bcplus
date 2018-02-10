@@ -1,0 +1,16 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "event",
+      "timestamp"
+   ],
+   "type": "object"
+}

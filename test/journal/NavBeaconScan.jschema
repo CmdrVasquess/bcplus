@@ -1,0 +1,20 @@
+{
+   "required": [
+      "NumBodies",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "NumBodies": {
+         "type": "integer"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#"
+}

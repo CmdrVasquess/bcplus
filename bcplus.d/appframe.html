@@ -26,6 +26,12 @@ CMDR `cmdr-name`
 <!-- <<< body-offline <<< \-->
 <!-- >>> body-online >>> -->
 	<header>
+	<a href="https://github.com/CmdrVasquess/BCplus/wiki" target="home"><img
+	 id="bcplogo" src="s/img/Logo.png"></a>
+	<div id="switches">
+		<img id="off" src="s/img/OnOff.png" title="Double-click to shutdown BC+" ondblclick="quit()">
+		<img id="menu" src="s/img/Menu.png" title="NYI! Settings">
+	</div>
 	<div id="base">
 	<p>CMDR `cmdr-name`<p>
 	<p>`credits` Cr</p>
@@ -129,6 +135,13 @@ function tglDest() {
 	rq.op = "tgldest";
 	var msg = JSON.stringify(rq);
 	wsock.send(msg);
+}
+function quit() {
+	var rq = new Object()
+	rq.topic = "all";
+	rq.op = "quit";
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);	
 }
 function send2kbd(e) {
 	var txt = e.target.parentElement.innerText.trim();

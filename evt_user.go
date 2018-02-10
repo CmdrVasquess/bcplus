@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"sync"
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
@@ -56,6 +57,7 @@ var allUsrOps = map[string]userHanlder{
 	"skbd":    allSkbd,
 	"tglhome": allTglHome,
 	"tgldest": allTglDest,
+	"quit":    allQuit,
 }
 
 const (
@@ -106,5 +108,13 @@ func allSkbd(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	txt, _ := attStr(evt, "str")
 	eulog.Logf(l.Trace, "sending as keyboard input: [%s]", txt)
 	robi.TypeStr(txt)
+	return false
+}
+
+func allQuit(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	myPid := os.Getpid()
+	me, _ := os.FindProcess(myPid)
+	eulog.Logf(l.Debug, "user quit: sending signal %s to %d", os.Interrupt, myPid)
+	me.Signal(os.Interrupt)
 	return false
 }

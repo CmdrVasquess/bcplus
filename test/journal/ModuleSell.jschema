@@ -1,0 +1,40 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "required": [
+      "SellItem",
+      "SellItem_Localised",
+      "SellPrice",
+      "Ship",
+      "ShipID",
+      "Slot",
+      "event",
+      "timestamp"
+   ],
+   "properties": {
+      "ShipID": {
+         "type": "integer"
+      },
+      "SellItem": {
+         "type": "string"
+      },
+      "SellItem_Localised": {
+         "type": "string"
+      },
+      "SellPrice": {
+         "type": "integer"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Ship": {
+         "type": "string"
+      },
+      "Slot": {
+         "type": "string"
+      }
+   }
+}

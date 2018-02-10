@@ -1,0 +1,24 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Scooped": {
+         "type": "number"
+      },
+      "Total": {
+         "type": "number"
+      }
+   },
+   "type": "object",
+   "required": [
+      "Scooped",
+      "Total",
+      "event",
+      "timestamp"
+   ]
+}

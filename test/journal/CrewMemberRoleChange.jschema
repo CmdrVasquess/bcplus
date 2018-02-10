@@ -1,0 +1,24 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "Crew",
+      "Role",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Role": {
+         "type": "string"
+      },
+      "Crew": {
+         "type": "string"
+      }
+   }
+}

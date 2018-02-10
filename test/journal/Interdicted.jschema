@@ -1,0 +1,37 @@
+{
+   "type": "object",
+   "properties": {
+      "Faction": {
+         "type": "string"
+      },
+      "IsPlayer": {
+         "type": "boolean"
+      },
+      "Interdictor": {
+         "type": "string"
+      },
+      "CombatRank": {
+         "type": "integer"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Interdictor_Localised": {
+         "type": "string"
+      },
+      "Submitted": {
+         "type": "boolean"
+      },
+      "event": {
+         "type": "string"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "Interdictor",
+      "IsPlayer",
+      "Submitted",
+      "event",
+      "timestamp"
+   ]
+}

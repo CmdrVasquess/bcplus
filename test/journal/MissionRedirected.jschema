@@ -1,0 +1,40 @@
+{
+   "properties": {
+      "Name": {
+         "type": "string"
+      },
+      "NewDestinationStation": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "MissionID": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      },
+      "NewDestinationSystem": {
+         "type": "string"
+      },
+      "OldDestinationSystem": {
+         "type": "string"
+      },
+      "OldDestinationStation": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "MissionID",
+      "Name",
+      "NewDestinationStation",
+      "NewDestinationSystem",
+      "OldDestinationStation",
+      "OldDestinationSystem",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object"
+}

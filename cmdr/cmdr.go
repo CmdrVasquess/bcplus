@@ -116,7 +116,7 @@ func (stat *GmState) AddJump(ssys *gxy.StarSys, t Timestamp) {
 		panic("new jump in history without star system")
 	}
 	hist := append(stat.JumpHist, nil)
-	newJump := &Jump{stat.Next1stJump, SysRef{ssys}, t}
+	newJump := &Jump{First: stat.Next1stJump, Sys: SysRef{ssys}, Arrive: t}
 	i := len(hist) - 2
 	for i >= 0 {
 		if !time.Time(t).Before(time.Time(hist[i].Arrive)) {

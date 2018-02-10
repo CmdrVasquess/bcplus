@@ -1,0 +1,20 @@
+{
+   "required": [
+      "HullRepaired",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "properties": {
+      "HullRepaired": {
+         "type": "number"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   }
+}

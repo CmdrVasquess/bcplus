@@ -1,0 +1,20 @@
+{
+   "properties": {
+      "Amount": {
+         "type": "integer"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "required": [
+      "Amount",
+      "event",
+      "timestamp"
+   ]
+}

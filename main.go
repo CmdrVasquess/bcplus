@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
@@ -256,6 +257,8 @@ func main() {
 	flag.BoolVar(&acceptHistory, "hist", false, "accept historic events")
 	loadCmdr := flag.String("cmdr", "", "preload commander")
 	promptKey := flag.Bool("pmk", false, "prompt for credential master key")
+	flag.DurationVar(&macroPause, "mcrp", 100*time.Millisecond,
+		"set the delay between macro elements")
 	showHelp := flag.Bool("h", false, "show help")
 	flag.Parse()
 	if *showHelp {
@@ -269,8 +272,9 @@ func main() {
 	} else if *verbose {
 		glog.SetLevel(l.Debug)
 	}
-	glog.Logf(l.Info, "Bordcomputer+ (%d.%.d.%d %s) on: %s\n",
-		BCpMajor, BCpMinor, BCpBugfix, BCpDate,
+	glog.Logf(l.Info, "Bordcomputer+ (%d.%.d.%d%s %s) on: %s\n",
+		BCpMajor, BCpMinor, BCpBugfix, BCpQuality,
+		BCpDate,
 		runtime.GOOS)
 	glog.Logf(l.Info, "data    : %s\n", dataDir)
 	var err error
@@ -284,6 +288,7 @@ func main() {
 		}
 	}
 	glog.Logf(l.Info, "journals: %s\n", jrnlDir)
+	loadMacros(filepath.Join(dataDir, "macros.xsx"))
 	theGalaxy, err = gxy.OpenGalaxy(
 		filepath.Join(dataDir, "systems.json"),
 		assetPath("data/"))

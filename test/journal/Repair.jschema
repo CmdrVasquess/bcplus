@@ -1,0 +1,24 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "Item": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Cost": {
+         "type": "integer"
+      }
+   },
+   "type": "object",
+   "required": [
+      "Cost",
+      "Item",
+      "event",
+      "timestamp"
+   ]
+}

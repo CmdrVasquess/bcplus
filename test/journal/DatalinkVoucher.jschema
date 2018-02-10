@@ -1,0 +1,28 @@
+{
+   "type": "object",
+   "required": [
+      "PayeeFaction",
+      "Reward",
+      "VictimFaction",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "Reward": {
+         "type": "integer"
+      },
+      "VictimFaction": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "PayeeFaction": {
+         "type": "string"
+      }
+   }
+}

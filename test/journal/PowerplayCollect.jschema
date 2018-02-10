@@ -1,0 +1,32 @@
+{
+   "type": "object",
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "Power": {
+         "type": "string"
+      },
+      "Type": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Count": {
+         "type": "integer"
+      },
+      "Type_Localised": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "Count",
+      "Power",
+      "Type",
+      "Type_Localised",
+      "event",
+      "timestamp"
+   ]
+}

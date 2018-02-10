@@ -1,0 +1,23 @@
+{
+   "required": [
+      "Others",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "properties": {
+      "Others": {
+         "type": "array",
+         "items": {
+            "type": "string"
+         }
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "$schema": "http://json-schema.org/schema#"
+}

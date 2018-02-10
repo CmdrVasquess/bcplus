@@ -1,0 +1,42 @@
+{
+   "type": "object",
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "TotalSale": {
+         "type": "integer"
+      },
+      "SellPrice": {
+         "type": "integer"
+      },
+      "StolenGoods": {
+         "type": "boolean"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Count": {
+         "type": "integer"
+      },
+      "BlackMarket": {
+         "type": "boolean"
+      },
+      "AvgPricePaid": {
+         "type": "integer"
+      },
+      "Type": {
+         "type": "string"
+      }
+   },
+   "required": [
+      "AvgPricePaid",
+      "Count",
+      "SellPrice",
+      "TotalSale",
+      "Type",
+      "event",
+      "timestamp"
+   ]
+}

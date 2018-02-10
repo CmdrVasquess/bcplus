@@ -17,26 +17,52 @@ type event = map[string]interface{}
 type journalHanlder func(*c.GmState, map[string]interface{}, time.Time)
 
 var dispatch = map[string]journalHanlder{
-	"Fileheader":        fileheader,
-	"Loadout":           loadout,
-	"Rank":              rank,
-	"Location":          location,
-	"Progress":          progress,
-	"Materials":         materials,
-	"FSDJump":           fsdjump,
-	"Docked":            docked,
-	"ShipyardBuy":       shipBuy,
-	"ShipyardNew":       shipNew,
-	"ShipyardSell":      shipSell,
-	"ShipyardSwap":      shipSwap,
-	"ShipyardTransfer":  shipXfer,
-	"SupercruiseEntry":  scEntry,
-	"Scan":              scan,
-	"MaterialCollected": matCollect,
-	"MaterialDiscarded": matDiscard,
-	//	"MaterialDiscovered": matDiscover,
-	"EngineerCraft": engyCraft,
-	"Synthesis":     synthesis,
+	"BuyAmmo":             jeBuyAmmo,
+	"BuyDrones":           jeBuyDrones,
+	"BuyExplorationData":  jeBuyXplorData,
+	"BuyTradeData":        jeBuyTrdData,
+	"CrewHire":            jeCrwHire,
+	"Docked":              jeDocked,
+	"EngineerCraft":       jeEngyCraft,
+	"FSDJump":             jeFsdjump,
+	"FetchRemoteModule":   jeFtchRModule,
+	"Fileheader":          jeFileheader,
+	"Loadout":             jeLoadout,
+	"Location":            jeLocation,
+	"MarketBuy":           jeMakretBuy,
+	"MarketSell":          jeMarketSell,
+	"MaterialCollected":   jeMatCollect,
+	"MaterialDiscarded":   jeMatDiscard,
+	"Materials":           jeMaterials,
+	"MissionCompleted":    jeMsnCmplt,
+	"ModuleBuy":           jeMdlBuy,
+	"ModuleRetrieve":      jeMdlRtrv,
+	"ModuleSell":          jeMdlSell,
+	"ModuleSellRemote":    jeMdlRSell,
+	"ModuleStore":         jeMdlStore,
+	"Progress":            jeProgress,
+	"Rank":                jeRank,
+	"Scan":                jeScan,
+	"SellExplorationData": jeSellXplorData,
+	"ShipyardBuy":         jeShipBuy,
+	"ShipyardNew":         jeShipNew,
+	"ShipyardSell":        jeShipSell,
+	"ShipyardSwap":        jeShipSwap,
+	"ShipyardTransfer":    jeShipXfer,
+	"SupercruiseEntry":    jeScEntry,
+	"Synthesis":           jeSynth,
+	"PayFines":            jePayFines,
+	"PayLegacyFines":      jePayLglFns,
+	"RedeemVoucher":       jeRedmVchr,
+	"RefuelAll":           jeFuelAll,
+	"RefuelPartial":       jeFuelPart,
+	"Repair":              jeRepair,
+	"RepairAll":           jeRprAll,
+	"SellDrones":          jeSellDrones,
+	"PowerplayFastTrack":  jePPFasTrk,
+	"PowerplaySalary":     jePPSlry,
+	"Resurrect":           jeResurrect,
+	"Promotion":           jePromote,
 }
 
 func init() {
@@ -73,6 +99,7 @@ func DispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 		ejlog.Logf(l.Warn, "cannot determine journal event from: %s", string(event))
 		return
 	}
+	jEventMacro(evt)
 	hdlr, ok := dispatch[evt]
 	if ok {
 		t, err := eventTime(jsonEvt)
@@ -250,7 +277,7 @@ func attF32(e event, name string) (float32, bool) {
 	return float32(v), ok
 }
 
-func fileheader(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeFileheader(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	if !gstat.IsOffline() {
 		saveState(gstat.IsBeta)
 	}
@@ -263,7 +290,7 @@ func fileheader(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func loadout(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeLoadout(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shipId, ok := attInt(evt, "ShipID")
 	if !ok {
@@ -334,7 +361,7 @@ func loadGame(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr.CurShip.Loc.Ref = nil
 }
 
-func rank(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeRank(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	rnks := &gstat.Cmdr.Ranks
 	setUint8(evt, "Combat", &rnks[c.RnkCombat])
 	setUint8(evt, "Trade", &rnks[c.RnkTrade])
@@ -344,7 +371,7 @@ func rank(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	setUint8(evt, "Federation", &rnks[c.RnkFed])
 }
 
-func progress(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeProgress(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	prgs := &gstat.Cmdr.RnkPrgs
 	setUint8(evt, "Combat", &prgs[c.RnkCombat])
 	setUint8(evt, "Trade", &prgs[c.RnkTrade])
@@ -354,7 +381,7 @@ func progress(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	setUint8(evt, "Federation", &prgs[c.RnkFed])
 }
 
-func materials(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeMaterials(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	cmdr.MatsRaw.ClearHave()
 	if mats, ok := attArray(evt, "Raw"); ok {
@@ -385,7 +412,7 @@ func materials(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func fsdjump(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeFsdjump(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	spos := evt["StarPos"].([]interface{})
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
@@ -422,7 +449,7 @@ func fsdjump(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func location(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeLocation(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	spos := evt["StarPos"].([]interface{})
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
@@ -448,7 +475,7 @@ func location(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func docked(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeDocked(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
@@ -462,7 +489,7 @@ func docked(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func shipXfer(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeShipXfer(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	if cmdr.Loc.Ref == nil {
 		return
@@ -481,7 +508,7 @@ func shipXfer(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	ship.Loc = cmdr.Loc
 }
 
-func shipBuy(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeShipBuy(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	mny, _ := attInt64(evt, "ShipPrice")
 	cmdr.Credits -= mny
@@ -494,7 +521,7 @@ func shipBuy(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func shipNew(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeShipNew(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shId, _ := attInt(evt, "ShipID")
 	ship := cmdr.ShipById(shId)
@@ -514,7 +541,7 @@ func shipNew(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func shipSell(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeShipSell(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	shId, ok := attInt(evt, "SellShipID")
 	if !ok {
@@ -528,7 +555,7 @@ func shipSell(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr.SellShipId(shId, c.Timestamp(t))
 }
 
-func shipSwap(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeShipSwap(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	oldId, ok := attInt(evt, "StoreShipID")
 	if !ok {
@@ -557,7 +584,7 @@ func shipSwap(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	oldShip.Loc = cmdr.Loc
 }
 
-func scEntry(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeScEntry(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
@@ -579,7 +606,7 @@ func stripSystemName(sysNm, bodyNm string) string {
 	}
 }
 
-func scan(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeScan(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	if gstat.Cmdr.Loc.Ref == nil {
 		ejlog.Log(lNotice, "scan event without known star-system")
 		return
@@ -632,14 +659,14 @@ func sumMat(cmdr *c.Commander, cat, name string, d int16) {
 	}
 }
 
-func matCollect(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeMatCollect(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	matCat, _ := attStr(evt, "Category")
 	matNm, _ := attStr(evt, "Name")
 	matNo, _ := attInt16(evt, "Count")
 	sumMat(&gstat.Cmdr, matCat, matNm, matNo)
 }
 
-func matDiscard(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeMatDiscard(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	matCat, _ := attStr(evt, "Category")
 	matNm, _ := attStr(evt, "Name")
 	matNo, _ := attInt16(evt, "Count")
@@ -653,7 +680,7 @@ func matDiscard(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 //	// Do NOT sum discoNo! It's ~an ID
 //}
 
-func synthesis(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeSynth(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	used := evt["Materials"].([]interface{})
 	for _, use1 := range used {
@@ -673,7 +700,7 @@ func synthesis(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	}
 }
 
-func engyCraft(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeEngyCraft(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdr := &gstat.Cmdr
 	used := evt["Ingredients"].([]interface{})
 	for _, i := range used {
@@ -690,5 +717,190 @@ func engyCraft(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 		default:
 			ejlog.Logf(l.Warn, "cannot categorize material '%s'", mat)
 		}
+	}
+}
+
+func jeBuyXplorData(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeSellXplorData(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	base, _ := attInt64(evt, "BaseValue")
+	bonus, _ := attInt64(evt, "Bonus")
+	cmdr.Credits += base + bonus
+}
+
+func jeBuyTrdData(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeMakretBuy(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	total, _ := attInt64(evt, "TotalCost")
+	cmdr.Credits -= total
+}
+
+func jeMarketSell(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	total, _ := attInt64(evt, "TotalSale")
+	cmdr.Credits += total
+}
+
+func jeBuyAmmo(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeBuyDrones(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	total, _ := attInt64(evt, "TotalCost")
+	cmdr.Credits -= total
+}
+
+func jeCrwHire(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeFtchRModule(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "TransferCost")
+	cmdr.Credits -= cost
+}
+
+func jeMsnCmplt(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	reward, _ := attInt64(evt, "Reward")
+	donate, _ := attInt64(evt, "Donation")
+	cmdr.Credits += reward - donate
+}
+
+func jeMdlBuy(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	buy, _ := attInt64(evt, "BuyPrice")
+	sell, _ := attInt64(evt, "SellPrice")
+	cmdr.Credits += sell - buy
+}
+
+func jeMdlRtrv(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeMdlSell(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	sell, _ := attInt64(evt, "SellPrice")
+	cmdr.Credits += sell
+}
+
+func jeMdlRSell(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	sell, _ := attInt64(evt, "SellPrice")
+	cmdr.Credits += sell
+}
+
+func jeMdlStore(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jePayFines(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	pay, _ := attInt64(evt, "Amount")
+	cmdr.Credits -= pay
+}
+
+func jePayLglFns(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	pay, _ := attInt64(evt, "Amount")
+	cmdr.Credits -= pay
+}
+
+func jeRedmVchr(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	rcv, _ := attInt64(evt, "Amount")
+	cmdr.Credits += rcv
+}
+
+func jeFuelAll(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeFuelPart(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeRepair(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeRprAll(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jeSellDrones(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	total, _ := attInt64(evt, "TotalSale")
+	cmdr.Credits += total
+}
+
+func jePPFasTrk(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	cost, _ := attInt64(evt, "Cost")
+	cmdr.Credits -= cost
+}
+
+func jePPSlry(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	amount, _ := attInt64(evt, "Amount")
+	cmdr.Credits += amount
+}
+
+func jeResurrect(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	if bankrup, ok := attBool(evt, "Bankrupt"); ok && bankrup {
+		cmdr.Credits = 1000
+	} else {
+		cost, _ := attInt64(evt, "Cost")
+		cmdr.Credits -= cost
+	}
+}
+
+func jePromote(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+	cmdr := &gstat.Cmdr
+	if rank, ok := attUint8(evt, "Combat"); ok {
+		cmdr.Ranks[c.RnkCombat] = rank
+	}
+	if rank, ok := attUint8(evt, "Trade"); ok {
+		cmdr.Ranks[c.RnkTrade] = rank
+	}
+	if rank, ok := attUint8(evt, "Explore"); ok {
+		cmdr.Ranks[c.RnkExplore] = rank
+	}
+	if rank, ok := attUint8(evt, "CQC"); ok {
+		cmdr.Ranks[c.RnkCqc] = rank
+	}
+	if rank, ok := attUint8(evt, "Empire"); ok {
+		cmdr.Ranks[c.RnkImp] = rank
+	}
+	if rank, ok := attUint8(evt, "Federation"); ok {
+		cmdr.Ranks[c.RnkFed] = rank
 	}
 }

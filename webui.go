@@ -132,9 +132,10 @@ func loadTmpls() {
 func prepareOfflinePage(title *gx.Template, body *gx.Template) {
 	btOffline := gxtPage.NewBounT()
 	if BCpBugfix == 0 {
-		btOffline.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
+		btOffline.BindFmt(gxtPage.Version, "%d.%d%s", BCpMajor, BCpMinor, BCpQuality)
 	} else {
-		btOffline.BindFmt(gxtPage.Version, "%d.%d.%d", BCpMajor, BCpMinor, BCpBugfix)
+		btOffline.BindFmt(gxtPage.Version, "%d.%d.%d%s",
+			BCpMajor, BCpMinor, BCpBugfix, BCpQuality)
 	}
 	btOffline.BindP(gxtPage.FullVersion, gxw.HtmlEsc(BCpDescStr()))
 	if stat, ok := title.Static(); !ok {
@@ -242,9 +243,10 @@ func preparePage(styles, endScript gx.Content, active string) (emit, bindto *gx.
 
 	btTitle := gxtTitle.NewBounT()
 	if BCpBugfix == 0 {
-		btPage.BindFmt(gxtPage.Version, "%d.%d", BCpMajor, BCpMinor)
+		btPage.BindFmt(gxtPage.Version, "%d.%d%s", BCpMajor, BCpMinor, BCpQuality)
 	} else {
-		btPage.BindFmt(gxtPage.Version, "%d.%d.%d", BCpMajor, BCpMinor, BCpBugfix)
+		btPage.BindFmt(gxtPage.Version, "%d.%d.%d%s",
+			BCpMajor, BCpMinor, BCpBugfix, BCpQuality)
 	}
 	btPage.BindP(gxtPage.FullVersion, gxw.HtmlEsc(BCpDescStr()))
 	btPage.Bind(gxtPage.PgTitle, gxw.EscHtml{btTitle})

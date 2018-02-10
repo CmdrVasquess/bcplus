@@ -1,0 +1,24 @@
+{
+   "properties": {
+      "event": {
+         "type": "string"
+      },
+      "Name": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Status": {
+         "type": "string"
+      }
+   },
+   "type": "object",
+   "required": [
+      "Name",
+      "Status",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#"
+}

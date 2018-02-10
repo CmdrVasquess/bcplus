@@ -1,0 +1,24 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "required": [
+      "Type",
+      "Type_Localised",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "properties": {
+      "timestamp": {
+         "type": "string"
+      },
+      "Type_Localised": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Type": {
+         "type": "string"
+      }
+   }
+}

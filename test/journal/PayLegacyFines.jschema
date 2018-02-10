@@ -1,0 +1,23 @@
+{
+   "required": [
+      "Amount",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "event": {
+         "type": "string"
+      },
+      "Amount": {
+         "type": "integer"
+      },
+      "BrokerPercentage": {
+         "type": "number"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "type": "object"
+}

@@ -1,0 +1,24 @@
+{
+   "required": [
+      "Reason",
+      "StationName",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "type": "object",
+   "properties": {
+      "StationName": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "Reason": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   }
+}

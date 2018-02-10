@@ -61,36 +61,62 @@ select {
 }
 header {
 	display: grid;
-	grid-template-columns: auto auto auto auto auto;
+	grid-template-columns: auto auto auto auto auto auto;
 	/*grid-gap: .2em;*/
-	background-color: var(--tblEvn);
+	font-weight: bold;
 	border: 1px solid var(--colBkg);
 	/*grid-template-rows: 1fr 1fr;*/
 }
-header { font-weight: bold; }
 header p { margin: 0; }
 header img.logo { max-height: 2em; max-width: 2.5em; margin-right: 0.5em; }
+header #bcplogo {
+	height: 3em;
+}
+header #switches {
+	grid-column: 1;
+	grid-row: 4;	
+	background-color: var(--colBkg);
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+header #menu {
+	height: 1em;
+}
+header #off {
+	height: 1.5em;
+}
+header #menu img { height: 1em; }
 header #base {
 	border: 1px solid var(--colBkg);
 	padding: .1em .3em .1em .3em;
- 	grid-column: 1;
+ 	grid-column: 2;
   	grid-row: 1 / span 4;
+}
+header a {
+	text-decoration: none;
+	padding: 0;
+	margin: 0;
+}
+header a:visited {
+	text-decoration: none;
+}
+header > div {
+	border: 1px solid var(--colBkg);
+	padding: .1em .3em .1em .3em;
+	background-color: var(--tblEvn);
 }
 header div.rank {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	grid-row: span 2;
-	border: 1px solid var(--colBkg);
-	padding: .1em .3em .1em .3em;
 }
 header div.locinfo {
 	grid-column: span 2;
 	grid-row: span 2;
 	display: flex;
 	flex-direction: row;
-	border: 1px solid var(--colBkg);
-	padding: .1em .3em .1em .3em;
 }
 nav {
 	display: block;

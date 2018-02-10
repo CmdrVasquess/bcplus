@@ -1,0 +1,28 @@
+{
+   "required": [
+      "Category",
+      "Count",
+      "Name",
+      "event",
+      "timestamp"
+   ],
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "event": {
+         "type": "string"
+      },
+      "Count": {
+         "type": "integer"
+      },
+      "Category": {
+         "type": "string"
+      },
+      "Name": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      }
+   },
+   "type": "object"
+}

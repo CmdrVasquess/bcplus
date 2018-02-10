@@ -1,0 +1,39 @@
+#+TITLE: Journal Event - Scan
+
+- [[file:../../test/journal/Scan-star.jschema][JSON Schema for stars]]
+- [[file:../../test/journal/Scan-belt.jschema][JSON Schema for belts]]
+- [[file:../../test/journal/Scan-planet.jschema][JSON Schema for planets]]
+
+* Scan Event Attributes
+| Attrbiute               | Star | Belt | Planet |
+|-------------------------+------+------+--------|
+| AbsoluteMagnitude       | m    |      |        |
+| Age_MY                  | m    |      |        |
+| Atmosphere              |      |      | o      |
+| AtmosphereComposition   |      |      | o      |
+| AtmosphereType          |      |      | o      |
+| *AxialTilt*             | m    |      | m      |
+| *BodyName*              | m    | m    | m      |
+| *DistanceFromArrivalLS* | m    | m    | m      |
+| Eccentricity            | o    |      | m      |
+| Landable                |      |      | o      |
+| Luminosity              | o    |      |        |
+| MassEM                  |      |      | m      |
+| Materials               |      |      | o      |
+| OrbitalInclination      | o    |      | m      |
+| OrbitalPeriod           | o    |      | m      |
+| Periapsis               | o    |      | m      |
+| PlanetClass             |      |      | M      |
+| *Radius*                | m    |      | m      |
+| ReserveLevel            |      |      | o      |
+| Rings                   | o    |      | o      |
+| *RotationPeriod*        | m    |      | m      |
+| SemiMajorAxis           | o    |      | m      |
+| StarType                | M    |      |        |
+| StellarMass             | m    |      |        |
+| SurfaceGravity          |      |      | m      |
+| SurfacePressure         |      |      | o      |
+| SurfaceTemperature      | m    |      | o      |
+| TerraformState          |      |      | o      |
+| TidalLock               |      |      | o      |
+| Volcanism               |      |      | o      |

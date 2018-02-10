@@ -1,0 +1,79 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "ShipID": {
+         "type": "integer"
+      },
+      "ShipIdent": {
+         "type": "string"
+      },
+      "Ship": {
+         "type": "string"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "ShipName": {
+         "type": "string"
+      },
+      "Modules": {
+         "items": {
+            "properties": {
+               "EngineerBlueprint": {
+                  "type": "string"
+               },
+               "Slot": {
+                  "type": "string"
+               },
+               "Item": {
+                  "type": "string"
+               },
+               "Health": {
+                  "type": "number"
+               },
+               "Value": {
+                  "type": "integer"
+               },
+               "Priority": {
+                  "type": "integer"
+               },
+               "AmmoInHopper": {
+                  "type": "integer"
+               },
+               "AmmoInClip": {
+                  "type": "integer"
+               },
+               "EngineerLevel": {
+                  "type": "integer"
+               },
+               "On": {
+                  "type": "boolean"
+               }
+            },
+            "required": [
+               "Health",
+               "Item",
+               "On",
+               "Priority",
+               "Slot",
+               "Value"
+            ],
+            "type": "object"
+         },
+         "type": "array"
+      }
+   },
+   "required": [
+      "Modules",
+      "Ship",
+      "ShipID",
+      "ShipIdent",
+      "ShipName",
+      "event",
+      "timestamp"
+   ],
+   "type": "object"
+}

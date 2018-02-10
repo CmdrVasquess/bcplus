@@ -1,0 +1,40 @@
+{
+   "required": [
+      "CQC",
+      "Combat",
+      "Empire",
+      "Explore",
+      "Federation",
+      "Trade",
+      "event",
+      "timestamp"
+   ],
+   "type": "object",
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+      "Combat": {
+         "type": "integer"
+      },
+      "Empire": {
+         "type": "integer"
+      },
+      "CQC": {
+         "type": "integer"
+      },
+      "Explore": {
+         "type": "integer"
+      },
+      "Federation": {
+         "type": "integer"
+      },
+      "event": {
+         "type": "string"
+      },
+      "timestamp": {
+         "type": "string"
+      },
+      "Trade": {
+         "type": "integer"
+      }
+   }
+}

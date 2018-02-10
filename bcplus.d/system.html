@@ -4,45 +4,106 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="s/css/bcp.css">
+<!-- >>> local-style >>> -->
+	<style>
+main tr:nth-of-type(odd) {
+	background-color: var(--tblEvn);
+}
+main tr { background-color: var(--tblEvn); }
+main tr.bdymain {
+	font-weight: bold;
+	background-color: var(--tblOdd);
+}
+main td { vertical-align: text-top; }
+main td.bold { font-weight: bold; }
+	</style>
+<!-- <<< local-style <<< -->	
   </head>
   <body>
   <main>
 <!-- >>> topic >>> -->
 	<h1>Local System Bodies</h1>
 	<table>
-		<tr>
-			<th>Type</th>
-			<th>Name</th>
-			<th>Dist</th>
-			<th>Details</th>
-		</tr>
 <!-- >>> bodies <<< \-->
 <!-- >>> bdy-none >>> -->
 		<tr><td colspan="4">No body scans to display</td></tr>
 <!-- <<< bdy-none <<< -->
 <!-- >>> bdy-star >>> -->
-		<tr>
+		<tr class="bdymain">
 			<td class="center" title="Star">☼</td>
-			<td>`name`</td>
-			<td class="right">`dist` ls</td>
-		</tr>		
+			<td>Name:<br>`name`</td>
+			<td class="right">Dist:<br>`dist`&nbsp;ls</td>
+			<td class="right">Radius:<br>`r`</td>
+			<td>Rot.&nbsp;Period:<br>`rot-prd`</td>
+			<td>Axis&nbsp;Tilt:<br>`tilt`</td>
+			<!-- -->
+			<td colspan="2">Abs.&nbsp;Magnitude:<br>xyz</td>
+			<td>Age&nbsp;[MY]:<br>xyz</td>
+			<td colspan="2">Stellar&nbsp;Mass:<br>xyz</td>
+			<td colspan="2">Surface&nbsp;Temerature:<br>xyz</td>
+		</tr>
+		<tr><td colspan="4"/>
+			<td colspan="2">Eccentricity:<br>xyz</td>
+			<td colspan="2">Luminosity:<br>xyz</td>
+			<td>Orb.&nbsp;Incl.:<br>xyz</td>
+			<td>Orb.&nbsp;Period:<br>xyz</td>
+			<td>Periaps:<br>xyz</td>
+			<td colspan="2">Semi&nbsp;Maj.&nbsp;Axis:<br>xyz</td>
+		</tr>
+		<tr><td/>
+			<td class="right bold">Rings:</td>
+			<td colspan="11">…</td>
+		</tr>
 <!-- <<< bdy-star <<< \-->
 <!-- >>> bdy-planet >>> -->
-		<tr>
+		<tr class="bdymain">
 			<td class="center" title="Planet">❍</td><!-- ○ ⏣ -->
-			<td>`name`</td>
-			<td class="right">`dist` ls</td>
-			<td>Land: `land`, Radius: `r`<br>Materials: `mats`</td>
+			<td>Name:<br>`name`</td>
+			<td class="right">Dist:<br>`dist`&nbsp;ls</td>
+			<td class="right">Radius:<br>`r`</td>
+			<td>Rot.&nbsp;Period:<br>rperiod</td>
+			<td>Axis&nbsp;Tilt:<br>tilt</td>
+			<!-- -->
+			<td>Eccentricity:<br>xyz</td>
+			<td>MassEM:<br>xyz</td>
+			<td>Orb.&nbsp;Incl.:<br>xyz</td>
+			<td>Orb.&nbsp;Period:<br>xyz</td>
+			<td>Periaps:<br>xyz</td>
+			<td>Semi&nbsp;Maj.&nbsp;Axis:<br>xyz</td>
+			<td>Surface&nbsp;Gravity:<br>xyz</td>
+		</tr>
+		<tr><td colspan="2"/>
+			<td>Atmosph:<br>xyz</td>
+			<td>Atm Comp:<br>xyz</td>
+			<td>Atm Type:<br>xyz</td>
+			<td>Land:<br>`land`</td>
+			<td>Resrv Lvl:<br>xyz</td>
+			<td>Surf. Press:<br>xyz</td>
+			<td>Surf. Tmprt:<br>xyz</td>
+			<td colspan="2">Terraf State:<br>xyz</td>
+			<td>Tidal Lock:<br>xyz</td>
+			<td>Volcanos:<br>xyz</td>			
+		</tr>
+<!-- >>> materials <<< \-->
+<!-- >>> mat-section >>> -->
+		<tr><td/>
+			<td class="right bold">Materials:</td>
+			<td colspan="11">`mats`</td>
+		</tr>
+<!-- <<< mat-section <<< \-->
+		<tr><td/>
+			<td class="right bold">Rings:</td>
+			<td colspan="11">…</td>
 		</tr>
 <!-- >>> mat0 >>> -->
-`name`: `frac`
+`name`: `frac`%
 <!-- <<< mat0 <<< -->
 <!-- >>> mat1 >>> -->
-, `name`: `frac`
+, `name`: `frac`%
 <!-- <<< mat1 <<< -->
 <!-- <<< bdy-planet <<< \-->
 <!-- >>> bdy-belt >>> -->
-		<tr>
+		<tr class="bdymain">
 			<td class="center" title="Belt">∵</td>
 			<td>`name`</td>
 			<td class="right">`dist` ls</td>
