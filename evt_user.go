@@ -112,9 +112,7 @@ func allSkbd(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 }
 
 func allQuit(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
-	myPid := os.Getpid()
-	me, _ := os.FindProcess(myPid)
-	eulog.Logf(l.Debug, "user quit: sending signal %s to %d", os.Interrupt, myPid)
-	me.Signal(os.Interrupt)
+	eulog.Logf(l.Debug, "user quit: signal %s", os.Interrupt)
+	signals <- os.Interrupt
 	return false
 }

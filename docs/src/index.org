@@ -1,11 +1,4 @@
 #+TITLE: BC+ – BoardComputer+ Document Index
 -----
-[[file:de/index.org][Deutsch]]
+[[file:index-en.org][English]] – [[file:index-de.org][Deutsch]]
 -----
-
-* Download
-
-* Installation
-
-* Running and Exit
-* Deinstall

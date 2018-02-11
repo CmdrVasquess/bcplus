@@ -20,4 +20,7 @@ func init() {
 	logFile, _ := os.Create("BCplus.log")
 	logWr := io.MultiWriter(logFile, os.Stderr)
 	glog.SetOutput(logWr)
+	nmlog.SetOutput(logWr)
+	ejlog.SetOutput(logWr)
+	eulog.SetOutput(logWr)
 }

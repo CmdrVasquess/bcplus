@@ -3,10 +3,10 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-02-11 So 13:18 -->
+<!-- 2018-02-11 So 13:17 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BC+ – BoardComputer+ Document Index</title>
+<title>BC+ – BoardComputer+ Dokumentation</title>
 <meta name="generator" content="Org mode" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
@@ -229,15 +229,199 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title">BC+ – BoardComputer+ Document Index</h1>
-<hr />
+<h1 class="title">BC+ – BoardComputer+ Dokumentation</h1>
+
+<div id="outline-container-org96ce345" class="outline-2">
+<h2 id="org96ce345">Download</h2>
+<div class="outline-text-2" id="text-org96ce345">
 <p>
-<a href="index-en.html">English</a> – <a href="index-de.html">Deutsch</a>
+<a href="https://github.com/CmdrVasquess/BCplus/releases">Binary Downloads</a> findet man auch auf Github. Die „Basisversion“ ist
+unter <code>BCplus-&lt;version&gt;.zip</code> zu finden. Sobald ich von dieser Version
+auch eine lokalisierte, deutsche Fassung habe wird die dort auch unter
+<code>BCplus-de-&lt;version&gt;.zip</code> zu finden sein.
 </p>
-<hr />
+</div>
+</div>
+
+<div id="outline-container-orgfedad5a" class="outline-2">
+<h2 id="orgfedad5a">Installation</h2>
+<div class="outline-text-2" id="text-orgfedad5a">
+<p>
+BC+ wird z.Z. nur für den Win-PC gebaut. Um es laufen zu lassen werden
+keine zusätzlichen Laufzeitumgebungen benötigt. Auch kommt BC+ ohne
+Installation aus – man kann es direkt aus dem ausgepackten ZIP Archiv
+laufen lassen. Das bedeutet
+</p>
+
+<ul class="org-ul">
+<li>Es gibt keine Berechtigungsprobleme wenn man BC+ installiert.</li>
+
+<li>Neue Versionen können einfach installiert werden, indem man den
+alten Ordner wegschmeißt und das neue ZIP Archiv
+auspackt. (Ggf. vewahrt man die alte Version erst mal…?!)</li>
+
+<li>Es werden aber auch keine Startmenü Einträge und Icons eingerichtet.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org4775288" class="outline-2">
+<h2 id="org4775288">Starten und Beenden</h2>
+<div class="outline-text-2" id="text-org4775288">
+<p>
+BC+ sollte gestartet werden, bevor E:D startet. BC+ beobachtet den
+Ordner mit Journal Dateien und fängt an diese zu lesen, sobald eine
+neue Datei angelegt wird (vgl. Startoption -l unten).
+</p>
+
+<p>
+Für eine 08/15 E:D Installation aus dem Frontier Store reicht ein
+Doppel-Klick auf die BCplus.exe. Diese findet automatisch alles
+nötige:
+</p>
+
+<ul class="org-ul">
+<li>Den Ordner mit den E:D Journal Dateien</li>
+
+<li>Den Ordner, in dem BC+ seine Daten ablegt</li>
+</ul>
+
+<p>
+Beides wird auch als Textnachricht im Konsole-Fenster angezeigt, wenn
+BC+ startet. Wer keine 08/15 Installation hat, kann bzw. muss die
+Pfade beim Start auf der Kommandozeile übergeben.
+</p>
+</div>
+
+<div id="outline-container-org270e626" class="outline-3">
+<h3 id="org270e626">Startoptionen für BC+</h3>
+<div class="outline-text-3" id="text-org270e626">
+<dl class="org-dl">
+<dt>-h</dt><dd>Zeigt eine kurze Beschreibung der Startoptionen an.</dd>
+
+<dt>-j &lt;ordner&gt;</dt><dd>Setzt den Ordner, in dem E:D die Journal Dateien anlegt.</dd>
+
+<dt>-d &lt;ordner&gt;</dt><dd>Setzt den Ordner, in dem BC+ seine Dateien ablegt</dd>
+
+<dt>-l</dt><dd>Liest nach dem Start die jüngste Journal Datei ein. Sonst
+wartet BC+ bis E:D beim Start die neue Journal Datei
+anlegt. (kann gut verwendet werden, wenn man BC+ bei laufendem
+Spiel startet)</dd>
+
+<dt>-p</dt><dd>Setzt den Socket Port, auf dem BC+ auf HTTP Anfragen
+lauscht. Per Voreinstellung ist der Wert auf <code>1337</code>
+gesetzt. Wenn es hier zu Problemen kommt, bspw. weil ein
+anderes Programm diesen Port bereits belegt, kann eine andere
+Nummer 1024–65535 gewählt werden.</dd>
+</dl>
+
+<p>
+Weitere Optionen wird der „normale“ Anwender hoffentlich nicht nötig
+haben. Wenn doch: <code>-h</code> hilft ein wenig weiter. Wenn das nicht reicht:
+<i>Use the source, Luke!</i>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7228326" class="outline-3">
+<h3 id="org7228326">Web Browser verbinden</h3>
+<div class="outline-text-3" id="text-org7228326">
+<p>
+Neben dem Konsole Fenster wird auf dem Computer mit E:D nicht viel
+passieren. Die Idee ist ja, dass man einen Web Browser auf einem
+anderen Computer nutzt, um die Web-GUI von BC+ anzuzeigen. Das
+bedeutet aber auch, dass man dem Web Browser die „Seite“ (URL) nennen
+muss, unter der BC+ zu finden ist. Weil der Computer mit E:D im
+Heimnetzt steht passiert das vermutlich nicht über eine lesbaren
+Domain Namen, wie z.B. <code>github.com</code>, sondern über die IP Adresse des
+E:D Computers. BC+ versucht die richtige Adresse raus zu bekommen und
+schreibt die Komplette URL als Vorschlag in das Terminal
+Fenster. Z.B. <code>http://192.168.0.3:1337/</code>. Das sollte meistens
+funktionieren. Wenn man aber einen Rechner mit mehreren Netz-Karten
+oder mehreren IP Adressen hat, dann wirds komplizierter (als ich es
+BC+ beigebracht habe) und Ihr müsst Euch (vorerst) selber kümmern.
+</p>
+
+<p>
+Wenn der Browser einmal mit BC+ verbunden ist, sieht man solange den
+„offline“ Bildschirm, bis BC+ aus der Journal Datei weiß, welcher
+Kommandant geladen werden muss (Hier bitte ein Lesezeichen
+anlegen). Dann schaltet BC+ in den „online“ Modus.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org09e07d3" class="outline-3">
+<h3 id="org09e07d3">BC+ Beenden</h3>
+<div class="outline-text-3" id="text-org09e07d3">
+<p>
+BC+ sammelt laufend Infos aus dem Journal. Einige dieser Informationen
+sind im Journal nicht „leicht“ zu finden. – Beispiel: Beim Start
+schriebt E:D immer den aktuellen Kontostand in das Journal. Also kann
+BC+ die Info regelmäßig aus dem Laufenden Journal lesen. Im Gegensatz
+dazu kann BC+ den Standort der Schiffe nicht finden, ohne alle
+vorhandenen Journal Dateien zu durchsuchen. …Und deswegen merkt sich
+BC+ den Standort der Schiffe wären die passenden Events zum Standort
+im Journal auftauchen.
+</p>
+
+<p>
+Damit diese und andere interessante Informationen nicht verloren
+gehen, muss BC+ die Gelegenheit haben, diese Infos zu speichern. Und
+weil ich, recht faul, die Daten nur gelegentlich – insbesondere beim
+<i>kontrollierten herunterfahren</i> des BD+ speichere, ist es wichtig,
+dass BC+ auch kontrolliert herunter gefahren wird.
+</p>
+
+<p>
+Das bedeutet, dass man am einfachsten den „Aus“-Schalter in der Web
+GUI verwendet. Man kann auch im Terminal Fenster Strg-C drücken, bis
+man die Meldungen sieht, dass BC+ runter gefahren wird. Was man jedoch
+<b>nicht machen</b> sollte ist, den Schließen Knopf [X] des Terminal
+Fensters zu drücken!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4912de1" class="outline-3">
+<h3 id="org4912de1">Ein Wort zur Sicherheit</h3>
+<div class="outline-text-3" id="text-org4912de1">
+<p>
+Z.Z. verbindet sich BC+ über HTTP (ohne ‘S’). D.h. dass die
+Netzkommunikation im Klartext in Eurem lokalen Netz läuft. In der
+aktuellen Version werden keinen sensiblen Daten übertragen: Keine
+Passworte, Bernutzerkennungen o.Ä. Von daher ist das z.Z. kein
+m.E. Problem.
+</p>
+
+<p>
+Aber während Ihr spielt und der BC+ läuft können sich noch weitere Web
+Browser mit dem BC+ verbinden und damit all das tun, was der
+„eigentliche“ Nutzer auch tun kann. Bitte bedenken!
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge86c3c6" class="outline-2">
+<h2 id="orge86c3c6">Deinstallation</h2>
+<div class="outline-text-2" id="text-orge86c3c6">
+<p>
+Braucht man nicht! Wer würde diese <b>unglaublich</b> nützliche Tool je
+wieder deinstallieren wollen. Spaß bei Seite: Es reicht, wenn man den
+BCplus Ordner aus dem Download-zip und den Ordner mit den eigenen BC+
+Dateien löscht. Sonst hinterlässt BC+ nicht auf dem Rechner.
+</p>
+
+<p>
+…Ach ja! Und das Lesezeichen aus dem Browser kann man auch noch
+wegschmeißen ;)
+</p>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2018-02-11 So 13:18</p>
+<p class="date">Created: 2018-02-11 So 13:17</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

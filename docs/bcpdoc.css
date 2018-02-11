@@ -13,3 +13,13 @@ a {
 a:hover {
 	color: #00a6ea;
 }
+h1, h2, h3, h4 {
+	color: #00a6ea;
+}
+#postamble {
+	color: #CC5A00;
+	background-color: #522400;
+}
+#postamble a {
+	color: #CC5A00;
+}

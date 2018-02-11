@@ -82,9 +82,11 @@ header #switches {
 }
 header #menu {
 	height: 1em;
+	cursor: pointer;
 }
 header #off {
 	height: 1.5em;
+	cursor: pointer;
 }
 header #menu img { height: 1em; }
 header #base {

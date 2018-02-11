@@ -94,27 +94,33 @@ func DispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 		ejlog.Logf(l.Error, "Event has %d byte:[%s]", len(event), string(event))
 		return
 	}
-	evt, ok := jsonEvt["event"].(string)
+	evtNm, ok := jsonEvt["event"].(string)
 	if !ok {
 		ejlog.Logf(l.Warn, "cannot determine journal event from: %s", string(event))
 		return
 	}
-	jEventMacro(evt)
-	hdlr, ok := dispatch[evt]
+	jEventMacro(evtNm)
+	hdlr, ok := dispatch[evtNm]
 	if ok {
 		t, err := eventTime(jsonEvt)
 		if err != nil {
 			ejlog.Log(l.Error, err)
 		}
-		var cmdrSwitch = evt == "Fileheader" || evt == "LoadGame"
+		var cmdrSwitch = evtNm == "Fileheader" || evtNm == "LoadGame"
 		if state.IsOffline() && !cmdrSwitch {
-			ejlog.Logf(l.Info, "retain event: %s @%s", evt, t)
+			ejlog.Logf(l.Info, "retain event: %s @%s", evtNm, t)
 			state.EvtBacklog = append(state.EvtBacklog, jsonEvt)
 		} else if acceptHistory || !t.Before(time.Time(state.T)) {
-			ejlog.Logf(l.Info, "process event: %s @%s", evt, t)
+			ejlog.Logf(l.Info, "process event: %s @%s", evtNm, t)
 			lock.Lock()
 			defer lock.Unlock()
+			credBefore := state.Cmdr.Credits
 			hdlr(state, jsonEvt, t)
+			credAfter := state.Cmdr.Credits
+			if credAfter != credBefore {
+				ejlog.Logf(l.Debug, "credits change: %s %d → %d diff: %d",
+					evtNm, credBefore, credAfter, credAfter-credBefore)
+			}
 			if !cmdrSwitch {
 				state.T = c.Timestamp(t)
 			}
@@ -129,9 +135,9 @@ func DispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 		}
 
 	} else if t, err := eventTime(jsonEvt); err == nil {
-		ejlog.Logf(l.Debug, "no handler for event: %s (%s)", evt, t)
+		ejlog.Logf(l.Debug, "no handler for event: %s (%s)", evtNm, t)
 	} else {
-		ejlog.Logf(l.Debug, "no handler for event: %s", evt)
+		ejlog.Logf(l.Debug, "no handler for event: %s", evtNm)
 	}
 }
 

@@ -91,6 +91,7 @@ var theGalaxy *gxy.Galaxy
 var theGame = c.NewGmState()
 var credsKey []byte
 var eventq = make(chan bcEvent, 128)
+var signals = make(chan os.Signal, 1)
 
 var jrnlDir string
 var dataDir string
@@ -307,9 +308,8 @@ func main() {
 	})
 	go eventLoop()
 	runWebGui()
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, os.Interrupt)
-	<-sigs
+	signal.Notify(signals, os.Interrupt)
+	<-signals
 	stopWatch <- true
 	glog.Log(l.Info, "BC+ interrupted")
 	theStateLock.RLock()

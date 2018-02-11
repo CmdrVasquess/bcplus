@@ -164,7 +164,7 @@ func WatchJournal(done <-chan bool,
 				glog.Logf(l.Debug, "enqueue new journal: %s", cleanName)
 				watchList <- cleanName
 			} else {
-				glog.Logf(l.Debug, "ignore fs-event: %s @ %s", fse.Op, fse.Name)
+				glog.Logf(l.Trace, "ignore fs-event: %s @ %s", fse.Op, fse.Name)
 			}
 		case err = <-watch.Errors:
 			glog.Logf(l.Error, "fs-watch error: %q", err)
