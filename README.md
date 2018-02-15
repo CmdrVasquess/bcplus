@@ -1,7 +1,8 @@
 ![Logo](bcplus.d/s/img/Logo.png)
 # BoardComputer+ for E:D
 
-[Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases)
+[Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases) –
+[Documentation Index](https://cmdrvasquess.github.io/BCplus/)
 
 --------------------
 
