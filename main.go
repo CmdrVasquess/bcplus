@@ -273,7 +273,7 @@ func main() {
 	} else if *verbose {
 		glog.SetLevel(l.Debug)
 	}
-	glog.Logf(l.Info, "Bordcomputer+ (%d.%.d.%d%s %s) on: %s\n",
+	glog.Logf(l.Info, "BoardComputer+ (%d.%.d.%d%s %s) on: %s\n",
 		BCpMajor, BCpMinor, BCpBugfix, BCpQuality,
 		BCpDate,
 		runtime.GOOS)

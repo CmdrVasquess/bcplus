@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-02-11 So 12:54 -->
+<!-- 2018-02-17 Sa 10:47 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BC+ – BoardComputer+ Documentation</title>
@@ -226,6 +226,28 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="content">
@@ -233,22 +255,89 @@ for the JavaScript code in this tag.
 
 <div id="outline-container-orga5dc00c" class="outline-2">
 <h2 id="orga5dc00c">Download</h2>
+<div class="outline-text-2" id="text-orga5dc00c">
+<p>
+<a href="https://github.com/CmdrVasquess/BCplus/releases">Binary Downloads</a> can be found on github. The “basic” build, i.e. the
+English version, is the file <code>BCplus-&lt;version&gt;.zip</code>. Othe language
+packages may become available as <code>BCplus-&lt;lang&gt;-&lt;version&gt;.zip</code>.
+</p>
+</div>
 </div>
 
 <div id="outline-container-orgb70ecf0" class="outline-2">
 <h2 id="orgb70ecf0">Installation</h2>
+<div class="outline-text-2" id="text-orgb70ecf0">
+<p>
+Currently BC+ is only build for the PC. To run BC+ no additional
+runtime environment, like e.g. Python or Java, is needed. BC+ is
+written in <a href="https://golang.org/">Go</a> and runs native on your machine. Further more BC+ is
+written to run right out of the box without installation. This means
+</p>
+
+<ul class="org-ul">
+<li>New versions are easy to install. Simply delete the old BCplus
+folder and unzip the new one right in place. (May be you wanna keep
+the old version around until you are satisfied with the new one?)</li>
+
+<li>On the other hand no one creates nice start-menu entries or icons on
+the desktop for you.</li>
+</ul>
+</div>
+
+<div id="outline-container-org2e18cf1" class="outline-3">
+<h3 id="org2e18cf1">Options</h3>
+<div class="outline-text-3" id="text-org2e18cf1">
+<p>
+First, option syntax is not Windows standard – BC+ is written in <a href="https://golang.org/">Go</a>
+and uses Go's standard command line parsing package. So be prepared to
+start options with '-' not '/'.
+</p>
+
+<dl class="org-dl">
+<dt>-j &lt;directory&gt;</dt><dd>set the path to the directory containig your
+journal files.</dd>
+<dt>-p &lt;port&gt;</dt><dd>set the port on which the web server is listening
+(default: 1337).</dd>
+<dt>-d &lt;directory&gt;</dt><dd>set the directory where BC+ collects data about
+your commander and the visited galaxy (BC+ can
+handle multiple commanders)</dd>
+<dt>-l</dt><dd>pick up the lates journal file when starting. This is useful
+if you run BC+ after E:D already started to write the journal
+file.</dd>
+<dt>-h</dt><dd>show help information, i.e. the complete and up-to-date list
+of options.</dd>
+</dl>
+</div>
+</div>
 </div>
 
 <div id="outline-container-orgf3f3b79" class="outline-2">
 <h2 id="orgf3f3b79">Running and Exit</h2>
 </div>
 
-<div id="outline-container-orgbef4060" class="outline-2">
-<h2 id="orgbef4060">Deinstall</h2>
+
+<div id="outline-container-org9d32593" class="outline-2">
+<h2 id="org9d32593">Uninstall</h2>
+<div class="outline-text-2" id="text-org9d32593">
+<p>
+Is <b>absolutely</b> unnecessary! Who would ever delete such a useful,
+nice, wonderful… OK, OK, OK. It's simple—just delete
+</p>
+
+<ol class="org-ol">
+<li>the BCplus folder you unzipped from the download</li>
+<li>the data folder (default: C:\Users\&lt;user&gt;\bcplus</li>
+<li>any Browser bookmarks you created</li>
+</ol>
+
+<p>
+That's it.
+</p>
+</div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2018-02-11 So 12:54</p>
+<p class="date">Created: 2018-02-17 Sa 10:47</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
