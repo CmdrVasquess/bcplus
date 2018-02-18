@@ -69,8 +69,8 @@ type GmState struct {
 	JumpHist     []*Jump         `json:",omitempty"`
 	MatCatHide   map[string]bool `json:",omitempty"`
 	MatFlt       MatFilter
-	EvtBacklog   []map[string]interface{} `json:-`
-	Next1stJump  bool                     `json:-`
+	EvtBacklog   []map[string]interface{} `json:"-"`
+	Next1stJump  bool                     `json:"-"`
 	Creds        *CmdrCreds
 }
 
@@ -352,7 +352,7 @@ func NewCommander() *Commander {
 	return &res
 }
 
-func (cmdr *Commander) NeedSynth(syn *gxy.Synthesis, lvl uint, count uint) {
+func (cmdr *Commander) NeedsSynth(syn *gxy.Synthesis, lvl uint, count uint) {
 	key := MkSynthRef(syn, int(lvl))
 	if count == 0 {
 		delete(cmdr.Synth, key)
@@ -360,6 +360,18 @@ func (cmdr *Commander) NeedSynth(syn *gxy.Synthesis, lvl uint, count uint) {
 		log.Logf(l.Info, "set syref %s = %d", string(key), count)
 		cmdr.Synth[key] = count
 	}
+}
+
+func (cmdr *Commander) NeedsMat(jName string) (res int) {
+	if mat := cmdr.Material(jName); mat != nil && mat.Need > 0 {
+		res += int(mat.Need)
+	}
+	for sRef, no := range cmdr.Synth {
+		recipe, lvl := sRef.Get()
+		mps := recipe.Levels[lvl].Demand[jName]
+		res += int(mps * no)
+	}
+	return res
 }
 
 func (cmdr *Commander) ShipById(shipId int) *Ship {

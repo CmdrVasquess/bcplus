@@ -16,6 +16,7 @@ main tr.bdymain {
 }
 main td { vertical-align: text-top; }
 main td.bold { font-weight: bold; }
+main span.mneed { color: var(--colGood); }
 	</style>
 <!-- <<< local-style <<< -->	
   </head>
@@ -50,10 +51,7 @@ main td.bold { font-weight: bold; }
 			<td>Periaps:<br>xyz</td>
 			<td colspan="2">Semi&nbsp;Maj.&nbsp;Axis:<br>xyz</td>
 		</tr>
-		<tr><td/>
-			<td class="right bold">Rings:</td>
-			<td colspan="11">…</td>
-		</tr>
+<!-- >>> rings <<< \-->
 <!-- <<< bdy-star <<< \-->
 <!-- >>> bdy-planet >>> -->
 		<tr class="bdymain">
@@ -85,21 +83,18 @@ main td.bold { font-weight: bold; }
 			<td>Volcanos:<br>xyz</td>			
 		</tr>
 <!-- >>> materials <<< \-->
+<!-- >>> rings <<< \-->
 <!-- >>> mat-section >>> -->
 		<tr><td/>
 			<td class="right bold">Materials:</td>
 			<td colspan="11">`mats`</td>
 		</tr>
 <!-- <<< mat-section <<< \-->
-		<tr><td/>
-			<td class="right bold">Rings:</td>
-			<td colspan="11">…</td>
-		</tr>
 <!-- >>> mat0 >>> -->
-`name`: `frac`%
+<span class="`class`">`name`: `frac`%</span>
 <!-- <<< mat0 <<< -->
 <!-- >>> mat1 >>> -->
-, `name`: `frac`%
+, <span class="`class`">`name`: `frac`%</span>
 <!-- <<< mat1 <<< -->
 <!-- <<< bdy-planet <<< \-->
 <!-- >>> bdy-belt >>> -->
@@ -109,6 +104,12 @@ main td.bold { font-weight: bold; }
 			<td class="right">`dist` ls</td>
 		</tr>		
 <!-- <<< bdy-belt <<< \-->
+<!-- >>> ring-section >>> -->
+		<tr><td/>
+			<td class="right bold">Rings:</td>
+			<td colspan="11">…</td>
+		</tr>
+<!-- <<< ring-section <<< \-->
 	</table>
 <!-- <<< topic <<< -->
   </main>

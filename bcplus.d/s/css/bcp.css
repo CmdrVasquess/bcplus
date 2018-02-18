@@ -175,6 +175,7 @@ main h1 {
 main a {
 	color: var(--colFgr);
 	text-decoration: none;
+	text-shadow: 0 0 3px var(--colBad);
 }
 main a:hover {
 	text-decoration: underline;

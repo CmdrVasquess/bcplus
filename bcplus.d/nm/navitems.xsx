@@ -3,5 +3,5 @@
 (materials Materials)
 (ships Ships)
 (synth Synthesis)
-(system System)
+(bodies Bodies)
 (travel Travel)

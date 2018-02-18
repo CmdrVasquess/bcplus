@@ -121,12 +121,13 @@ func loadTmpls() {
 	gx.MustIndexMap(&gxtFrame, needTemplate(tmpls, "body-online"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtNavItem, needTemplate(tmpls, "body-online/nav-item"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtNavActv, needTemplate(tmpls, "body-online/nav-actv"), idxMapNames.Convert)
+	loadDshbTemplates()
 	loadWebTkTemplates()
 	loadRescTemplates()
 	loadTrvlTemplates()
 	loadSynTemplates()
 	loadShpTemplates()
-	loadSysTemplates()
+	loadBdyTemplates()
 }
 
 func prepareOfflinePage(title *gx.Template, body *gx.Template) {
@@ -355,10 +356,10 @@ func runWebGui() {
 	})
 	go wscHub()
 	http.HandleFunc("/ws", serveWs)
-	setupTopic("dashboard", wuiDashboard)
+	//setupTopic("dashboard", wuiDashboard)
 	setupTopic("ships", wuiShp)
 	setupTopic("travel", wuiTravel)
-	setupTopic("system", wuiSys)
+	setupTopic("bodies", wuiBdys)
 	setupTopic("materials", wuiMats)
 	setupTopic("synth", wuiSyn)
 	glog.Logf(l.Info, "Starting web GUI on port %d", webGuiPort)

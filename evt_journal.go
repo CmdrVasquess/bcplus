@@ -66,7 +66,7 @@ var dispatch = map[string]journalHanlder{
 }
 
 func init() {
-	dispatch["LoadGame"] = loadGame
+	dispatch["LoadGame"] = jeLoadGame
 }
 
 func eventTime(evt map[string]interface{}) (time.Time, error) {
@@ -118,7 +118,7 @@ func DispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 			hdlr(state, jsonEvt, t)
 			credAfter := state.Cmdr.Credits
 			if credAfter != credBefore {
-				ejlog.Logf(l.Debug, "credits change: %s %d → %d diff: %d",
+				ejlog.Logf(l.Info, "credits change: %s %d → %d diff: %d",
 					evtNm, credBefore, credAfter, credAfter-credBefore)
 			}
 			if !cmdrSwitch {
@@ -315,7 +315,7 @@ func jeLoadout(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	ship.Ident = str.ToUpper(ship.Ident)
 }
 
-func loadGame(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
+func jeLoadGame(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	cmdrNm, ok := attStr(evt, "Commander")
 	if !gstat.IsOffline() {
 		saveState(gstat.IsBeta)

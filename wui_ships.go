@@ -67,7 +67,7 @@ func wuiShp(w http.ResponseWriter, r *http.Request) {
 				btCShip.Bind(gxtCShip.Loc, webGuiNOC)
 				btCShip.Bind(gxtCShip.Dist, webGuiNOC)
 			} else {
-				btCShip.BindP(gxtCShip.Loc, gxw.HtmlEsc(ship.Loc.String()))
+				btCShip.Bind(gxtCShip.Loc, CntLoc{ship.Loc.Ref}) //gxw.HtmlEsc(ship.Loc.String()))
 				btCShip.Bind(gxtCShip.Dist,
 					gxm.Msg(wuiL7d, "%.2f", gxy.Dist(ship.Loc.Ref, cmdr.Loc.Ref)))
 			}
