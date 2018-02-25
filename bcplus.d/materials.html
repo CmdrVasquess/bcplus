@@ -1,4 +1,4 @@
-<!doctype html>
+c<!doctype html>
 <html lang="de">
   <head>
     <meta charset="utf-8">
@@ -36,14 +36,7 @@ main .mdmnd {
 	<table>
 		<tr> 
 			<th rowspan="2">⌬</th><th rowspan="2">Material</th>
-			<th rowspan="2"><select id="flt-have" onchange="reFilter()">
-				<option value="alor">All</option>
-				<option value="alnd">All and</option>
-				<option value="hvnd">Have and</option>
-				<option value="hvor">Have or</option>
-				<option value="nond">None and</option>
-				<option value="noor">None or</option>
-			</select></th>
+			<th>Have</th>
 			<th rowspan="2"><input id="flt-need" type="checkbox" name="shwnd" checked
 			                       onchange="reFilter()">Need</th>
 			<th rowspan="2" colspan="2">Sorce</th>
@@ -55,6 +48,14 @@ main .mdmnd {
 <!-- <<< th-synrcp <<< \-->
 		</tr>
 		<tr>
+			<th><select id="flt-have" onchange="reFilter()">
+				<option value="alor">Show all!</option>
+				<option value="alnd">Show if</option>
+				<option value="hvnd">any and</option>
+				<option value="hvor">any or</option>
+				<option value="nond">none and</option>
+				<option value="noor">none or</option>
+			</select></th>
 <!-- >>> th-synlvls <<< \-->
 <!-- >>> th-synlvl >>> -->
 			<th>`count`&times;`level`</th>
@@ -72,14 +73,14 @@ main .mdmnd {
 <!-- >>> need >>> -->
 			<th>`need`</th>
 
-<!-- <<< need <<< -->
+<!-- <<< need <<< \-->
 		</tr>
 
 <!-- <<< sec-title <<< \-->
 <!-- >>> sec-row >>> -->
 		<tr class="`cat`" id="`mat-id`">
  	  		<td class="center"><img class="inlico" src="s/mat/g`mat-grade`.png"></td>			
- 	  		<td><a target="BCPxref"
+ 	  		<td><a target="bcp-xref"
  	  		       href="http://elite-dangerous.wikia.com/wiki/`xref`">`name`</a></td>
  	  		<td class="right">`have`</td>
  	  		<td class="right">`need`</td>
@@ -115,8 +116,8 @@ var initFilterNeed = `flt-need`;
 <!-- >>> hide-cat >>> -->
 hideCat('`cat`');
 
-<!-- <<< hide-cat <<< -->
-<!-- <<< end-script <<< -->
+<!-- <<< hide-cat <<< \-->
+<!-- <<< end-script <<< \-->
   </main>
   </body>
 </html>

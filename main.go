@@ -22,6 +22,7 @@ import (
 func init() {
 	assetPathRoot = os.Args[0]
 	assetPathRoot = filepath.Dir(filepath.Clean(assetPathRoot))
+	docsPath = filepath.Join(assetPathRoot, "docs")
 	assetPathRoot = filepath.Join(assetPathRoot, "bcplus.d")
 	var err error
 	if assetPathRoot, err = filepath.Abs(assetPathRoot); err != nil {
@@ -95,6 +96,7 @@ var signals = make(chan os.Signal, 1)
 
 var jrnlDir string
 var dataDir string
+var enableJMacros bool
 
 var nmNavItem namemap.FromTo
 var nmRnkCombat namemap.FromTo
@@ -114,11 +116,13 @@ var nmSynthLvl namemap.FromTo
 
 //go:generate ./genversion.sh
 func BCpDescribe(wr io.Writer) {
-	fmt.Fprintf(wr, "CMDR Vasquess: BC+ v%d.%d.%d / %s (%s)",
+	fmt.Fprintf(wr, "BoardComputer+ v%d.%d.%d%s / %s on %s (%s)",
 		BCpMajor,
 		BCpMinor,
 		BCpBugfix,
+		BCpQuality,
 		runtime.Version(),
+		runtime.GOOS,
 		BCpDate)
 }
 
@@ -155,6 +159,7 @@ func saveState(beta bool) {
 		}
 	}
 	theGalaxy.Close()
+	saveMacros(filepath.Join(dataDir, "macros.xsx"))
 }
 
 func loadCreds(cmdrNm string) error {
@@ -200,6 +205,7 @@ func loadState(cmdrNm string, beta bool) bool {
 		defer r.Close()
 		theGame.Load(r)
 		if len(credsKey) > 0 {
+			// TODO
 		}
 		return true
 	} else {
@@ -207,7 +213,10 @@ func loadState(cmdrNm string, beta bool) bool {
 	}
 }
 
-var assetPathRoot string
+var (
+	docsPath      string
+	assetPathRoot string
+)
 
 func assetPath(relPathSlash string) string {
 	relPathSlash = filepath.FromSlash(relPathSlash)
@@ -230,7 +239,7 @@ func eventLoop() {
 						glog.Logf(l.Error, "journal event error: %s", r)
 					}
 				}()
-				DispatchJournal(&theStateLock, theGame, e.data.([]byte))
+				dispatchJournal(&theStateLock, theGame, e.data.([]byte))
 			}()
 		case esrcUsr:
 			func() {
@@ -260,6 +269,7 @@ func main() {
 	promptKey := flag.Bool("pmk", false, "prompt for credential master key")
 	flag.DurationVar(&macroPause, "mcrp", 100*time.Millisecond,
 		"set the delay between macro elements")
+	flag.BoolVar(&enableJMacros, "jmacros", true, "enable journal macro engine")
 	showHelp := flag.Bool("h", false, "show help")
 	flag.Parse()
 	if *showHelp {
@@ -273,10 +283,7 @@ func main() {
 	} else if *verbose {
 		glog.SetLevel(l.Debug)
 	}
-	glog.Logf(l.Info, "BoardComputer+ (%d.%.d.%d%s %s) on: %s\n",
-		BCpMajor, BCpMinor, BCpBugfix, BCpQuality,
-		BCpDate,
-		runtime.GOOS)
+	glog.Logf(l.Info, BCpDescStr())
 	glog.Logf(l.Info, "data    : %s\n", dataDir)
 	var err error
 	if *promptKey {

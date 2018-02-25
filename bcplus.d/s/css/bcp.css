@@ -7,6 +7,7 @@
   --tblOdd: #522400;
   --tblEvn: #2f1500;
   --navBtn: #0080FF;
+  --mnuBkg: #522400;
 /*  --colBkg: #eee;
   --colFrg: #000;
   --colSec: #555;
@@ -14,7 +15,8 @@
   --colBad: #700;
   --tblOdd: #ccc;
   --tblEvn: #ddd;
-  --navBtn: #888;*/
+  --navBtn: #888;
+  --mnuBkg: #CCCCCC;*/
 }
 .left {
 	text-align: left;
@@ -80,15 +82,33 @@ header #switches {
 	justify-content: space-around;
 	align-items: center;
 }
-header #menu {
-	height: 1em;
-	cursor: pointer;
-}
 header #off {
 	height: 1.5em;
 	cursor: pointer;
 }
-header #menu img { height: 1em; }
+#menu {
+	cursor: pointer;
+	position: relative;
+}
+#menu img { height: 1em; }
+#menu ul {
+	position:absolute;
+	left: -.2em;
+	top: -1.2em;
+	padding: .5em;
+	background-color: var(--mnuBkg);
+	list-style-type: none;
+	border: 1px solid var(--colSec);
+	box-shadow: 2px 1px 20px var(--colSec);
+}
+#menu ul.hide { display: none; }
+#menu li {
+	white-space: nowrap;
+	padding-top: .2em; 
+	padding-bottom: .2em; 
+}
+#menu a { color: var(--colGood); }
+#menu a:hover { color: var(--colFrg); }
 header #base {
 	border: 1px solid var(--colBkg);
 	padding: .1em .3em .1em .3em;

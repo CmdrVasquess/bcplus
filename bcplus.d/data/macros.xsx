@@ -1,3 +1,3 @@
-[source event macro]
-(j Docked [f8])
-(j Undocked [f8])
+[source event active macro]
+(j Docked false [f8])
+(j Undocked false [f8])

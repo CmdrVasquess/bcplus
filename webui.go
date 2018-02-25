@@ -43,6 +43,7 @@ func needTemplate(tmap map[string]*gx.Template, path string) *gx.Template {
 }
 
 var offlinePage []byte
+var denyPage []byte
 
 var gxtPage struct {
 	*gx.Template
@@ -116,7 +117,8 @@ func loadTmpls() {
 	}
 	gx.MustIndexMap(&gxtPage, needTemplate(tmpls, ""), idxMapNames.Convert)
 	prepareOfflinePage(needTemplate(tmpls, "title-offline"),
-		needTemplate(tmpls, "body-offline"))
+		needTemplate(tmpls, "body-offline"),
+		needTemplate(tmpls, "body-deny"))
 	gx.MustIndexMap(&gxtTitle, needTemplate(tmpls, "title-online"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtFrame, needTemplate(tmpls, "body-online"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtNavItem, needTemplate(tmpls, "body-online/nav-item"), idxMapNames.Convert)
@@ -128,9 +130,10 @@ func loadTmpls() {
 	loadSynTemplates()
 	loadShpTemplates()
 	loadBdyTemplates()
+	loadSMcTemplates()
 }
 
-func prepareOfflinePage(title *gx.Template, body *gx.Template) {
+func prepareOfflinePage(title *gx.Template, tOffline, tDeny *gx.Template) {
 	btOffline := gxtPage.NewBounT()
 	if BCpBugfix == 0 {
 		btOffline.BindFmt(gxtPage.Version, "%d.%d%s", BCpMajor, BCpMinor, BCpQuality)
@@ -144,18 +147,27 @@ func prepareOfflinePage(title *gx.Template, body *gx.Template) {
 	} else {
 		btOffline.BindP(gxtPage.PgTitle, string(stat))
 	}
-	if stat, ok := body.Static(); ok {
-		btOffline.BindP(gxtPage.PgBody, string(stat))
+	if stat, ok := tOffline.Static(); ok {
+		btOffline.Bind(gxtPage.PgBody, gx.Data(stat))
 	} else {
 		glog.Fatal("no offline body")
 	}
 	btOffline.Bind(gxtPage.Styles, gx.Empty)
 	btOffline.Bind(gxtPage.ScriptEnd, gx.Empty)
-	fix := btOffline.Fixate()
-	if stat, ok := fix.Static(); ok {
+	if stat, ok := btOffline.Fixate().Static(); ok {
 		offlinePage = stat
 	} else {
-		panic("offline page not static")
+		glog.Fatal("offline page not static")
+	}
+	if stat, ok := tDeny.Static(); ok {
+		btOffline.Bind(gxtPage.PgBody, gx.Data(stat))
+	} else {
+		glog.Fatal("no deny body")
+	}
+	if stat, ok := btOffline.Fixate().Static(); ok {
+		denyPage = stat
+	} else {
+		glog.Fatal("deny page not static")
 	}
 }
 
@@ -164,12 +176,36 @@ func init() {
 }
 
 func offline(w http.ResponseWriter, r *http.Request, h func(http.ResponseWriter, *http.Request)) {
-	if theGame.IsOffline() {
+	if !primaryClient(r) {
+		w.Write(denyPage)
+	} else if theGame.IsOffline() {
 		w.Write(offlinePage)
 	} else {
 		theStateLock.RLock()
 		defer theStateLock.RUnlock()
 		h(w, r)
+	}
+}
+
+var wuiPCLient = ""
+
+func primaryClient(rq *http.Request) bool {
+	clt := rq.RemoteAddr
+	if sep := strings.LastIndex(clt, ":"); sep > 0 {
+		clt = clt[:sep]
+	}
+	if len(wuiPCLient) == 0 {
+		wuiPCLient = clt
+		glog.Logf(l.Info, "set primary client: %s", wuiPCLient)
+		return true
+	} else if clt != wuiPCLient {
+		glog.Logf(l.Warn,
+			"request from not primary client '%s' for '%s'",
+			clt,
+			rq.URL.String())
+		return false
+	} else {
+		return true
 	}
 }
 
@@ -187,6 +223,35 @@ func nmap(nm *namemap.FromTo, term string) gx.Content {
 func nmapU8(nm *namemap.FromTo, rank uint8) gx.Content {
 	str, _ := nm.Map(strconv.Itoa(int(rank)))
 	return gxw.EscHtml{gx.Print{str}}
+}
+
+// TODO should be taken from a package for localized input. Is there a reverse
+//      for golang/x/text/message?
+func parseDec(dstr string) (float64, error) {
+	lastCma := strings.LastIndex(dstr, ",")
+	lastDot := strings.LastIndex(dstr, ".")
+	if lastCma >= 0 {
+		frstCma := strings.Index(dstr, ",")
+		if lastDot < 0 {
+			if frstCma == lastCma {
+				dstr = strings.Replace(dstr, ",", ".", -1)
+			} else {
+				dstr = strings.Replace(dstr, ",", "", -1)
+			}
+		} else if lastDot < lastCma {
+			dstr = strings.Replace(dstr, ".", "", -1)
+			dstr = strings.Replace(dstr, ",", ".", -1)
+		} else {
+			dstr = strings.Replace(dstr, ",", "", -1)
+		}
+	} else if lastDot >= 0 {
+		frstDot := strings.Index(dstr, ".")
+		if frstDot != lastDot {
+			dstr = strings.Replace(dstr, ".", "", -1)
+		}
+	}
+	f, err := strconv.ParseFloat(dstr, 64)
+	return f, err
 }
 
 func pgLocStyleFix(tmpls map[string]*gx.Template) (res gx.Content) {
@@ -349,8 +414,10 @@ func activeTopic(r *http.Request) (res string) {
 }
 
 func runWebGui() {
-	htfs := http.FileServer(http.Dir(assetPath("s")))
-	http.Handle("/s/", http.StripPrefix("/s", htfs))
+	htStatic := http.FileServer(http.Dir(assetPath("s")))
+	http.Handle("/s/", http.StripPrefix("/s", htStatic))
+	htDoc := http.FileServer(http.Dir(docsPath))
+	http.Handle("/doc/", http.StripPrefix("/doc", htDoc))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		offline(w, r, wuiDashboard)
 	})
@@ -362,16 +429,53 @@ func runWebGui() {
 	setupTopic("bodies", wuiBdys)
 	setupTopic("materials", wuiMats)
 	setupTopic("synth", wuiSyn)
+	http.HandleFunc("/set-macros", func(w http.ResponseWriter, r *http.Request) {
+		offline(w, r, suiMacros)
+	})
 	glog.Logf(l.Info, "Starting web GUI on port %d", webGuiPort)
 	go http.ListenAndServe(fmt.Sprintf(":%d", webGuiPort), nil)
+	var potAddrs []string
 	ifaddrs, _ := net.InterfaceAddrs()
 	for _, addr := range ifaddrs {
-		if nip, ok := addr.(*net.IPNet); ok && !nip.IP.IsLoopback() && nip.IP.To4() != nil {
-			glog.Logf(l.Info,
-				"for web GUI open 'http://%s:%d/' in your browser",
-				nip.IP.String(),
-				webGuiPort)
-			break
+		if nip, ok := addr.(*net.IPNet); ok {
+			if nip.IP.IsLoopback() {
+				continue
+			}
+			if ip := nip.IP.To4(); ip != nil {
+				potAddrs = append(potAddrs, nip.IP.String())
+			} else if ip := nip.IP.To16(); ip != nil {
+				potAddrs = append(potAddrs, fmt.Sprintf("[%s]", nip.IP.String()))
+			}
+			//			; ok && !nip.IP.IsLoopback() && nip.IP.To4() != nil {
+			//			glog.Logf(l.Info,
+			//				"for web GUI open 'http://%s:%d/' in your browser",
+			//				nip.IP.String(),
+			//				webGuiPort)
+			//			break
 		}
 	}
+	switch len(potAddrs) {
+	case 0:
+		glog.Log(l.Warn,
+			"cannot determine BC+ IP address. check your network configuration.")
+		glog.Logf(l.Warn,
+			"- try local acces to web GUI with 'http://localhost:%d/",
+			webGuiPort)
+	case 1:
+		glog.Logf(l.Info,
+			"to access web GUI open 'http://%s:%d/' in your browser",
+			potAddrs[0],
+			webGuiPort)
+	default:
+		glog.Logf(l.Info,
+			"BC+ found %d ip address on your computer. Try following URLs to connect web GUI:",
+			len(potAddrs))
+		for _, addr := range potAddrs {
+			glog.Logf(l.Info,
+				"- 'http://%s:%d/'",
+				addr,
+				webGuiPort)
+		}
+	}
+	glog.Log(l.Warn, "Check your firewall to not block access to BC+!")
 }

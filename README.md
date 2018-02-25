@@ -21,6 +21,54 @@ current system:
 
 ![Travel Screen](docs/imgs/screen-mats.jpg?raw=true)
 
+## Installation
+
+BC+ currently is only provided for E:D on PC – though it compliles fine
+on Linux (my dev platform). It can be run from any directory as long as
+the directory with necessary assets `bcplus.d` is accessible in the same
+directory.
+
+If you download the binary distribution, just unpack the ZIP file. This
+will create a BCplus folder containing all things you need.
+
+## Running
+
+With a standard E:D installation from Frontier it should be perfectly
+fine to just double-click the BCplus.exe. It should find the journal
+files in the standard location. If you don't have a standard filesystem
+layout, there are some command-line options that let you change
+directory paths and other things.
+
+After running the program a web-server is running on your machine (that's
+why the windows firewall will ask you if BCplus is permitted to access
+the network the first time you run the program). You can open the web 
+pages with your local browser on `http://localhost:1337`. If you want to
+run the browser on another device in your network you can do so, if you
+know how to address your E:D host, e.g. by IP like `192.168.0.2`. Then
+you would enter `http://192.168.0.2:1337` in the browser on the other
+device. 
+
+### Options
+
+First, option syntax is not Windows standard – BC+ is written in
+[GO](https://golang.org) and uses GO's standard command line parsing
+package. So be prepared to start options with '-' not '/'.
+
+* `-j <directory>` set the path to the directory containig your journal
+  files.
+
+* `-p <port>` set the port on which the web server is listening (default:
+  1337).
+
+* `-d <directory>` set the directory where BC+ collects data about your
+  commander and the visited galaxy (BC+ can handle multiple commanders)
+
+* `-l` pick up the lates journal file when starting. This is useful if
+  you run BC+ after E:D already started to write the journal file.
+
+* `-h` show help information, i.e. the complete and up-to-date list of
+  options.
+
 ## Credits
 
 1. Thanks to the [GO](https://golang.org) community to provide such a nice

@@ -23,7 +23,7 @@ laufen lassen. Das bedeutet
 * Starten und Beenden
 BC+ sollte gestartet werden, bevor E:D startet. BC+ beobachtet den
 Ordner mit Journal Dateien und fängt an diese zu lesen, sobald eine
-neue Datei angelegt wird (vgl. Startoption -l unten).
+neue Datei angelegt wird (vgl. Startoption =-l= unten).
 
 Für eine 08/15 E:D Installation aus dem Frontier Store reicht ein
 Doppel-Klick auf die BCplus.exe. Diese findet automatisch alles
@@ -91,9 +91,9 @@ im Journal auftauchen.
 
 Damit diese und andere interessante Informationen nicht verloren
 gehen, muss BC+ die Gelegenheit haben, diese Infos zu speichern. Und
-weil ich, recht faul, die Daten nur gelegentlich – insbesondere beim
-/kontrollierten herunterfahren/ des BD+ speichere, ist es wichtig,
-dass BC+ auch kontrolliert herunter gefahren wird.
+weil ich – recht faul – die Daten nur gelegentlich speichere,
+insbesondere beim /kontrollierten herunterfahren/ des BC+, ist es
+wichtig, dass BC+ auch kontrolliert herunter gefahren wird.
 
 Das bedeutet, dass man am einfachsten den „Aus“-Schalter in der Web
 GUI verwendet. Man kann auch im Terminal Fenster Strg-C drücken, bis
@@ -105,18 +105,20 @@ Fensters zu drücken!
 Z.Z. verbindet sich BC+ über HTTP (ohne ‘S’). D.h. dass die
 Netzkommunikation im Klartext in Eurem lokalen Netz läuft. In der
 aktuellen Version werden keinen sensiblen Daten übertragen: Keine
-Passworte, Bernutzerkennungen o.Ä. Von daher ist das z.Z. kein
-m.E. Problem.
+Passworte, Bernutzerkennungen o.Ä. Von daher ist das meines Erachtens
+im Augenblick Problem.
 
-Aber während Ihr spielt und der BC+ läuft können sich noch weitere Web
-Browser mit dem BC+ verbinden und damit all das tun, was der
+Aber während Ihr spielt und der BC+ läuft, können sich noch weitere
+Web Browser mit dem BC+ verbinden und damit all das tun, was der
 „eigentliche“ Nutzer auch tun kann. Bitte bedenken!
 
 * Deinstallation
 Braucht man nicht! Wer würde diese *unglaublich* nützliche Tool je
-wieder deinstallieren wollen. Spaß bei Seite: Es reicht, wenn man den
-BCplus Ordner aus dem Download-zip und den Ordner mit den eigenen BC+
-Dateien löscht. Sonst hinterlässt BC+ nicht auf dem Rechner.
+wieder deinstallieren wollen. Spaß bei Seite: Es reicht, wenn man 
+
+1. den BCplus Ordner aus dem Download-ZIP und
+2. den Ordner mit den eigenen BC+ Dateien (C:\Users\<user>\bcplus)
+   löscht.
 
 …Ach ja! Und das Lesezeichen aus dem Browser kann man auch noch
 wegschmeißen ;)

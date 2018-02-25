@@ -1,0 +1,58 @@
+#+TITLE: BC+ Macro Engine
+
+The BC+ macro engine is based on the [[https://github.com/go-vgo/robotgo][RobotGo, Go Native cross-platform
+GUI automation]] project. BC+ implements a simple macro language to
+describe keyboard macros. A macro is a list of action. Between each
+action, BC+ will make a short pause (100ms) before the next action is
+executed.
+
+* Keyboard Action
+There are two kinds of keyboard actions:
+
+- Typing words :: This is expressed by a quoted "<string>"
+                  representing the typed words. To make the quote " be
+                  part of the string write \" inside the string. To
+                  make backslash \ be part of the sting write \\ for a
+                  single backslash.
+
+				  E.g. ="Nice ship name \"Bella Principessa\"!"= would
+                  be a message to appreciate some commander's taste
+                  for naming his Cobra.
+
+- Single key actions :: These describe an action of one key on the
+     keyboard. \\
+     =<key> | ([<action>] <key> [<modifier>...])=
+
+- Actions :: tap, down, up
+- Modifiers :: alt, command, control, and shift
+
+** Special Key Codes
+The following key codes are [[https://github.com/go-vgo/robotgo/blob/master/docs/keys.md][supported by]]:
+
+- Control Keys :: backspace delete enter tab escape home end pageup
+                  pagedown command alt control shift right_shift space
+                  printscreen insert menu
+
+- Arrow Keys :: up down left right
+
+- Function Keys :: f1 f2 f3 … f24
+
+- Number Pad :: numpad_0 numpad_1 numpad_2 … numpad_9
+
+- Audio :: audio_mute audio_vol_down audio_vol_up audio_play
+           audio_stop audio_pause audio_prev audio_next audio_rewind
+           audio_forward audio_repeat audio_random
+
+* Mouse Actions
+{<cmd>...}
+
+** Cmds
+- move [+-]<x> [+-]<y> ::
+
+- [left,middle,right][up,down,click,double] ::
+
+- drag [+-]<x> [+-]<y> ::
+
+- scroll <no> [up|down] ::
+
+* Redirected Actions

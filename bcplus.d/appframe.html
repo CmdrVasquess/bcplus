@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BC+ `version`: `title`</title>
     <link rel="stylesheet" href="s/css/bcp.css">
-<!-- >>> dyn-styles <<< -->
+<!-- >>> dyn-styles <<< \-->
 <!-- >>> title-offline >>> -->
 –offline–
 <!-- <<< title-offline <<< \-->
@@ -24,16 +24,32 @@ CMDR `cmdr-name`
 	<img src="s/img/EDLoader.svg" alt="loading…" style="margin-top:5em;">
 	</main>
 <!-- <<< body-offline <<< \-->
+<!-- >>> body-deny >>> -->
+   <header style="display:block;" class="center">
+	  <h1 style="color: var(--colBad)">…access denied…</h1>
+	</header>
+	<main class="center">
+	<p>There is already another BC+ client connected to your main board computer.</p>
+	<img src="s/img/EDLoader.svg" alt="loading…" style="margin-top:5em;">
+	</main>
+<!-- <<< body-deny <<< \-->
 <!-- >>> body-online >>> -->
 	<header>
 	<a href="/"><img id="bcplogo" src="s/img/Logo.png"></a>
 	<div id="switches">
 		<img id="off" src="s/img/OnOff.png" title="Double-click to shutdown BC+" ondblclick="quit()">
-		<img id="menu" src="s/img/Menu.png" title="NYI! Settings">
+		<div id="menu">
+		  <img src="s/img/Menu.png" onclick="showMenu()">
+		  <ul class="hide" onmouseleave="hideMenu()">
+		    <li><a href="set-macros" target="bcp-settings">Journal Event Macros</a></li>
+		    <li><a href="disconnect" title="Let's you connect from another machine">Disconnect</a></li>
+		  	 <li><a href="doc/index-en.html" target="bcp-doc">Documentation</a></li>
+		  </ul>
+		</div>
 	</div>
 	<div id="base">
 	<p>CMDR `cmdr-name`<p>
-	<p>`credits` Cr</p>
+	<p title="Not precise because of share with crew member">~`credits` Cr</p>
 	<p>`ship-name` / `ship-ident`</p>
 	<p>`ship-type`</p>
 	</div>
@@ -91,35 +107,12 @@ CMDR `cmdr-name`
 	</main>
 <!-- <<< body-online <<< \-->
 	<footer id="status" title="`full-version`">&nbsp;</footer>
+	<script src="s/js/wsock.js"></script>
 	<script>
 var statLine = document.getElementById("status");
 function showStatus(msg) {
 	statLine.innerHTML = msg;
 	setTimeout(function(){ statLine.innerHTML = "&nbsp;" }, 10000);
-}
-var wsurl = "ws://"+location.hostname+":"+location.port+"/ws";
-var wsock = new WebSocket(wsurl);
-function startWs() {
-	// https://www.tutorialspoint.com/html5/html5_websocket.htm
-	// .onerror(err); .onopen; .onmessage(msg); .onclose
-	/*wsockUpd.onopen = function () {
-	   showStatus('Event Channel Connected: '+wsurl);	   	
-	}*/
-	wsock.onerror = function (err) {
-	   showStatus('Event Channel Error: '+err);	   	
-	}
-	wsock.onclose = function(evt) {
-	   showStatus('Event Channel Closed: '+wsurl);
-	   setTimeout(startWs(), 1500);
-	}
-	wsock.onmessage = function(evt) {
-		var cmd = JSON.parse(evt.data)
-	 	if (cmd.cmd == "reload") {
-	   	location.reload(true);
-	  	} else {
-	     	showStatus('Event: ['+evt.data+']');
-	   }
-	}	   
 }
 function tglHome() {
 	var rq = new Object()
@@ -150,7 +143,6 @@ function send2kbd(e) {
 	rq.str = txt;
 	var msg = JSON.stringify(rq);
 	wsock.send(msg);
-
 }
 function higltSkbd(e) {
 	var span = e.target.parentElement;
@@ -177,14 +169,15 @@ function decoAllSkbd() {
 		decoSkbd(skbds[i])
 	}
 }
-document.addEventListener('DOMContentLoaded', function () {
-	if (window["WebSocket"]) {
-		startWs()
-	} else {
-		alert("Your browser does not support WebSockets.")
-	}
-	decoAllSkbd();
-})
+function showMenu() {
+	var mnu = document.querySelector("#menu ul");
+	mnu.classList.remove("hide");
+}
+function hideMenu() {
+	var mnu = document.querySelector("#menu ul");
+	mnu.classList.add("hide");
+}
+document.addEventListener('DOMContentLoaded', decoAllSkbd);
 	</script>
 <!-- >>> script-end <<< \-->
   </body>

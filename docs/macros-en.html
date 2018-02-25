@@ -3,10 +3,10 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-02-22 Do 08:18 -->
+<!-- 2018-02-23 Fr 11:41 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BC+ – BoardComputer+ Documentation</title>
+<title>BC+ Macro Engine</title>
 <meta name="generator" content="Org mode" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
@@ -226,178 +226,108 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        displayAlign: "center",
-        displayIndent: "0em",
-
-        "HTML-CSS": { scale: 100,
-                        linebreaks: { automatic: "false" },
-                        webFont: "TeX"
-                       },
-        SVG: {scale: 100,
-              linebreaks: { automatic: "false" },
-              font: "TeX"},
-        NativeMML: {scale: 100},
-        TeX: { equationNumbers: {autoNumber: "AMS"},
-               MultLineWidth: "85%",
-               TagSide: "right",
-               TagIndent: ".8em"
-             }
-});
-</script>
-<script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="content">
-<h1 class="title">BC+ – BoardComputer+ Documentation</h1>
-
-<div id="outline-container-orga5dc00c" class="outline-2">
-<h2 id="orga5dc00c">Download</h2>
-<div class="outline-text-2" id="text-orga5dc00c">
+<h1 class="title">BC+ Macro Engine</h1>
 <p>
-<a href="https://github.com/CmdrVasquess/BCplus/releases">Binary Downloads</a> can be found on github. The “basic” build, i.e. the
-English version, is the file <code>BCplus-&lt;version&gt;.zip</code>. Othe language
-packages may become available as <code>BCplus-&lt;lang&gt;-&lt;version&gt;.zip</code>.
-</p>
-</div>
-</div>
-
-<div id="outline-container-orgb70ecf0" class="outline-2">
-<h2 id="orgb70ecf0">Installation</h2>
-<div class="outline-text-2" id="text-orgb70ecf0">
-<p>
-Currently BC+ is only build for the PC. To run BC+ no additional
-runtime environment, like e.g. Python or Java, is needed. BC+ is
-written in <a href="https://golang.org/">Go</a> and runs native on your machine. Further more BC+ is
-written to run right out of the box without installation. This means
+The BC+ macro engine is based on the <a href="https://github.com/go-vgo/robotgo">RobotGo, Go Native cross-platform
+GUI automation</a> project. BC+ implements a simple macro language to
+describe keyboard macros. A macro is a list of action. Between each
+action, BC+ will make a short pause (100ms) before the next action is
+executed.
 </p>
 
-<ul class="org-ul">
-<li>New versions are easy to install. Simply delete the old BCplus
-folder and unzip the new one right in place. (May be you wanna keep
-the old version around until you are satisfied with the new one?)</li>
-
-<li>On the other hand no one creates nice start-menu entries or icons on
-the desktop for you.</li>
-</ul>
-</div>
-</div>
-
-<div id="outline-container-orgf3f3b79" class="outline-2">
-<h2 id="orgf3f3b79">Running and Exit</h2>
-<div class="outline-text-2" id="text-orgf3f3b79">
+<div id="outline-container-org5e29571" class="outline-2">
+<h2 id="org5e29571">Keyboard Action</h2>
+<div class="outline-text-2" id="text-org5e29571">
 <p>
-BC+ should be started before running E:D. BC+ watches the journal
-directory and starts reading when a new journal file is created (see
-also option <code>-l</code>).
-</p>
-
-<p>
-If you have a standard E:D installation from the Frontier Store simply
-double-clicking BCplus.exe will do the job. BC+ should detect necessary
-paths by itself:
-</p>
-
-<ul class="org-ul">
-<li>The E:D journal file folder</li>
-
-<li>The folder with BC+'s own data files</li>
-</ul>
-
-<p>
-Both paths will be displayed in BC+ text console when it starts. If
-you don't have the standard installation you have to set the paths on
-the command line.
-</p>
-</div>
-
-<div id="outline-container-org8d22ada" class="outline-3">
-<h3 id="org8d22ada">Command Line Options</h3>
-<div class="outline-text-3" id="text-org8d22ada">
-<p>
-First, option syntax is not Windows standard – BC+ is written in <a href="https://golang.org/">Go</a>
-and uses Go's standard command line parsing package. So be prepared to
-start options with '-' not '/'.
+There are two kinds of keyboard actions:
 </p>
 
 <dl class="org-dl">
-<dt>-h</dt><dd>show help information, i.e. the complete and up-to-date list
-of options.</dd>
+<dt>Typing words</dt><dd><p>
+This is expressed by a quoted "&lt;string&gt;"
+representing the typed words. To make the quote " be
+part of the string write \" inside the string. To
+make backslash \ be part of the sting write \\ for a
+single backslash.
+</p>
 
-<dt>-j &lt;directory&gt;</dt><dd>set the path to the directory containig your
-journal files.</dd>
+<p>
+E.g. <code>"Nice ship name \"Bella Principessa\"!"</code> would
+be a message to appreciate some commander's taste
+for naming his Cobra.
+</p></dd>
 
-<dt>-d &lt;directory&gt;</dt><dd>set the directory where BC+ collects data about
-your commander and the visited galaxy (BC+ can
-handle multiple commanders)</dd>
+<dt>Single key actions</dt><dd>These describe an action of one key on the
+keyboard. <br />
+<code>&lt;key&gt; | ([&lt;action&gt;] &lt;key&gt; [&lt;modifier&gt;...])</code></dd>
 
-<dt>-l</dt><dd>pick up the lates journal file when starting. This is useful
-if you run BC+ after E:D already started to write the journal
-file.</dd>
-
-<dt>-p &lt;port&gt;</dt><dd>set the port on which the web server is listening
-(default: 1337).</dd>
+<dt>Actions</dt><dd>tap, down, up</dd>
+<dt>Modifiers</dt><dd>alt, command, control, and shift</dd>
 </dl>
+</div>
 
+<div id="outline-container-org1e3fc2a" class="outline-3">
+<h3 id="org1e3fc2a">Special Key Codes</h3>
+<div class="outline-text-3" id="text-org1e3fc2a">
 <p>
-Normal users shouldn't need more options. If you feel that there has
-to be more try <code>-h</code> to see the complete list of options. This should
-help a little. If even that isn't enough: <i>Use the source, Luke!</i>
-</p>
-</div>
-</div>
-
-<div id="outline-container-org0825c11" class="outline-3">
-<h3 id="org0825c11">Connecting the Web Browser</h3>
-</div>
-
-<div id="outline-container-orgedf5db4" class="outline-3">
-<h3 id="orgedf5db4">Shutting Down BC+</h3>
-</div>
-
-<div id="outline-container-orgca4c23d" class="outline-3">
-<h3 id="orgca4c23d">Few Word on Security</h3>
-<div class="outline-text-3" id="text-orgca4c23d">
-<p>
-Currently BC+ serves its GUI over HTTP (without 'S'). This means that
-data is send as clear text over you local network. Currently there is
-no sensitive data transferred: No passwords, users ids etc. Thus HTTP
-should be no problem for now.
+The following key codes are <a href="https://github.com/go-vgo/robotgo/blob/master/docs/keys.md">supported by</a>:
 </p>
 
-<p>
-However keep in mind that while BC+ is running any Web Browser in your
-net can connect to it. Those user can perform same actions on BC+ as
-you do! Keep this in mind.
-</p>
+<dl class="org-dl">
+<dt>Control Keys</dt><dd>backspace delete enter tab escape home end pageup
+pagedown command alt control shift right_shift space
+printscreen insert menu</dd>
+
+<dt>Arrow Keys</dt><dd>up down left right</dd>
+
+<dt>Function Keys</dt><dd>f1 f2 f3 … f24</dd>
+
+<dt>Number Pad</dt><dd>numpad_0 numpad_1 numpad_2 … numpad_9</dd>
+
+<dt>Audio</dt><dd>audio_mute audio_vol_down audio_vol_up audio_play
+audio_stop audio_pause audio_prev audio_next audio_rewind
+audio_forward audio_repeat audio_random</dd>
+</dl>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org9d32593" class="outline-2">
-<h2 id="org9d32593">Uninstall</h2>
-<div class="outline-text-2" id="text-org9d32593">
+<div id="outline-container-orga5991e9" class="outline-2">
+<h2 id="orga5991e9">Mouse Actions</h2>
+<div class="outline-text-2" id="text-orga5991e9">
 <p>
-Is <b>absolutely</b> unnecessary! Who would ever delete such a useful,
-nice, wonderful… OK, OK, OK. It's simple—just delete
-</p>
-
-<ol class="org-ol">
-<li>the BCplus folder you unzipped from the download</li>
-<li>the data folder (default: C:\Users\&lt;user&gt;\bcplus)°</li>
-<li>any Browser bookmarks you created</li>
-</ol>
-
-<p>
-That's it.
+{&lt;cmd&gt;&#x2026;}
 </p>
 </div>
+
+<div id="outline-container-org82e32bc" class="outline-3">
+<h3 id="org82e32bc">Cmds</h3>
+<div class="outline-text-3" id="text-org82e32bc">
+<dl class="org-dl">
+<dt>move [+-]&lt;x&gt; [+-]&lt;y&gt;</dt><dd></dd>
+
+
+<dt>[left,middle,right][up,down,click,double]</dt><dd></dd>
+
+
+<dt>drag [+-]&lt;x&gt; [+-]&lt;y&gt;</dt><dd></dd>
+
+
+<dt>scroll &lt;no&gt; [up|down]</dt><dd></dd>
+</dl>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org78274e9" class="outline-2">
+<h2 id="org78274e9">Redirected Actions</h2>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2018-02-22 Do 08:18</p>
+<p class="date">Created: 2018-02-23 Fr 11:41</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

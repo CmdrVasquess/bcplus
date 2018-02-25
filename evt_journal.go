@@ -83,7 +83,7 @@ func eventTime(evt map[string]interface{}) (time.Time, error) {
 
 var acceptHistory = false
 
-func DispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
+func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 	if len(event) == 0 {
 		ejlog.Logf(l.Warn, "empty journal event")
 		return
@@ -99,7 +99,9 @@ func DispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 		ejlog.Logf(l.Warn, "cannot determine journal event from: %s", string(event))
 		return
 	}
-	jEventMacro(evtNm)
+	if enableJMacros {
+		jEventMacro(evtNm)
+	}
 	hdlr, ok := dispatch[evtNm]
 	if ok {
 		t, err := eventTime(jsonEvt)

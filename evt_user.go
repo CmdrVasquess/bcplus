@@ -30,6 +30,8 @@ func DispatchUser(lock *sync.RWMutex, state *c.GmState, event map[string]interfa
 			handler, _ = matUsrOps[oprtn]
 		case "synth":
 			handler, _ = synUsrOps[oprtn]
+		case "stng-macros":
+			handler, _ = stngMacros[oprtn]
 		}
 	}
 	if handler == nil {

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+: Macro Settings</title>
+    <link rel="stylesheet" href="s/css/bcp.css">
+    <style>
+main table { width: 100%; }
+main td.test {
+	text-align: center;
+	width: 3em;
+	cursor: pointer;
+}
+main td.test:hover {
+   color: var(--colBkg);
+   background-color: var(--colFrg);
+}
+main table input[type=text] { width: 100%; }
+    </style>
+  </head>
+  <body>
+  <main>
+  	<h1>Journal Event Macro Settings</h1>
+<!-- >>> disabled <<< -->
+<!-- >>> disable >>> -->
+  	 <p style="width:100%;font-weight:bold;text-align:center;color:black;background-color:red;padding:1em;">Journal Event Macros are diabled. To enable the macro engine pass option '-jmarcos'
+  	 on the command line when starting BC+.</p>
+<!-- <<< disable <<< -->
+	 <p><a href="doc/macros-en.html">Help on macro syntax</a></p>
+    <table>
+    	<tr>
+    		<th style="width: 14em;">Journal Event</th>
+    		<th style="width: 4em;">Active</th>
+    		<th colspan="2">Macro</th>
+    	</tr>
+<!-- >>> events <<< \-->
+<!-- >>> event >>> -->
+	   <tr>
+		  <td>`event`</td>
+		  <td class="center"><input type="checkbox" onchange="chgCheck(this)" `check`></td>
+		  <td class="test" onclick="testMacro(this)">Test</td>
+		  <td><input type="text" value="`macro`" onchange="defMacro(this)"></td>
+		</tr>
+<!-- <<< event <<< \-->
+    </table>
+  </main>
+  </body>
+  <script src="s/js/wsock.js"></script>
+  <script>
+function chgCheck(chb) {
+ 	var row = chb.parentElement.parentElement
+ 	var elms = row.getElementsByTagName("td")
+	var rq = new Object();
+	rq.topic = "stng-macros";
+	rq.op = chb.checked ? "on" : "off";
+	rq.macro = elms[0].innerHTML;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
+}
+function defMacro(txt) {
+ 	var row = txt.parentElement.parentElement;
+ 	var elms = row.getElementsByTagName("td");
+	var rq = new Object();
+	rq.topic = "stng-macros";
+	rq.op = "def";
+	rq.macro = elms[0].innerHTML;
+	rq.defn = txt.value;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
+}
+function testMacro(btn) {
+ 	var row = btn.parentElement;
+ 	var elms = row.getElementsByTagName("td");
+	var rq = new Object();
+	rq.topic = "stng-macros";
+	rq.op = "test";
+	rq.macro = elms[0].innerHTML;
+	rq.defn = elms[3].getElementsByTagName("input")[0].value;
+	var msg = JSON.stringify(rq);
+	wsock.send(msg);
+}
+  </script>
+</html>

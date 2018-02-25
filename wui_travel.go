@@ -4,7 +4,6 @@ import (
 	"io"
 	"math"
 	"net/http"
-	"strconv"
 	"strings"
 	str "strings"
 	"time"
@@ -556,7 +555,7 @@ func trvlAddDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 			sys := loc.System()
 			for i := 0; i < num; i++ {
 				glog.Logf(l.Trace, "parse dest coo %d = %s", i, ctxt[i])
-				if f, err := strconv.ParseFloat(strings.TrimSpace(ctxt[i]), 64); err == nil {
+				if f, err := parseDec(strings.TrimSpace(ctxt[i])); err == nil {
 					sys.Coos[i] = f
 				} else {
 					sys.Coos[i] = math.NaN()

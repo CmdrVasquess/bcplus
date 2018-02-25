@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-02-17 Sa 10:47 -->
+<!-- 2018-02-22 Do 08:18 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BC+ – BoardComputer+ Dokumentation</title>
@@ -226,6 +226,28 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="content">
@@ -271,7 +293,7 @@ auspackt. (Ggf. vewahrt man die alte Version erst mal…?!)</li>
 <p>
 BC+ sollte gestartet werden, bevor E:D startet. BC+ beobachtet den
 Ordner mit Journal Dateien und fängt an diese zu lesen, sobald eine
-neue Datei angelegt wird (vgl. Startoption -l unten).
+neue Datei angelegt wird (vgl. Startoption <code>-l</code> unten).
 </p>
 
 <p>
@@ -368,9 +390,9 @@ im Journal auftauchen.
 <p>
 Damit diese und andere interessante Informationen nicht verloren
 gehen, muss BC+ die Gelegenheit haben, diese Infos zu speichern. Und
-weil ich, recht faul, die Daten nur gelegentlich – insbesondere beim
-<i>kontrollierten herunterfahren</i> des BD+ speichere, ist es wichtig,
-dass BC+ auch kontrolliert herunter gefahren wird.
+weil ich – recht faul – die Daten nur gelegentlich speichere,
+insbesondere beim <i>kontrollierten herunterfahren</i> des BC+, ist es
+wichtig, dass BC+ auch kontrolliert herunter gefahren wird.
 </p>
 
 <p>
@@ -390,13 +412,13 @@ Fensters zu drücken!
 Z.Z. verbindet sich BC+ über HTTP (ohne ‘S’). D.h. dass die
 Netzkommunikation im Klartext in Eurem lokalen Netz läuft. In der
 aktuellen Version werden keinen sensiblen Daten übertragen: Keine
-Passworte, Bernutzerkennungen o.Ä. Von daher ist das z.Z. kein
-m.E. Problem.
+Passworte, Bernutzerkennungen o.Ä. Von daher ist das meines Erachtens
+im Augenblick Problem.
 </p>
 
 <p>
-Aber während Ihr spielt und der BC+ läuft können sich noch weitere Web
-Browser mit dem BC+ verbinden und damit all das tun, was der
+Aber während Ihr spielt und der BC+ läuft, können sich noch weitere
+Web Browser mit dem BC+ verbinden und damit all das tun, was der
 „eigentliche“ Nutzer auch tun kann. Bitte bedenken!
 </p>
 </div>
@@ -408,10 +430,14 @@ Browser mit dem BC+ verbinden und damit all das tun, was der
 <div class="outline-text-2" id="text-orge86c3c6">
 <p>
 Braucht man nicht! Wer würde diese <b>unglaublich</b> nützliche Tool je
-wieder deinstallieren wollen. Spaß bei Seite: Es reicht, wenn man den
-BCplus Ordner aus dem Download-zip und den Ordner mit den eigenen BC+
-Dateien löscht. Sonst hinterlässt BC+ nicht auf dem Rechner.
+wieder deinstallieren wollen. Spaß bei Seite: Es reicht, wenn man 
 </p>
+
+<ol class="org-ol">
+<li>den BCplus Ordner aus dem Download-ZIP und</li>
+<li>den Ordner mit den eigenen BC+ Dateien (C:\Users\&lt;user&gt;\bcplus)
+löscht.</li>
+</ol>
 
 <p>
 …Ach ja! Und das Lesezeichen aus dem Browser kann man auch noch
@@ -421,7 +447,7 @@ wegschmeißen ;)
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2018-02-17 Sa 10:47</p>
+<p class="date">Created: 2018-02-22 Do 08:18</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

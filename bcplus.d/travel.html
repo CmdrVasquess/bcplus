@@ -7,15 +7,6 @@
 <!-- >>> local-style >>> -->
 	<style>
 main span.btn { cursor: pointer; }
-main span.addest {
-	background-color: var(--tblOdd);
-	padding-left: .5em;
-	padding-right: .5em;
-	padding-top: .2em;
-	padding-bottom: .2em;
-	border-radius: 3px;
-	cursor: pointer;
-}
 main td {
 	padding-left: .3em;
 	padding-right: .3em;
@@ -47,17 +38,35 @@ main tr:nth-of-type(even) {
 #dsthdr{ cursor: pointer; }
 #dsthdr::before {	content: "▾ "; }
 #dsthdr.hide::before { content: "▸ "; }
-#addest { margin-bottom: .5em; }
+#addest {
+	display: grid;
+	grid-template-columns: 8em 1fr 1fr 1fr;
+	grid-gap: .5em;
+	margin-bottom: .5em;
+}
 #addest.hide { display: none; }
+#addest label { font-weight: bold; }
+#btnadst {
+   grid-column: 1;
+   grid-row:    1 / span 2;	
+	background-color: var(--tblOdd);
+	padding-top: .3em;
+	padding-bottom: .3em;
+	font-weight: bold;
+	text-align: center;
+	align-self: flex-end;
+	border-radius: 3px;
+	cursor: pointer;
+}
+#destnm { grid-column: 2; }
 #destnts {
-	width: 40em;
+	grid-column: 2 / span 3;
 	height: 5em;
 	color: var(--colFgr);
 	background-color: var(--colBkg);
 	border: 1px solid;
 	border-color: var(--colFgr);
 	padding: .2em;
-	vertical-align: top;
 }
 	</style>
 <!-- <<< local-style <<< -->
@@ -68,10 +77,15 @@ main tr:nth-of-type(even) {
 <!-- >>> topic >>> -->
 	<h1 id="dsthdr" class="hide" onclick="tglDstForm()">Destinations</h1>
 	<form id="addest" class="hide">
-		<label for="destnm"><span class="addest" onclick="addDst()">Add Destination</span>: <input type="text" id="destnm" size="20"></label>
-		<label for="destcoo">Coordinates: <input type="text" id="destcoo" size="24"></label>
-		<label for="desttags">Tags: <input type="text" id="desttags" size="30"></label>
-		<br><label for="destnts">Notes:<textarea id="destnts"></textarea></label>
+		<span id="btnadst" onclick="addDst()">Save Destination</span>
+		<label for="destnm">Location</label>
+		<label for="destcoo">Coordinates</label>
+		<label for="desttags">Tags</label>
+		<input type="text" id="destnm" size="20">
+		<input type="text" id="destcoo" size="24">
+		<input type="text" id="desttags" size="30">
+		<label for="destnts" style="text-align:right">Notes:</label>
+		<textarea id="destnts"></textarea>
 	</form>
 Plan with <select name="shipopt" onchange="selShip(value)">
 <!-- >>> shipopts <<< \-->
