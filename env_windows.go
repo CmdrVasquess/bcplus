@@ -1,20 +1,23 @@
 package main
 
 import (
-	"fmt"
 	"os/user"
 	"path/filepath"
-	"strings"
 )
 
-const winStdJDir = `C:\Users\%s\Saved Games\Frontier Developments\Elite Dangerous`
+var relJournalPath = []string{
+	"",
+	"Saved Games",
+	"Frontier Developments",
+	"Elite Dangerous",
+}
 
 func defaultJournalDir() string {
 	if usr, err := user.Current(); err != nil {
 		return "."
 	} else {
-		unms := strings.Split(usr.Username, "\\")
-		res := fmt.Sprintf(winStdJDir, unms[1])
+		relJournalPath[0] = usr.HomeDir
+		res := filepath.Join(relJournalPath...)
 		return res
 	}
 }

@@ -27,11 +27,16 @@ function rowFilter(fHave, fNeed, row) {
 		return true;
 	}
 	var cells = row.getElementsByTagName("td");
-	var hv = cells[2].innerHTML == "" ? 0 : parseInt(cells[2].innerHTML);
-	var nd = cells[3].innerHTML == "" ? 0 : parseInt(cells[3].innerHTML);
+	//var hv = cells[2].innerHTML.startsWith("–") ? 0 : parseInt(cells[2].innerHTML);
+	var hv = parseInt(cells[2].innerHTML);
+	if (isNaN(hv)) { hv = 0; }
+	var nd = parseInt(cells[3].innerHTML);
+	if (isNaN(nd)) { nd = 0; }
 	switch(fHave) {
 		case "alnd":
 			return fNeed ? nd > 0 : nd == 0;
+		case "miss":
+			return fNeed & nd > hv;
 		case "hvnd":
 			if (hv > 0) {
 				return fNeed ? nd > 0 : nd == 0;				
@@ -46,7 +51,7 @@ function rowFilter(fHave, fNeed, row) {
 			}
 		case "nond":
 			if (hv == 0) {
-				return fNeed ? nd > 0 : nd == 0;				
+				return fNeed ? nd > 0 : nd == 0;					
 			} else {
 				return false;
 			}
@@ -152,7 +157,8 @@ function rowSum(row, manidx) {
 		row.classList.remove("engh");
 		row.classList.remove("miss");
 	} else {
-		have = parseInt(cells[2].innerHTML);
+		var have = parseInt(cells[2].innerHTML);
+		if (isNaN(have)) { have = 0; }
 		if (have < sum) {
 			row.classList.remove("engh");
 			row.classList.add("miss");

@@ -68,6 +68,8 @@ type GmState struct {
 	TrvlPlanShip ShipRef
 	JumpHist     []*Jump         `json:",omitempty"`
 	MatCatHide   map[string]bool `json:",omitempty"`
+	TrvlDstTgAll bool
+	TrvlDstTags  []string
 	MatFlt       MatFilter
 	EvtBacklog   []map[string]interface{} `json:"-"`
 	Next1stJump  bool                     `json:"-"`
@@ -357,7 +359,7 @@ func (cmdr *Commander) NeedsSynth(syn *gxy.Synthesis, lvl uint, count uint) {
 	if count == 0 {
 		delete(cmdr.Synth, key)
 	} else {
-		log.Logf(l.Info, "set syref %s = %d", string(key), count)
+		log.Logf(l.Debug, "set synth-ref %s = %d", string(key), count)
 		cmdr.Synth[key] = count
 	}
 }
@@ -488,13 +490,45 @@ type JumpStats struct {
 	BoostCount int
 }
 
+type ModClass int8
+type ModRating int8
+
+const (
+	MOD_E ModRating = iota
+	MOD_D
+	MOD_C
+	MOD_B
+	MOD_A
+)
+
+type Module interface {
+	Class() ModClass
+	Rating() ModRating
+}
+
+type module struct {
+	cls ModClass
+	rtg ModRating
+}
+
+func (m *module) Class() ModClass   { return m.cls }
+func (m *module) Rating() ModRating { return m.rtg }
+
 type Ship struct {
-	ID     int
-	Type   string
-	Name   string
-	Ident  string
-	Bought *Timestamp `json:",omitempty"`
-	Sold   *Timestamp `json:",omitempty"`
-	Loc    LocRef     `json:"Location,omitempty"`
-	Jump   JumpStats
+	ID       int
+	Type     string
+	Name     string
+	Ident    string
+	Bought   *Timestamp `json:",omitempty"`
+	Sold     *Timestamp `json:",omitempty"`
+	Loc      LocRef     `json:"Location,omitempty"`
+	Jump     JumpStats
+	Armor    *module
+	PowPlant *module
+	Thrusts  *module
+	Fsd      *module
+	LifeSupp *module
+	PowDistr *module
+	Sens     *module
+	FuleTank *module
 }

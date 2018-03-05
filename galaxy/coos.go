@@ -2,7 +2,11 @@ package galaxy
 
 import (
 	"math"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
+
+type Vec3D = vec3.T
 
 const (
 	Xk = 0
@@ -10,35 +14,18 @@ const (
 	Zk = 2
 )
 
-type Vec3D [3]float64
-
-func (v *Vec3D) Valid() bool {
-	nan := math.NaN()
-	return v[Xk] != nan && v[Yk] != nan && v[Zk] != nan
-}
-
-func (v *Vec3D) Set(x, y, z float64) {
+func V3dSet(v *Vec3D, x, y, z float64) {
 	v[Xk] = x
 	v[Yk] = y
 	v[Zk] = z
 }
 
-func (v *Vec3D) Set1(f float64) {
-	v.Set(f, f, f)
+func V3dSet1(v *Vec3D, f float64) {
+	v[Xk] = f
+	v[Yk] = f
+	v[Zk] = f
 }
 
-func V3Dist2(lhs *Vec3D, rhs *Vec3D) float64 {
-	d := rhs[Xk] - lhs[Xk]
-	tmp := d * d
-	d = rhs[Yk] - lhs[Yk]
-	tmp += d * d
-	d = rhs[Zk] - lhs[Zk]
-	tmp += d * d
-	return tmp
-}
-
-func V3Dist(lhs *Vec3D, rhs *Vec3D) float64 {
-	tmp := V3Dist2(lhs, rhs)
-	tmp = math.Sqrt(tmp)
-	return tmp
+func V3dValid(v *Vec3D) bool {
+	return !math.IsNaN(v[Xk]) && !math.IsNaN(v[Yk]) && !math.IsNaN(v[Zk])
 }

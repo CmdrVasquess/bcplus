@@ -198,7 +198,7 @@ func wuiBdys(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Slice(matLs,
 		func(i, j int) bool { return cmprMatByL7d(matLs, i, j) })
-	btEmit, btBind, hook := preparePage(dynBdyStyles, gx.Empty, activeTopic(r))
+	btEmit, btBind, hook := preparePage(dynBdyStyles, gx.Empty, gx.Empty, activeTopic(r))
 	btFrame := gxtBdyFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	btFrame.BindGen(gxtBdyFrame.Bodies, func(wr io.Writer) int {

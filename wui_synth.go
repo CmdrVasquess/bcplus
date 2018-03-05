@@ -161,7 +161,7 @@ func recipeBuilds(recipe *gxy.Synthesis) (res []int) {
 
 func wuiSyn(w http.ResponseWriter, r *http.Request) {
 	cmdr := &theGame.Cmdr
-	btEmit, btBind, hook := preparePage(dynSynStyles, gx.Empty, activeTopic(r))
+	btEmit, btBind, hook := preparePage(dynSynStyles, gx.Empty, gx.Empty, activeTopic(r))
 	btFrame := gxtSynFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	btFrame.BindGen(gxtSynFrame.Recipes, func(wr io.Writer) (n int) {

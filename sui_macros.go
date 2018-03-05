@@ -84,10 +84,10 @@ func suiMacros(w http.ResponseWriter, r *http.Request) {
 }
 
 var stngMacros = map[string]userHanlder{
-	"on":  stngMcrOn,
-	"off": stngMcrOff,
-	"def": stngMcrDef,
-	//	"test": stngMcrTest,
+	"on":   stngMcrOn,
+	"off":  stngMcrOff,
+	"def":  stngMcrDef,
+	"test": stngMcrTest,
 }
 
 func stngMcrOn(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
@@ -111,6 +111,17 @@ func stngMcrOff(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	return false
 }
 
+func defn2macro(defn string) (res *gem.Sequence) {
+	tmp := bytes.NewBuffer(nil)
+	tmp.WriteRune('[')
+	tmp.WriteString(defn)
+	tmp.WriteRune(']')
+	xp := xsx.NewPullParser(bufio.NewReader(tmp))
+	seq, _ := gem.ReadNext(xp)
+	res = seq.(*gem.Sequence)
+	return res
+}
+
 // TODO error feddback to user
 func stngMcrDef(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	eulog.Log(l.Info, evt)
@@ -121,13 +132,7 @@ func stngMcrDef(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 		macro = &Macro{}
 		jMacros[mcrNm] = macro
 	}
-	tmp := bytes.NewBuffer(nil)
-	tmp.WriteRune('[')
-	tmp.WriteString(mcrDef)
-	tmp.WriteRune(']')
-	xp := xsx.NewPullParser(bufio.NewReader(tmp))
-	seq, _ := gem.ReadNext(xp)
-	macro.Seq = seq.(*gem.Sequence)
+	macro.Seq = defn2macro(mcrDef)
 	return false
 }
 
@@ -135,6 +140,10 @@ func stngMcrTest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	if !enableJMacros {
 		return false
 	}
-	// TODO
+	hint, _ := attStr(evt, "macro")
+	mcrDef, _ := attStr(evt, "defn")
+	macro := defn2macro(mcrDef)
+	eulog.Logf(l.Info, "test macro '%s': [%s]", hint, mcrDef)
+	playMacro(macro, hint)
 	return false
 }

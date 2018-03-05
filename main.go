@@ -15,6 +15,7 @@ import (
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	edsm "github.com/CmdrVasquess/goEDSM"
 	"github.com/fractalqb/namemap"
 	l "github.com/fractalqb/qblog"
 )
@@ -59,7 +60,6 @@ func init() {
 		Verify("imperial ranks", "std → lang:")
 	nmShipType = namemap.MustLoad(assetPath("nm/shiptype.xsx")).
 		FromStd().
-		To(false, "lang:").
 		Verify("ship types", "std → lang:")
 	nmMatType = namemap.MustLoad(assetPath("nm/resctypes.xsx")).
 		FromStd().
@@ -72,6 +72,8 @@ func init() {
 	nmMatsXRef = nmMats.Base().FromStd().To(false, "wikia")
 	nmMatsId = nmMats.Base().FromStd().To(false, "id")
 	nmMatsIdRev = nmMats.Base().From("id", false).To(true)
+	nmMatGrade = namemap.MustLoad(assetPath("nm/matgrade.xsx")).FromStd()
+	nmMGrdRaw = nmMatGrade.Base().DomainIdx("raw")
 	nmBdyCats = namemap.MustLoad(assetPath("nm/body-cats.xsx")).
 		FromStd().
 		To(false, "lang:").
@@ -94,6 +96,8 @@ var credsKey []byte
 var eventq = make(chan bcEvent, 128)
 var signals = make(chan os.Signal, 1)
 
+var theEdsm = edsm.NewService()
+
 var jrnlDir string
 var dataDir string
 var enableJMacros bool
@@ -105,7 +109,7 @@ var nmRnkExplor namemap.FromTo
 var nmRnkCqc namemap.FromTo
 var nmRnkFed namemap.FromTo
 var nmRnkImp namemap.FromTo
-var nmShipType namemap.FromTo
+var nmShipType namemap.From
 var nmMatType namemap.FromTo
 var nmMats namemap.FromTo
 var nmMatsXRef namemap.FromTo
@@ -113,6 +117,8 @@ var nmMatsId namemap.FromTo
 var nmMatsIdRev namemap.FromTo
 var nmBdyCats namemap.FromTo
 var nmSynthLvl namemap.FromTo
+var nmMatGrade namemap.From
+var nmMGrdRaw int
 
 //go:generate ./genversion.sh
 func BCpDescribe(wr io.Writer) {
@@ -267,7 +273,7 @@ func main() {
 	flag.BoolVar(&acceptHistory, "hist", false, "accept historic events")
 	loadCmdr := flag.String("cmdr", "", "preload commander")
 	promptKey := flag.Bool("pmk", false, "prompt for credential master key")
-	flag.DurationVar(&macroPause, "mcrp", 100*time.Millisecond,
+	flag.DurationVar(&macroPause, "mcrp", 60*time.Millisecond,
 		"set the delay between macro elements")
 	flag.BoolVar(&enableJMacros, "jmacros", true, "enable journal macro engine")
 	showHelp := flag.Bool("h", false, "show help")

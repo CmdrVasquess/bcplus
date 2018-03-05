@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	l "github.com/fractalqb/qblog"
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 var log = l.Std("BC+gxy:")
@@ -100,7 +101,7 @@ func (g *Galaxy) GetSystem(name string) (res *StarSys) {
 	if res == nil {
 		res = &StarSys{}
 		res.SetName(name)
-		res.Coos.Set1(math.NaN())
+		V3dSet1(&res.Coos, math.NaN())
 		g.sysByName[name] = res
 	}
 	return res
@@ -159,7 +160,7 @@ func ParseLoc(str string, galaxy *Galaxy) (res Location, err error) {
 }
 
 func Dist(from, to Location) float64 {
-	res := V3Dist(from.GCoos(), to.GCoos())
+	res := vec3.Distance(from.GCoos(), to.GCoos())
 	return res
 }
 
@@ -178,6 +179,7 @@ type StarSys struct {
 	Coos     Vec3D
 	Bodies   []*SysBody `json:",omitempty"`
 	Stations []*Station `json:",omitempty"`
+	EdsmId   int64
 }
 
 func (s *StarSys) String() string {

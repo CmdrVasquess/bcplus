@@ -4,6 +4,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"sort"
 	"strings"
 	str "strings"
 	"time"
@@ -24,6 +25,7 @@ var gxtTrvlFrame struct {
 	LypjMax  []int
 	LypjAvg  []int
 	ShipOpts []int `goxic:"shipopts"`
+	TagsHdr  []int
 }
 
 var gxtShipOpt struct {
@@ -39,6 +41,9 @@ var gxtShipOptSel struct {
 	Ship []int
 	Jump []int
 }
+
+var gxcTagsNof gx.Content
+var gxcTagsFlt gx.Content
 
 var gxtTrvlAvgHead struct {
 	*gx.Template
@@ -78,6 +83,7 @@ var gxtTrvlDestRow struct {
 }
 
 var dynTrvlStyles gx.Content
+var hdrTrvlScrpit gx.Content
 var endTrvlScrpit gx.Content
 
 func loadTrvlTemplates() {
@@ -86,10 +92,13 @@ func loadTrvlTemplates() {
 		panic("failed loading templates: " + err.Error())
 	}
 	dynTrvlStyles = pgLocStyleFix(tmpls)
+	hdrTrvlScrpit = pgHdrScriptFix(tmpls)
 	endTrvlScrpit = pgEndScriptFix(tmpls)
 	gx.MustIndexMap(&gxtTrvlFrame, needTemplate(tmpls, "topic"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtShipOpt, needTemplate(tmpls, "topic/shipopt"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtShipOptSel, needTemplate(tmpls, "topic/shipopt-sel"), idxMapNames.Convert)
+	gxcTagsNof = needStatic(tmpls, "topic/tags-nof")
+	gxcTagsFlt = needStatic(tmpls, "topic/tags-flt")
 	gx.MustIndexMap(&gxtTrvlAvgHead, needTemplate(tmpls, "topic/avg-heading"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtTrvlAvgRow, needTemplate(tmpls, "topic/avg-row"), idxMapNames.Convert)
 	gx.MustIndexMap(&gxtTrvlAvgVal1, needTemplate(tmpls, "topic/avg-row/value1"), idxMapNames.Convert)
@@ -235,6 +244,9 @@ func computeTravel() (dur []time.Duration, path []float64, dist []float64) {
 	pos0 := jhist[len(jhist)-1]
 	for i := len(jhist) - 1; i > 0; i-- {
 		j0, j1 := jhist[i], jhist[i-1]
+		if !gxy.V3dValid(&j0.Sys.Coos) || !gxy.V3dValid(&j1.Sys.Coos) {
+			continue
+		}
 		pathSum += gxy.Dist(j0.Sys, j1.Sys)
 		count++
 		if !j0.First {
@@ -281,6 +293,21 @@ func computeTravel() (dur []time.Duration, path []float64, dist []float64) {
 		dur = append(dur, 0)
 	}
 	return dur, path, dist
+}
+
+func collectTags() (res []string) {
+	set := make(map[string]bool)
+	for _, dst := range theGame.Cmdr.Dests {
+		for _, tag := range dst.Tags {
+			set[tag] = true
+		}
+	}
+	res = make([]string, 0, len(set))
+	for tag := range set {
+		res = append(res, tag)
+	}
+	sort.Strings(res)
+	return res
 }
 
 func emitJumpStats(btFrame *gx.BounT, times []time.Duration, paths, dists []float64) {
@@ -340,7 +367,6 @@ func emitJumpStats(btFrame *gx.BounT, times []time.Duration, paths, dists []floa
 		return n
 	})
 }
-
 func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64) {
 	var dpjAvg, dpjMax float64 // distance per jump
 	useJumpStats := 0.0        // ~ did we travel a straight line in jump history?
@@ -409,7 +435,7 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			if ship.ID < 0 || ship.Type == "testbuggy" {
 				continue
 			}
-			shTy, _ := nmShipType.Map(ship.Type)
+			shTy, _ := nmShipType.MapNm(ship.Type, "lang:")
 			if ship == theGame.TrvlPlanShip.Ship {
 				btShipOptSel.BindP(gxtShipOptSel.Id, ship.ID)
 				btShipOptSel.BindFmt(gxtShipOptSel.Ship, "%s: %s / %s",
@@ -432,6 +458,11 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 	})
 	btFrame.BindFmt(gxtTrvlFrame.LypjMax, "%.2f", dpjMax)
 	btFrame.BindFmt(gxtTrvlFrame.LypjAvg, "%.2f", dpjAvg)
+	if len(theGame.TrvlDstTags) > 0 {
+		btFrame.Bind(gxtTrvlFrame.TagsHdr, gxcTagsFlt)
+	} else {
+		btFrame.Bind(gxtTrvlFrame.TagsHdr, gxcTagsNof)
+	}
 	btDest := gxtTrvlDestRow.NewBounT()
 	btFrame.BindGen(gxtTrvlFrame.Dests, func(wr io.Writer) (n int) {
 		for i, dst := range cmdr.Dests {
@@ -471,7 +502,7 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 }
 
 func wuiTravel(w http.ResponseWriter, r *http.Request) {
-	btEmit, btBind, hook := preparePage(dynTrvlStyles, endTrvlScrpit, activeTopic(r))
+	btEmit, btBind, hook := preparePage(dynTrvlStyles, hdrTrvlScrpit, endTrvlScrpit, activeTopic(r))
 	btFrame := gxtTrvlFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr
@@ -481,6 +512,7 @@ func wuiTravel(w http.ResponseWriter, r *http.Request) {
 		cmdr.Dests = append(cmdr.Dests, home)
 	}
 	times, paths, dists := computeTravel()
+	// TODO collectTags()
 	emitJumpStats(btFrame, times, paths, dists)
 	emitDests(btFrame, times, paths, dists)
 	btEmit.Emit(w)
@@ -491,6 +523,7 @@ var trvlUsrOps = map[string]userHanlder{
 	"tglHomeId": trvlTglHmid,
 	"addDst":    trvlAddDest,
 	"delDst":    trvlDelDest,
+	"sortDst":   trvlSortDest,
 }
 
 func trvlPlanShip(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
@@ -562,6 +595,29 @@ func trvlAddDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 				}
 			}
 		}
+		if !gxy.V3dValid(loc.GCoos()) {
+			snm := loc.System().Name()
+			glog.Logf(l.Debug, "lookup coos from EDSM for '%s'", snm)
+			go func() {
+				if rsy := theEdsm.System(snm); rsy != nil {
+					sys := loc.System()
+					// Unsynchronized writes! Unlikely to make problems!?!?!?
+					sys.EdsmId = rsy.Id
+					sys.Coos[gxy.Xk] = rsy.Coords.X
+					sys.Coos[gxy.Yk] = rsy.Coords.Y
+					sys.Coos[gxy.Zk] = rsy.Coords.Z
+					wscSendTo <- true
+					glog.Logf(l.Debug, "coos for '%s': %f / %f / %f",
+						snm,
+						rsy.Coords.X,
+						rsy.Coords.Y,
+						rsy.Coords.Z,
+					)
+				} else {
+					glog.Logf(l.Debug, "no coos for '%s'", snm)
+				}
+			}()
+		}
 		dst.Note = note
 		dst.Tags = strings.Split(tags, ",")
 		for i, tag := range dst.Tags {
@@ -579,4 +635,17 @@ func trvlDelDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 		cmdr.RmDest(loc)
 	}
 	return true
+}
+
+func trvlSortDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	idls := evt["idls"].([]interface{})
+	glog.Log(l.Debug, "reodrder destinations: ", idls)
+	cdsts := gstat.Cmdr.Dests
+	ndsts := make([]*c.Destination, len(cdsts))
+	for idx, json := range idls {
+		id := int(json.(float64))
+		ndsts[idx] = cdsts[id]
+	}
+	gstat.Cmdr.Dests = ndsts
+	return false
 }

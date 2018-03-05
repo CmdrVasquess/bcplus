@@ -16,6 +16,11 @@ import (
 	robi "github.com/go-vgo/robotgo"
 )
 
+func init() {
+	glog.Logf(l.Info, "set keyboad delay to 50ms")
+	robi.SetKeyDelay(50)
+}
+
 //go:generate stringer -type=MacroName
 type MacroName uint
 
@@ -153,7 +158,7 @@ type Macro struct {
 }
 
 var jMacros = make(map[string]*Macro)
-var macroPause time.Duration = 100
+var macroPause = 50 * time.Millisecond
 
 const (
 	MCR_COLNM_SRC = "source"
@@ -294,7 +299,7 @@ func playMacro(m *gem.Sequence, hint string) {
 				hint,
 				reflect.TypeOf(step))
 		}
-		time.Sleep(macroPause * time.Millisecond) // TODO make it adjustable
+		time.Sleep(macroPause) // TODO make it adjustable
 	}
 }
 

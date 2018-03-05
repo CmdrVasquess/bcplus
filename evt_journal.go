@@ -425,7 +425,7 @@ func jeFsdjump(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
 	ssys := theGalaxy.GetSystem(snm)
-	ssys.Coos.Set(spos[0].(float64), spos[1].(float64), spos[2].(float64))
+	gxy.V3dSet(&ssys.Coos, spos[0].(float64), spos[1].(float64), spos[2].(float64))
 	gstat.AddJump(ssys, c.Timestamp(t))
 	gstat.Next1stJump = false
 	if lji := len(gstat.JumpHist) - 1; lji > 0 {
@@ -462,7 +462,7 @@ func jeLocation(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	snm, _ := attStr(evt, "StarSystem")
 	snm = str.ToUpper(snm)
 	ssys := theGalaxy.GetSystem(snm)
-	ssys.Coos.Set(spos[0].(float64), spos[1].(float64), spos[2].(float64))
+	gxy.V3dSet(&ssys.Coos, spos[0].(float64), spos[1].(float64), spos[2].(float64))
 	gstat.Cmdr.Loc.Ref = ssys
 	var body *gxy.SysBody
 	if bodyNm, ok := attStr(evt, "Body"); ok {

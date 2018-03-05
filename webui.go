@@ -42,6 +42,16 @@ func needTemplate(tmap map[string]*gx.Template, path string) *gx.Template {
 	}
 }
 
+func needStatic(tmap map[string]*gx.Template, path string) gx.Data {
+	t := needTemplate(tmap, path)
+	if raw, ok := t.Static(); ok {
+		return gx.Data(raw)
+	} else {
+		glog.Fatalf("no static content in template '%s'", t.Name)
+		return nil
+	}
+}
+
 var offlinePage []byte
 var denyPage []byte
 
@@ -50,6 +60,7 @@ var gxtPage struct {
 	PgTitle     []int `goxic:"title"`
 	Version     []int
 	Styles      []int `goxic:"dyn-styles"`
+	ScriptHdr   []int `goxic:"dyn-scripts"`
 	PgBody      []int `goxic:"body"`
 	FullVersion []int
 	ScriptEnd   []int
@@ -153,6 +164,7 @@ func prepareOfflinePage(title *gx.Template, tOffline, tDeny *gx.Template) {
 		glog.Fatal("no offline body")
 	}
 	btOffline.Bind(gxtPage.Styles, gx.Empty)
+	btOffline.Bind(gxtPage.ScriptHdr, gx.Empty)
 	btOffline.Bind(gxtPage.ScriptEnd, gx.Empty)
 	if stat, ok := btOffline.Fixate().Static(); ok {
 		offlinePage = stat
@@ -220,8 +232,8 @@ func nmap(nm *namemap.FromTo, term string) gx.Content {
 	return gxw.EscHtml{gx.Print{str}}
 }
 
-func nmapU8(nm *namemap.FromTo, rank uint8) gx.Content {
-	str, _ := nm.Map(strconv.Itoa(int(rank)))
+func nmapI(nm *namemap.FromTo, rank int) gx.Content {
+	str, _ := nm.Map(strconv.Itoa(rank))
 	return gxw.EscHtml{gx.Print{str}}
 }
 
@@ -267,12 +279,25 @@ func pgLocStyleFix(tmpls map[string]*gx.Template) (res gx.Content) {
 	return res
 }
 
+func pgHdrScriptFix(tmpls map[string]*gx.Template) (res gx.Content) {
+	if hsrc, ok := tmpls["hdr-script"]; ok {
+		if raw, ok := hsrc.Static(); ok {
+			res = gx.Data(raw)
+		} else {
+			glog.Fatal("header-script template is not static content")
+		}
+	} else {
+		res = gx.Empty
+	}
+	return res
+}
+
 func pgEndScriptFix(tmpls map[string]*gx.Template) (res gx.Content) {
 	if escr, ok := tmpls["end-script"]; ok {
 		if raw, ok := escr.Static(); ok {
 			res = gx.Data(raw)
 		} else {
-			res = gx.Empty
+			glog.Fatal("end-script template is not static content")
 		}
 	} else {
 		res = gx.Empty
@@ -302,7 +327,7 @@ func emitNavItems(wr io.Writer, active string) (n int) {
 	return n
 }
 
-func preparePage(styles, endScript gx.Content, active string) (emit, bindto *gx.BounT, hook []int) {
+func preparePage(styles, hdrScript, endScript gx.Content, active string) (emit, bindto *gx.BounT, hook []int) {
 	cmdr := &theGame.Cmdr
 	cmdrNameEsc := gxw.HtmlEsc(cmdr.Name)
 	btPage := gxtPage.NewBounT()
@@ -317,6 +342,7 @@ func preparePage(styles, endScript gx.Content, active string) (emit, bindto *gx.
 	btPage.BindP(gxtPage.FullVersion, gxw.HtmlEsc(BCpDescStr()))
 	btPage.Bind(gxtPage.PgTitle, gxw.EscHtml{btTitle})
 	btPage.Bind(gxtPage.Styles, styles)
+	btPage.Bind(gxtPage.ScriptHdr, hdrScript)
 	btTitle.BindP(gxtTitle.CmdrName, cmdrNameEsc)
 
 	//	btFrame := gxtFrame.NewInitBounT(gx.Empty)
@@ -338,22 +364,22 @@ func preparePage(styles, endScript gx.Content, active string) (emit, bindto *gx.
 		btFrame.BindP(gxtFrame.DestFlag, "no")
 	}
 
-	btFrame.Bind(gxtFrame.RnkCombat, nmapU8(&nmRnkCombat, cmdr.Ranks[c.RnkCombat]))
+	btFrame.Bind(gxtFrame.RnkCombat, nmapI(&nmRnkCombat, int(cmdr.Ranks[c.RnkCombat])))
 	btFrame.BindP(gxtFrame.RLvlCombat, cmdr.Ranks[c.RnkCombat])
 	btFrame.BindP(gxtFrame.RPrgCombat, cmdr.RnkPrgs[c.RnkCombat])
-	btFrame.Bind(gxtFrame.RnkTrade, nmapU8(&nmRnkTrade, cmdr.Ranks[c.RnkTrade]))
+	btFrame.Bind(gxtFrame.RnkTrade, nmapI(&nmRnkTrade, int(cmdr.Ranks[c.RnkTrade])))
 	btFrame.BindP(gxtFrame.RLvlTrade, cmdr.Ranks[c.RnkTrade])
 	btFrame.BindP(gxtFrame.RPrgTrade, cmdr.RnkPrgs[c.RnkTrade])
-	btFrame.Bind(gxtFrame.RnkExplor, nmapU8(&nmRnkExplor, cmdr.Ranks[c.RnkExplore]))
+	btFrame.Bind(gxtFrame.RnkExplor, nmapI(&nmRnkExplor, int(cmdr.Ranks[c.RnkExplore])))
 	btFrame.BindP(gxtFrame.RLvlExplor, cmdr.Ranks[c.RnkExplore])
 	btFrame.BindP(gxtFrame.RPrgExplor, cmdr.RnkPrgs[c.RnkExplore])
-	btFrame.Bind(gxtFrame.RnkCqc, nmapU8(&nmRnkCqc, cmdr.Ranks[c.RnkCqc]))
+	btFrame.Bind(gxtFrame.RnkCqc, nmapI(&nmRnkCqc, int(cmdr.Ranks[c.RnkCqc])))
 	btFrame.BindP(gxtFrame.RLvlCqc, cmdr.Ranks[c.RnkCqc])
 	btFrame.BindP(gxtFrame.RPrgCqc, cmdr.RnkPrgs[c.RnkCqc])
-	btFrame.Bind(gxtFrame.RnkFed, nmapU8(&nmRnkFed, cmdr.Ranks[c.RnkFed]))
+	btFrame.Bind(gxtFrame.RnkFed, nmapI(&nmRnkFed, int(cmdr.Ranks[c.RnkFed])))
 	btFrame.BindP(gxtFrame.RLvlFed, cmdr.Ranks[c.RnkFed])
 	btFrame.BindP(gxtFrame.RPrgFed, cmdr.RnkPrgs[c.RnkFed])
-	btFrame.Bind(gxtFrame.RnkImp, nmapU8(&nmRnkImp, cmdr.Ranks[c.RnkImp]))
+	btFrame.Bind(gxtFrame.RnkImp, nmapI(&nmRnkImp, int(cmdr.Ranks[c.RnkImp])))
 	btFrame.BindP(gxtFrame.RLvlImp, cmdr.Ranks[c.RnkImp])
 	btFrame.BindP(gxtFrame.RPrgImp, cmdr.RnkPrgs[c.RnkImp])
 	if cmdr.Loc.Ref == nil {
@@ -373,7 +399,7 @@ func preparePage(styles, endScript gx.Content, active string) (emit, bindto *gx.
 		btFrame.Bind(gxtFrame.ShipName, webGuiNOC)
 		btFrame.Bind(gxtFrame.ShipIdent, webGuiNOC)
 	} else {
-		btFrame.Bind(gxtFrame.ShipType, nmap(&nmShipType, cshp.Type))
+		btFrame.BindP(gxtFrame.ShipType, namemap.IgnDom(nmShipType.MapNm(cshp.Type, "lang:")))
 		if len(cshp.Name) == 0 {
 			btFrame.Bind(gxtFrame.ShipName, webGuiNOC)
 		} else {

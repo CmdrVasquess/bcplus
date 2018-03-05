@@ -40,7 +40,6 @@ var gxtSecTitle struct {
 	Cat      []int
 	Category []int
 	Have     []int
-	Free     []int
 	Needs    []int
 }
 
@@ -57,6 +56,7 @@ var gxtSecRow struct {
 	Xref     []int
 	Name     []int
 	Have     []int
+	Max      []int
 	Need     []int
 	Source   []int
 	Needs    []int
@@ -182,15 +182,18 @@ func emitRawMats(wr io.Writer, bt *gx.BounT, cmdr *cmdr.Commander, ndSyn []cmdr.
 		bt.Bind(gxtSecRow.MatId, nmap(&nmMatsId, mat))
 		if m, ok := theGalaxy.Materials[mat]; !ok || m.Commons < 0 {
 			bt.BindP(gxtSecRow.MatGrade, "_")
+			bt.Bind(gxtSecRow.Max, webGuiTBD)
 		} else {
 			bt.BindP(gxtSecRow.MatGrade, m.Commons)
+			max, _ := nmMatGrade.Map(strconv.Itoa(int(m.Commons)), nmMGrdRaw)
+			bt.BindP(gxtSecRow.Max, max)
 		}
 		bt.Bind(gxtSecRow.Xref, nmap(&nmMatsXRef, mat))
 		bt.Bind(gxtSecRow.Name, nmap(&nmMats, mat))
 		cmdrmat, cmdrHas := mats[mat]
 		if cmdrHas {
 			if cmdrmat.Have == 0 {
-				bt.Bind(gxtSecRow.Have, gx.Empty)
+				bt.Bind(gxtSecRow.Have, webGuiNOC)
 			} else {
 				bt.BindP(gxtSecRow.Have, cmdrmat.Have)
 			}
@@ -202,7 +205,7 @@ func emitRawMats(wr io.Writer, bt *gx.BounT, cmdr *cmdr.Commander, ndSyn []cmdr.
 			}
 		} else {
 			bt.BindP(gxtSecRow.Cat, "raw")
-			bt.Bind(gxtSecRow.Have, gx.Empty)
+			bt.Bind(gxtSecRow.Have, webGuiNOC)
 			bt.Bind(gxtSecRow.Need, gx.Empty)
 		}
 		if bm, ok := best[mat]; ok {
@@ -249,15 +252,18 @@ func emitMatLs(
 		bt.Bind(gxtSecRow.MatId, nmap(&nmMatsId, mat))
 		if m, ok := theGalaxy.Materials[mat]; !ok || m.Commons < 0 {
 			bt.BindP(gxtSecRow.MatGrade, "_")
+			bt.Bind(gxtSecRow.Max, webGuiTBD)
 		} else {
 			bt.BindP(gxtSecRow.MatGrade, m.Commons)
+			max, _ := nmMatGrade.MapNm(strconv.Itoa(int(m.Commons)), cat)
+			bt.BindP(gxtSecRow.Max, max)
 		}
 		bt.Bind(gxtSecRow.Xref, nmap(&nmMatsXRef, mat))
 		bt.Bind(gxtSecRow.Name, nmap(&nmMats, mat))
 		cmdrmat, cmdrHas := cMat[mat]
 		if cmdrHas {
 			if cmdrmat.Have == 0 {
-				bt.Bind(gxtSecRow.Have, gx.Empty)
+				bt.Bind(gxtSecRow.Have, webGuiNOC)
 			} else {
 				bt.BindP(gxtSecRow.Have, cmdrmat.Have)
 			}
@@ -270,7 +276,7 @@ func emitMatLs(
 		} else {
 			bt.BindP(gxtSecRow.Cat, cat)
 			bt.Bind(gxtSecRow.Need, gx.Empty)
-			bt.Bind(gxtSecRow.Have, gx.Empty)
+			bt.Bind(gxtSecRow.Have, webGuiNOC)
 		}
 		bt.BindGen(gxtSecRow.Needs, func(wr io.Writer) (n int) {
 			for _, sr := range ndSyn {
@@ -339,12 +345,11 @@ func needsLvls(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (
 	return n
 }
 
-func secTitle(bt *gx.BounT, wr io.Writer, cat string, have, need, free, needs int) (n int) {
+func secTitle(bt *gx.BounT, wr io.Writer, cat string, have, need, needs int) (n int) {
 	catNm, _ := nmMatType.Map(cat)
 	bt.BindP(gxtSecTitle.Cat, cat)
 	bt.Bind(gxtSecTitle.Category, gxw.EscHtml{gx.Print{catNm}})
 	bt.BindP(gxtSecTitle.Have, have)
-	bt.BindP(gxtSecTitle.Free, free)
 	btSecNeed := gxtSecNeed.NewInitBounT(gx.Empty)
 	bt.BindGen(gxtSecTitle.Needs, func(wr io.Writer) (n int) {
 		for needs > 0 {
@@ -369,7 +374,7 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 		}
 		return n
 	})
-	btEmit, btBind, hook := preparePage(dynRescStyles, btEndScript, activeTopic(r))
+	btEmit, btBind, hook := preparePage(dynRescStyles, gx.Empty, btEndScript, activeTopic(r))
 	btFrame := gxtRescFrame.NewBounT()
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr
@@ -397,13 +402,12 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 	btRow := gxtSecRow.NewBounT()
 	btSrc1 := gxtRowSrc1.NewBounT()
 	btFrame.BindGen(gxtRescFrame.Sections, func(wr io.Writer) (n int) {
-		rawManFree := 1000 - haveRaw - haveMan
-		n += secTitle(btSec, wr, "raw", haveRaw, needRaw, rawManFree, len(needSynths))
+		n += secTitle(btSec, wr, "raw", haveRaw, needRaw, len(needSynths))
 		n += emitRawMats(wr, btRow, cmdr, needSynths)
 		btRow.Bind(gxtSecRow.Source, btSrc1)
-		n += secTitle(btSec, wr, "man", haveMan, needMan, rawManFree, len(needSynths))
+		n += secTitle(btSec, wr, "man", haveMan, needMan, len(needSynths))
 		n += emitMatLs(wr, btRow, btSrc1, "man", manSorted, cmdr, cmdr.MatsMan, needSynths)
-		n += secTitle(btSec, wr, "enc", haveEnc, needEnc, 500-haveEnc, len(needSynths))
+		n += secTitle(btSec, wr, "enc", haveEnc, needEnc, len(needSynths))
 		n += emitMatLs(wr, btRow, btSrc1, "enc", encSorted, cmdr, cmdr.MatsEnc, needSynths)
 		return n
 	})

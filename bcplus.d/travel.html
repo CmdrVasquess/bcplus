@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="s/css/bcp.css">
 <!-- >>> local-style >>> -->
+  	<link rel="stylesheet" href="s/jqui/jquery-ui.min.css">
 	<style>
 main span.btn { cursor: pointer; }
 main td {
@@ -68,8 +69,14 @@ main tr:nth-of-type(even) {
 	border-color: var(--colFgr);
 	padding: .2em;
 }
+.thop::after { content: " Ly"; }
+.tsum::after { content: " Ly"; }
 	</style>
 <!-- <<< local-style <<< -->
+<!-- >>> hdr-script >>> -->
+   <script src="s/jqui/external/jquery/jquery.js"></script>
+  	<script src="s/jqui/jquery-ui.min.js"></script>
+<!-- <<< hdr-script <<< -->
   </head>
   <body>
   <main>
@@ -110,13 +117,20 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 </datalist -->	
 	<table id="dests" style="width:100%">
 		<thead><tr>
-			<th colspan="2">Destination</th>
+			<th colspan="2" title="Drag to change order">Destination</th>
 			<th>Distance</th>
 			<th>ETD</th>
 			<th>EJD</th>
-			<th>Coordinates</th>
+			<th title="Distance to previous destination">Journey Δ</th>
+			<th title="Sum of previous distances">Journey Σ</th>
 			<th>Note</th>
-			<th>Tags</th>
+<!-- >>> tags-hdr <<< \-->
+<!-- >>> tags-nof >>> -->
+			<th title="NYI! Tag filter"><span style="color:var(--tblOdd)">◎</span>&nbsp;Tags</th>
+<!-- <<< tags-nof <<< \-->
+<!-- >>> tags-flt >>> -->
+			<th title="NYI! Tag filter">◉&nbsp;Tags</th>
+<!-- <<< tags-flt <<< \-->
 		</tr></thead>
 		<tbody>
 <!-- >>> destinations <<< \-->
@@ -133,10 +147,11 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 			        title="Double-click to Delete"
 			        ondblclick="delDst(`dst-id`)">
 			</td>
-			<td class="right">`dist` Ly</td>
+			<td class="right" title="`coox` / `cooy` / `cooz`">`dist` Ly</td>
 			<td class="right">`etd`</td>
 			<td class="center">`ejd`</td>
-			<td class="center">`coox` / `cooy` / `cooz`</td>
+			<td class="right thop">–</td>
+			<td class="right tsum">–</td>
 			<td>`note`</td>
 			<td>`tags`</td>
 		</tr>
@@ -174,62 +189,10 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 <!-- <<< avg-row <<< \-->
 		<tbody>
 	</table>
-   <script type="text/javascript">
-function selShip(shId) {
-	var rq = new Object();
-	rq.topic = "travel";
-	rq.op = "planShip";
-	rq.shipId = parseInt(shId);
-	var msg = JSON.stringify(rq);
-	wsock.send(msg);
-}
-function tglHomeId(hId) {
-	var rq = new Object();
-	rq.topic = "travel";
-	rq.op = "tglHomeId";
-	rq.id = hId;
-	var msg = JSON.stringify(rq);
-	wsock.send(msg);	
-}
-function tglDstForm() {
-	var hdr = document.getElementById("dsthdr");
-	var frm = document.getElementById("addest");
-	hdr.classList.toggle("hide");
-	frm.classList.toggle("hide");
-}
-function editDst(btn) {
-	var edNm = document.getElementById("destnm");
-	var edCoos = document.getElementById("destcoo");
-	var edNts = document.getElementById("destnts");
-	var edTags = document.getElementById("desttags");
-	var dst = btn.parentElement.parentElement.getElementsByTagName("td");
-	showStatus(dst[0].innerText);
-	edNm.value = dst[0].innerText;
-	edCoos.value = dst[5].innerText;
-	edNts.value = dst[6].innerText;
-	edTags.value = dst[7].innerText;
-}
-function addDst() {
-	var rq = new Object();
-	rq.topic = "travel";
-	rq.op = "addDst";
-	rq.nm = document.getElementById("destnm").value;
-	rq.coo = document.getElementById("destcoo").value;
-	rq.note = document.getElementById("destnts").value;
-	rq.tags = document.getElementById("desttags").value;
-	var msg = JSON.stringify(rq);
-	wsock.send(msg);		
-}
-function delDst(dId) {
-	var rq = new Object();
-	rq.topic = "travel";
-	rq.op = "delDst";
-	rq.id = dId;
-	var msg = JSON.stringify(rq);
-	wsock.send(msg);	
-}
-	</script>
 <!-- <<< topic <<< -->
   </main>
   </body>
+<!-- >>> end-script >>> -->
+	<script src="s/js/travel.js"></script>
+<!-- <<< end-script <<< \-->
 </html>

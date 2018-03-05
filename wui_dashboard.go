@@ -24,7 +24,7 @@ func loadDshbTemplates() {
 }
 
 func wuiDashboard(w http.ResponseWriter, r *http.Request) {
-	btEmit, btBind, hook := preparePage(gx.Empty, gx.Empty, activeTopic(r))
+	btEmit, btBind, hook := preparePage(gx.Empty, gx.Empty, gx.Empty, activeTopic(r))
 	btBind.Bind(hook, gxcDshb)
 	btEmit.Emit(w)
 }

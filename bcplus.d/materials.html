@@ -37,8 +37,7 @@ main .mdmnd {
 		<tr> 
 			<th rowspan="2">⌬</th><th rowspan="2">Material</th>
 			<th>Have</th>
-			<th rowspan="2"><input id="flt-need" type="checkbox" name="shwnd" checked
-			                       onchange="reFilter()">Need</th>
+			<th>Need</th>
 			<th rowspan="2" colspan="2">Sorce</th>
 			<th rowspan="2">Manual<br>Demand</th>
 <!-- >>> th-synrcps <<< \-->
@@ -50,12 +49,14 @@ main .mdmnd {
 		<tr>
 			<th><select id="flt-have" onchange="reFilter()">
 				<option value="alor">Show all!</option>
+				<option value="miss">Missing!</option>
 				<option value="alnd">Show if</option>
 				<option value="hvnd">any and</option>
 				<option value="hvor">any or</option>
 				<option value="nond">none and</option>
 				<option value="noor">none or</option>
 			</select></th>
+			<th><input id="flt-need" type="checkbox" name="shwnd" onchange="reFilter()"></th>
 <!-- >>> th-synlvls <<< \-->
 <!-- >>> th-synlvl >>> -->
 			<th>`count`&times;`level`</th>
@@ -67,7 +68,7 @@ main .mdmnd {
 		<tr class="sec-title `cat`">
 			<th class="show" onclick="toggleCat(this, '`cat`')"></th>
 			<th>`category`</th><th class="right">`have`</th><th class="right">?</th>
-			<th colspan="2" class="left">Free: `free`</th>
+			<th colspan="2" class="left"></th>
 			<th></th>
 <!-- >>> needs <<< \-->
 <!-- >>> need >>> -->
@@ -82,7 +83,7 @@ main .mdmnd {
  	  		<td class="center"><img class="inlico" src="s/mat/g`mat-grade`.png"></td>			
  	  		<td><a target="bcp-xref"
  	  		       href="http://elite-dangerous.wikia.com/wiki/`xref`">`name`</a></td>
- 	  		<td class="right">`have`</td>
+ 	  		<td class="right" title="Max: `max`">`have`</td>
  	  		<td class="right">`need`</td>
 <!-- >>> source <<< \-->
 			<td class="right"><input class="mdmnd" type="number" min="0" value="`need`"
