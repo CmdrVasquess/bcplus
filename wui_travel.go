@@ -14,6 +14,7 @@ import (
 	gx "github.com/fractalqb/goxic"
 	gxm "github.com/fractalqb/goxic/textmessage"
 	gxw "github.com/fractalqb/goxic/web"
+	"github.com/fractalqb/groph"
 	l "github.com/fractalqb/qblog"
 )
 
@@ -26,6 +27,7 @@ var gxtTrvlFrame struct {
 	LypjAvg  []int
 	ShipOpts []int `goxic:"shipopts"`
 	TagsHdr  []int
+	TspLimit []int
 }
 
 var gxtShipOpt struct {
@@ -463,11 +465,10 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 	} else {
 		btFrame.Bind(gxtTrvlFrame.TagsHdr, gxcTagsNof)
 	}
+	btFrame.BindP(gxtTrvlFrame.TspLimit, tspLimit)
 	btDest := gxtTrvlDestRow.NewBounT()
 	btFrame.BindGen(gxtTrvlFrame.Dests, func(wr io.Writer) (n int) {
 		for i, dst := range cmdr.Dests {
-			dstLoc := dst.Loc.Ref
-			dist2 := gxy.Dist(dstLoc, cmdr.Loc.Ref)
 			btDest.BindP(gxtTrvlDestRow.DstId, i)
 			btDest.Bind(gxtTrvlDestRow.Name, CntLoc{dst.Loc.Ref})
 			if cmdr.Home.Nil() || dst.Loc.Ref != cmdr.Home.Ref {
@@ -475,23 +476,35 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			} else {
 				btDest.Bind(gxtTrvlDestRow.HomeFlag, gx.Empty)
 			}
-			btDest.Bind(gxtTrvlDestRow.Dist, gxm.Msg(wuiL7d, "%.2f", dist2))
-			djAvg := int(math.Ceil(dist2 / dpjAvg))
-			djMin := int(math.Ceil(dist2 / dpjMax))
-			if djMin == djAvg {
-				btDest.BindFmt(gxtTrvlDestRow.EJD, "~%d", djAvg)
+			dstLoc := dst.Loc.Ref
+			dstLokOk := gxy.V3dValid(dstLoc.GCoos())
+			if dstLokOk {
+				dist2 := gxy.Dist(dstLoc, cmdr.Loc.Ref)
+				btDest.Bind(gxtTrvlDestRow.Dist, gxm.Msg(wuiL7d, "%.1f", dist2))
+				djAvg := int(math.Ceil(dist2 / dpjAvg))
+				djMin := int(math.Ceil(dist2 / dpjMax))
+				if djMin == djAvg {
+					btDest.BindFmt(gxtTrvlDestRow.EJD, "~%d", djAvg)
+				} else {
+					btDest.BindFmt(gxtTrvlDestRow.EJD, "%d~%d", djMin, djAvg)
+				}
+				if theGame.Tj2j > 0 {
+					dur2 := time.Duration(djAvg) * theGame.Tj2j
+					btDest.BindP(gxtTrvlDestRow.ETD, dur2)
+				} else {
+					btDest.Bind(gxtTrvlDestRow.ETD, webGuiNOC)
+				}
+				btDest.Bind(gxtTrvlDestRow.CooX, gxm.Msg(wuiL7d, "%.1f", dstLoc.GCoos()[gxy.Xk]))
+				btDest.Bind(gxtTrvlDestRow.CooY, gxm.Msg(wuiL7d, "%.1f", dstLoc.GCoos()[gxy.Yk]))
+				btDest.Bind(gxtTrvlDestRow.CooZ, gxm.Msg(wuiL7d, "%.1f", dstLoc.GCoos()[gxy.Zk]))
 			} else {
-				btDest.BindFmt(gxtTrvlDestRow.EJD, "%d~%d", djMin, djAvg)
-			}
-			if theGame.Tj2j > 0 {
-				dur2 := time.Duration(djAvg) * theGame.Tj2j
-				btDest.BindP(gxtTrvlDestRow.ETD, dur2)
-			} else {
+				btDest.Bind(gxtTrvlDestRow.Dist, webGuiNOC)
+				btDest.Bind(gxtTrvlDestRow.EJD, webGuiNOC)
 				btDest.Bind(gxtTrvlDestRow.ETD, webGuiNOC)
+				btDest.Bind(gxtTrvlDestRow.CooX, webGuiNOC)
+				btDest.Bind(gxtTrvlDestRow.CooY, webGuiNOC)
+				btDest.Bind(gxtTrvlDestRow.CooZ, webGuiNOC)
 			}
-			btDest.Bind(gxtTrvlDestRow.CooX, gxm.Msg(wuiL7d, "%.2f", dstLoc.GCoos()[gxy.Xk]))
-			btDest.Bind(gxtTrvlDestRow.CooY, gxm.Msg(wuiL7d, "%.2f", dstLoc.GCoos()[gxy.Yk]))
-			btDest.Bind(gxtTrvlDestRow.CooZ, gxm.Msg(wuiL7d, "%.2f", dstLoc.GCoos()[gxy.Zk]))
 			btDest.BindP(gxtTrvlDestRow.Note, gxw.HtmlEsc(dst.Note))
 			btDest.BindP(gxtTrvlDestRow.Tags,
 				gxw.HtmlEsc(str.Join(dst.Tags, ", ")))
@@ -524,6 +537,7 @@ var trvlUsrOps = map[string]userHanlder{
 	"addDst":    trvlAddDest,
 	"delDst":    trvlDelDest,
 	"sortDst":   trvlSortDest,
+	"optmz":     trvlOptimize,
 }
 
 func trvlPlanShip(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
@@ -648,4 +662,90 @@ func trvlSortDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	}
 	gstat.Cmdr.Dests = ndsts
 	return false
+}
+
+func trvlOptimize(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	what, _ := attStr(evt, "what")
+	rlen, _ := attInt(evt, "len")
+	route := make([]*c.Destination, rlen+1)
+	for i := 0; i <= rlen; i++ {
+		route[i] = gstat.Cmdr.Dests[i]
+	}
+	switch what {
+	case "l":
+		go trvlOptLoop(route)
+	default:
+		go trvlOptRoute(route)
+	}
+	return false
+}
+
+func destDist(d1, d2 *c.Destination) float32 {
+	s1 := d1.Loc.System()
+	s2 := d2.Loc.System()
+	d := gxy.Dist(s1, s2)
+	return float32(d)
+}
+
+func trvlReorder(cdsts []*c.Destination, perm []uint) {
+	// TODO try to do it in-place (or don't – for simplicity)
+	start := 0
+	for start < len(perm) {
+		if perm[start] == 0 {
+			break
+		}
+		start++
+	}
+	tmp := make([]*c.Destination, len(perm))
+	for i := range perm {
+		d := cdsts[perm[i]]
+		j := i - start
+		if j < 0 {
+			j += len(perm)
+		}
+		tmp[j] = d
+	}
+	copy(cdsts, tmp)
+}
+
+var tspSolver = groph.Tsp2Optf32
+var tspLimit = 120
+
+func trvlOptLoop(dests []*c.Destination) {
+	if len(dests) > tspLimit {
+		glog.Logf(l.Warn,
+			"request for TSP with %d > 10 nodes denied",
+			len(dests))
+		return
+	}
+	glog.Logf(l.Debug, "solving TSP for %d nodes…", len(dests))
+	am := groph.NewAdjMxUf32(uint(len(dests)), nil)
+	groph.CpWeights(am, groph.NewSliceNMeasure(dests, destDist, false))
+	perm, _ := tspSolver(am)
+	trvlReorder(theGame.Cmdr.Dests, perm)
+	glog.Logf(l.Debug, "…TSP for %d nodes done", len(dests))
+	wscSendTo <- true
+}
+
+func trvlOptRoute(dests []*c.Destination) {
+	if len(dests) > tspLimit {
+		glog.Logf(l.Warn,
+			"request for TSP with %d > 10 nodes denied",
+			len(dests))
+		return
+	}
+	glog.Logf(l.Debug, "solving TSP for %d nodes…", len(dests))
+	am := groph.NewAdjMxUf32(uint(len(dests)), nil)
+	first, last := dests[0], dests[len(dests)-1]
+	groph.CpWeights(am, groph.NewSliceNMeasure(dests, func(a, b *c.Destination) float32 {
+		if (a == first && b == last) || (b == first && a == last) {
+			return float32(0)
+		} else {
+			return destDist(a, b)
+		}
+	}, false))
+	perm, _ := tspSolver(am)
+	trvlReorder(theGame.Cmdr.Dests, perm)
+	glog.Logf(l.Debug, "…TSP for %d nodes done", len(dests))
+	wscSendTo <- true
 }

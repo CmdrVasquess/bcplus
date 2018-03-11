@@ -69,8 +69,20 @@ main tr:nth-of-type(even) {
 	border-color: var(--colFgr);
 	padding: .2em;
 }
-.thop::after { content: " Ly"; }
-.tsum::after { content: " Ly"; }
+.tlen { text-align: right; }
+.tlen::after {
+	content: " Ly";
+}
+.btopt {
+	background-image: url('s/img/TrvlLong.png');
+	background-size: 1em .8em;
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+main span.hide { display: none; }
+.btopt:hover {
+	background-image: url('s/img/TrvlShort.png');
+}
 	</style>
 <!-- <<< local-style <<< -->
 <!-- >>> hdr-script >>> -->
@@ -121,12 +133,13 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 			<th>Distance</th>
 			<th>ETD</th>
 			<th>EJD</th>
-			<th title="Distance to previous destination">Journey Δ</th>
-			<th title="Sum of previous distances">Journey Σ</th>
+			<th title="Sum of previous distances">Route</th>
+			<th>Loop</th>
+			<th title="Distance to previous destination">Section</th>
 			<th>Note</th>
 <!-- >>> tags-hdr <<< \-->
 <!-- >>> tags-nof >>> -->
-			<th title="NYI! Tag filter"><span style="color:var(--tblOdd)">◎</span>&nbsp;Tags</th>
+			<th title="NYI! Tag filter"><span class="txclk off">◎</span>&nbsp;Tags</th>
 <!-- <<< tags-nof <<< \-->
 <!-- >>> tags-flt >>> -->
 			<th title="NYI! Tag filter">◉&nbsp;Tags</th>
@@ -141,7 +154,7 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 			         onclick="tglHomeId(`dst-id`)">
 			    `name`</td>
 			<td class="center"> 
-			   <span class="btn" onclick="editDst(this)">✍</span>
+			   <span class="txclk" onclick="editDst(this)" title="Edit location">✍</span>
 			   &nbsp;
 				<img class="inlico btn" src="s/img/Trash.png"
 			        title="Double-click to Delete"
@@ -150,8 +163,23 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 			<td class="right" title="`coox` / `cooy` / `cooz`">`dist` Ly</td>
 			<td class="right">`etd`</td>
 			<td class="center">`ejd`</td>
-			<td class="right thop">–</td>
-			<td class="right tsum">–</td>
+			<td class="right">
+				<span class="btopt"
+				      onclick="optmz(this,'r')"
+				      title="Optimize route">&nbsp;&nbsp;&nbsp;</span>
+				<span class="tlen">–</span>
+			</td>
+			<td class="right">
+				<span class="btopt"
+				      onclick="optmz(this,'l')"
+				      title="Optimize loop">&nbsp;&nbsp;&nbsp;</span>
+				<span class="tlen">–</span>
+			</td>
+			<td class="tlen">–</td>
+			<!--td class="center">
+				<span class="txclk off" onclick="optmz(this,'r')">↝</span>
+				<span class="txclk" onclick="optmz(this,'l')">↺</span>
+			</td-->
 			<td>`note`</td>
 			<td>`tags`</td>
 		</tr>
@@ -189,6 +217,9 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 <!-- <<< avg-row <<< \-->
 		<tbody>
 	</table>
+	<script>
+tspLimit=`tsp-limit`;
+  	</script>
 <!-- <<< topic <<< -->
   </main>
   </body>

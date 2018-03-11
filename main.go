@@ -276,6 +276,7 @@ func main() {
 	flag.DurationVar(&macroPause, "mcrp", 60*time.Millisecond,
 		"set the delay between macro elements")
 	flag.BoolVar(&enableJMacros, "jmacros", true, "enable journal macro engine")
+	flag.IntVar(&tspLimit, "tsp-limit", 120, "set the limit for TSP in travel planning")
 	showHelp := flag.Bool("h", false, "show help")
 	flag.Parse()
 	if *showHelp {
