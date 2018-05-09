@@ -37,7 +37,8 @@ var gxtSShip struct {
 
 func loadShpTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("ships.html"), "ships", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("ships.html"), "ships", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	//	dynShpStyles = pgLocStyleFix(tmpls)
@@ -48,9 +49,9 @@ func loadShpTemplates() {
 
 func wuiShp(w http.ResponseWriter, r *http.Request) {
 	btEmit, btBind, hook := preparePage(gx.Empty, gx.Empty, gx.Empty, activeTopic(r))
-	btFrame := gxtShpFrame.NewBounT()
+	btFrame := gxtShpFrame.NewBounT(nil)
 	btBind.Bind(hook, btFrame)
-	btCShip := gxtCShip.NewBounT()
+	btCShip := gxtCShip.NewBounT(nil)
 	btFrame.Bind(gxtShpFrame.CurShips, btCShip)
 	cmdr := &theGame.Cmdr
 	btFrame.BindGen(gxtShpFrame.CurShips, func(wr io.Writer) (n int) {

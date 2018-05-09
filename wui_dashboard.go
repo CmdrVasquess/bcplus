@@ -11,7 +11,8 @@ var gxcDshb gx.Content
 
 func loadDshbTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("dashboard.html"), "dshb", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("dashboard.html"), "dshb", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	//	dynShpStyles = pgLocStyleFix(tmpls)

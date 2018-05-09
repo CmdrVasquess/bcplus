@@ -123,7 +123,8 @@ var gxtNavActv struct {
 
 func loadTmpls() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("appframe.html"), "frame", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("appframe.html"), "frame", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	gx.MustIndexMap(&gxtPage, needTemplate(tmpls, ""), idxMapNames.Convert)
@@ -145,7 +146,7 @@ func loadTmpls() {
 }
 
 func prepareOfflinePage(title *gx.Template, tOffline, tDeny *gx.Template) {
-	btOffline := gxtPage.NewBounT()
+	btOffline := gxtPage.NewBounT(nil)
 	if BCpBugfix == 0 {
 		btOffline.BindFmt(gxtPage.Version, "%d.%d%s", BCpMajor, BCpMinor, BCpQuality)
 	} else {
@@ -311,8 +312,8 @@ func pgEndScript(tmpls map[string]*gx.Template) *gx.Template {
 }
 
 func emitNavItems(wr io.Writer, active string) (n int) {
-	btNavi := gxtNavItem.NewBounT()
-	btNava := gxtNavActv.NewBounT()
+	btNavi := gxtNavItem.NewBounT(nil)
+	btNava := gxtNavActv.NewBounT(nil)
 	var bt *gx.BounT
 	for _, ln := range webGuiTopics {
 		if ln == active {
@@ -330,9 +331,9 @@ func emitNavItems(wr io.Writer, active string) (n int) {
 func preparePage(styles, hdrScript, endScript gx.Content, active string) (emit, bindto *gx.BounT, hook []int) {
 	cmdr := &theGame.Cmdr
 	cmdrNameEsc := gxw.HtmlEsc(cmdr.Name)
-	btPage := gxtPage.NewBounT()
+	btPage := gxtPage.NewBounT(nil)
 
-	btTitle := gxtTitle.NewBounT()
+	btTitle := gxtTitle.NewBounT(nil)
 	if BCpBugfix == 0 {
 		btPage.BindFmt(gxtPage.Version, "%d.%d%s", BCpMajor, BCpMinor, BCpQuality)
 	} else {
@@ -346,7 +347,7 @@ func preparePage(styles, hdrScript, endScript gx.Content, active string) (emit, 
 	btTitle.BindP(gxtTitle.CmdrName, cmdrNameEsc)
 
 	//	btFrame := gxtFrame.NewInitBounT(gx.Empty)
-	btFrame := gxtFrame.NewBounT()
+	btFrame := gxtFrame.NewBounT(nil)
 	btPage.Bind(gxtPage.PgBody, btFrame)
 	btPage.Bind(gxtPage.ScriptEnd, endScript)
 	btFrame.BindP(gxtFrame.CmdrName, cmdrNameEsc)
@@ -460,6 +461,10 @@ func runWebGui() {
 	})
 	glog.Logf(l.Info, "Starting web GUI on port %d", webGuiPort)
 	go http.ListenAndServe(fmt.Sprintf(":%d", webGuiPort), nil)
+	//	go http.ListenAndServeTLS(fmt.Sprintf(":%d", webGuiPort),
+	//		"test/cert.pem",
+	//		"test/key.pem",
+	//		nil)
 	var potAddrs []string
 	ifaddrs, _ := net.InterfaceAddrs()
 	for _, addr := range ifaddrs {

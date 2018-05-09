@@ -1,425 +1,849 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ship-types xmlns="https://fractalqb.de/ed/ship-types/2.4">
-  <ship jname="adder" size="small" crew="2" price="87810"
-		manf="Zorgon Peterson">
+<ship-types xmlns="https://fractalqb.de/ed/ship-types/3.0">
+  <ship name="Adder" manf="Zorgon Peterson"
+		jname="adder" size="small" crew="2" price="87810">
 	<hardpoints small="2" medium="1"/>
 	<utilitiy mounts="2"/>
+	<core module="armour" class="1"/>
 	<core module="powerplant" class="3"/>
 	<core module="thrusters" class="3"/>
 	<core module="fsd" class="3"/>
 	<core module="life-support" class="1"/>
 	<core module="power-distributor" class="2"/>
 	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="3"/>
 	<internal size="1" count="1"/>
 	<internal size="2" count="2"/>
 	<internal size="3" count="2"/>
+	<feature type="agility">152</feature>
+	<feature type="hardness">35</feature>
+	<feature type="max-speed">352</feature>
+	<feature type="max-boost">512</feature>
+	<feature type="max-jump">33.0</feature>
+	<feature type="max-cargo">26</feature>
+	<feature type="max-passengers">12</feature>
   </ship>
   
-  <ship jname="anaconda" size="large" crew="3" price="146969450"
-		manf="Faulcon DeLacy">
+  <ship name="Alliance Chieftain" manf="Lakon"
+		jname="typex" size="medium" crew="2" price="19382250">
+	<hardpoints small="3" medium="1" large="2"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="6"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="6"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="6" count="1"/>
+	<internal size="5" count="1"/>
+	<internal size="4" count="1"/>
+	<internal size="4" count="3" restriction="military"/>
+	<internal size="2" count="2"/>
+	<feature type="agility">147</feature>
+	<feature type="hardness">65</feature>
+	<feature type="max-speed">267</feature>
+	<feature type="max-boost">383</feature>
+	<feature type="max-jump">27.8</feature>
+	<feature type="max-cargo">120</feature>
+	<feature type="max-passengers">60</feature>
+  </ship>
+
+  <ship name="Anaconda" manf="Faulcon DeLacy"
+		jname="anaconda" size="large" crew="3" price="146969450"
+		fighter="true">
 	<hardpoints small="2" medium="2" large="3" huge="1"/>
 	<utilitiy mounts="8"/>
+	<core module="armour" class="1"/>
 	<core module="powerplant" class="8"/>
 	<core module="thrusters" class="7"/>
 	<core module="fsd" class="6"/>
 	<core module="life-support" class="5"/>
 	<core module="power-distributor" class="8"/>
 	<core module="scanner" class="8"/>
+	<core module="fuel-tank" class="5"/>
 	<internal size="2" count="1"/>
 	<internal size="4" count="3"/>
-	<internal size="5" count="4"/>
+	<internal size="5" count="3"/>
+	<internal size="5" count="1" restriction="military"/>
 	<internal size="6" count="3"/>
 	<internal size="7" count="1"/>
+	<feature type="agility">95</feature>
+	<feature type="hardness">65</feature>
+	<feature type="max-speed">209</feature>
+	<feature type="max-boost">278</feature>
+	<feature type="max-jump">41.4</feature>
+	<feature type="max-cargo">468</feature>
+	<feature type="max-passengers">170</feature>
   </ship>
 
-  <ship jname="asp" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
+  <ship name="Asp Explorer" manf="Lakon"
+		jname="asp" size="medium" crew="2" price="6661150">
+	<hardpoints small="4" medium="2"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="5"/>
+	<core module="thrusters" class="5"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="4"/>
+	<core module="power-distributor" class="4"/>
+	<core module="scanner" class="5"/>
+	<core module="fuel-tank" class="5"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="3"/>
+	<internal size="5" count="1"/>
+	<internal size="6" count="1"/>
+	<feature type="agility">148</feature>
+	<feature type="hardness">52</feature>
+	<feature type="max-speed">290</feature>
+	<feature type="max-boost">394</feature>
+	<feature type="max-jump">38.2</feature>
+	<feature type="max-cargo">128</feature>
+	<feature type="max-passengers">64</feature>
+  </ship>
+
+  <ship name="Asp Scout" manf="Lakon"
+		jname="asp_scout" size="medium" crew="2" price="3961150">
+	<hardpoints small="2" medium="2"/>
 	<utilitiy mounts="2"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="3"/>
+	<core module="power-distributor" class="4"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="1"/>
+	<internal size="5" count="1"/>
+	<feature type="agility">165</feature>
+	<feature type="hardness">52</feature>
+	<feature type="max-speed">255</feature>
+	<feature type="max-boost">348</feature>
+	<feature type="max-jump">33.2</feature>
+	<feature type="max-cargo">72</feature>
+	<feature type="max-passengers">36</feature>
+  </ship>
+
+  <ship name="Beluga Liner" manf="Saud Kruger"
+		jname="" size="large" crew="3" price="84532770"
+		fighter="true">
+	<hardpoints medium="5"/>
+	<utilitiy mounts="6"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="7"/>
+	<core module="fsd" class="7"/>
+	<core module="life-support" class="8"/>
+	<core module="power-distributor" class="6"/>
+	<core module="scanner" class="5"/>
+	<core module="fuel-tank" class="7"/>
+	<internal size="3" count="4"/>
+	<internal size="4" count="1"/>
+	<internal size="5" count="2" restriction="tourist"/>
+	<internal size="6" count="2"/>
+	<internal size="6" count="2" restriction="tourist"/>
+	<feature type="agility">102</feature>
+	<feature type="hardness">60</feature>
+	<feature type="max-speed">230</feature>
+	<feature type="max-boost">323</feature>
+	<feature type="max-jump">30.1</feature>
+	<feature type="max-cargo">368</feature>
+	<feature type="max-passengers">184</feature>
+  </ship>
+  
+  <ship name="Cobra MkIII" manf="Faulcon DeLacy"
+		jname="cobramkiii" size="small" crew="2" price="349720">
+	<hardpoints small="2" medium="2"/>
+	<utilitiy mounts="2"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="3"/>
+	<core module="power-distributor" class="3"/>
+	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="3"/>
+	<internal size="4" count="3"/>
+	<feature type="agility">150</feature>
+	<feature type="hardness">35</feature>
+	<feature type="max-speed">325</feature>
+	<feature type="max-boost">464</feature>
+	<feature type="max-jump">28.6</feature>
+	<feature type="max-cargo">60</feature>
+	<feature type="max-passengers">30</feature>
+  </ship>
+
+  <ship name="Cobra MkIV" manf="Faulcon DeLacy"
+		jname="cobramkiv" size="small" crew="2" price="764720">
+	<hardpoints small="3" medium="2"/>
+	<utilitiy mounts="2"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="3"/>
+	<core module="power-distributor" class="3"/>
+	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="4"/>
+	<feature type="agility">130</feature>
+	<feature type="hardness">35</feature>
+	<feature type="max-speed">228</feature>
+	<feature type="max-boost">342</feature>
+	<feature type="max-jump">24.9</feature>
+	<feature type="max-cargo">88</feature>
+	<feature type="max-passengers">44</feature>
+  </ship>
+
+  <ship name="Diamondback Explorer" manf="Lakon"
+		jname="diamondbackxl" size="small" crew="1" price="1894760">
+	<hardpoints medium="2" large="1"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="3"/>
+	<core module="power-distributor" class="4"/>
+	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="5"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="2"/>
+	<feature type="agility">138</feature>
+	<feature type="hardness">42</feature>
+	<feature type="max-speed">284</feature>
+	<feature type="max-boost">371</feature>
+	<feature type="max-jump">41.8</feature>
+	<feature type="max-cargo">56</feature>
+	<feature type="max-passengers">28</feature>
+  </ship>
+
+  <ship name="Diamondback Scout" manf="Lakon"
+		jname="diamondback" size="small" crew="1" price="564330">
+	<hardpoints small="2" medium="2"/>
+	<utilitiy mounts="3"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="2"/>
+	<core module="power-distributor" class="3"/>
+	<core module="scanner" class="2"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="3"/>
+	<feature type="agility">157</feature>
+	<feature type="hardness">40</feature>
+	<feature type="max-speed">325</feature>
+	<feature type="max-boost">441</feature>
+	<feature type="max-jump">30.4</feature>
+	<feature type="max-cargo">28</feature>
+	<feature type="max-passengers">14</feature>
+  </ship>
+
+  <ship name="Dolphin" manf="Saud Kruger"
+		jname="dolphin" size="small" crew="1" price="1337330">
+	<hardpoints small="2"/>
+	<utilitiy mounts="3"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="5"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="4"/>
+	<core module="power-distributor" class="3"/>
+	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="3"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="2"/>
+	<internal size="5" count="1" restriction="tourist"/>
+	<feature type="agility">150</feature>
+	<feature type="hardness">35</feature>
+	<feature type="max-speed">290</feature>
+	<feature type="max-boost">406</feature>
+	<feature type="max-jump">35.2</feature>
+	<feature type="max-cargo">84</feature>
+	<feature type="max-passengers">42</feature>
+  </ship>
+
+  <ship name="Eagle" manf="Core Dynamics"
+		jname="eagle" size="small" crew="1" price="44800">
+	<hardpoints small="3" medium="1"/>
+	<utilitiy mounts="1"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="2"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="2"/>
+	<core module="scanner" class="2"/>
+	<core module="fuel-tank" class="2"/>
+	<internal size="1" count="2"/>
+	<internal size="2" count="1" restriction="military"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="1"/>
+	<feature type="agility">188</feature>
+	<feature type="hardness">28</feature>
+	<feature type="max-speed">384</feature>
+	<feature type="max-boost">560</feature>
+	<feature type="max-jump">25.4</feature>
+	<feature type="max-cargo">16</feature>
+	<feature type="max-passengers">6</feature>
+  </ship>
+
+  <ship name="Federal Assault Ship" manf="Core Dynamics"
+		jname="federation_dropship_mkii" size="medium" crew="2"
+		price="19814210">
+	<hardpoints medium="2" large="2"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="6"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="6"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="1"/>
+	<internal size="4" count="2" restriction="military"/>
+	<internal size="5" count="2"/>
+	<feature type="agility">147</feature>
+	<feature type="hardness">60</feature>
+	<feature type="max-speed">244</feature>
+	<feature type="max-boost">406</feature>
+	<feature type="max-jump">23.4</feature>
+	<feature type="max-cargo">96</feature>
+	<feature type="max-passengers">48</feature>
+  </ship>
+
+  <ship name="Federal Corvette" manf="Core Dynamics"
+		jname="federation_corvette" size="large" crew="3" price="187969450"
+		fighter="true">
+	<hardpoints small="2" medium="2" large="1" huge="2"/>
+	<utilitiy mounts="8"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="8"/>
+	<core module="thrusters" class="7"/>
+	<core module="fsd" class="6"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="8"/>
+	<core module="scanner" class="8"/>
+	<core module="fuel-tank" class="5"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="2"/>
+	<internal size="5" count="2" restriction="military"/>
+	<internal size="5" count="2"/>
+	<internal size="6" count="2"/>
+	<internal size="7" count="3"/>
+	<feature type="agility">111</feature>
+	<feature type="hardness">70</feature>
+	<feature type="max-speed">232</feature>
+	<feature type="max-boost">302</feature>
+	<feature type="max-jump">21.1</feature>
+	<feature type="max-cargo">616</feature>
+	<feature type="max-passengers">116</feature>
+  </ship>
+
+  <ship name="Federal Dropship" manf="Core Dynamics"
+		jname="federation_dropship" size="medium" crew="2" price="14314210">
+	<hardpoints medium="4" large="1"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="6"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="6"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="1"/>
+	<internal size="4" count="2" restriction="military"/>
+	<internal size="5" count="2"/>
+	<internal size="6" count="1"/>
+	<feature type="agility">124</feature>
+	<feature type="hardness">60</feature>
+	<feature type="max-speed">209</feature>
+	<feature type="max-boost">348</feature>
+	<feature type="max-jump">19.7</feature>
+	<feature type="max-cargo">164</feature>
+	<feature type="max-passengers">82</feature>
+  </ship>
+
+  <ship name="Federal Gunship" manf="Core Dynamics"
+		jname="federation_gunship" size="medium" crew="2" price="35814210"
+		fighter="true">
+	<hardpoints small="2" medium="4" large="1"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="6"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="7"/>
+	<core module="scanner" class="5"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="2"/>
+	<internal size="4" count="3" restriction="military"/>
+	<internal size="5" count="1"/>
+	<internal size="6" count="2"/>
+	<feature type="agility">123</feature>
+	<feature type="hardness">60</feature>
+	<feature type="max-speed">197</feature>
+	<feature type="max-boost">325</feature>
+	<feature type="max-jump">19.5</feature>
+	<feature type="max-cargo">168</feature>
+	<feature type="max-passengers">84</feature>
+  </ship>
+
+  <ship name="Fer-de-Lance" manf="Zorgon Peterson"
+		jname="ferdelance" size="medium" crew="2" price="51567040">
+	<hardpoints medium="4" huge="1"/>
+	<utilitiy mounts="6"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="5"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="4"/>
+	<core module="power-distributor" class="6"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="3"/>
+	<internal size="1" count="1"/>
+	<internal size="2" count="1"/>
+	<internal size="4" count="2"/>
+	<internal size="5" count="1"/>
+	<feature type="agility">140</feature>
+	<feature type="hardness">70</feature>
+	<feature type="max-speed">302</feature>
+	<feature type="max-boost">406</feature>
+	<feature type="max-jump">20.9</feature>
+	<feature type="max-cargo">70</feature>
+	<feature type="max-passengers">34</feature>
+  </ship>
+
+  <ship name="Hauler" manf="Zorgon Peterson"
+		jname="hauler" size="small" crew="1" price="52720">
+	<hardpoints small="1"/>
+	<utilitiy mounts="2"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="2"/>
+	<core module="thrusters" class="2"/>
+	<core module="fsd" class="2"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="1"/>
+	<core module="scanner" class="1"/>
+	<core module="fuel-tank" class="2"/>
+	<internal size="1" count="1"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="2"/>
+	<feature type="agility">150</feature>
+	<feature type="hardness">20</feature>
+	<feature type="max-speed">320</feature>
+	<feature type="max-boost">480</feature>
+	<feature type="max-jump">37.3</feature>
+	<feature type="max-cargo">22</feature>
+	<feature type="max-passengers">10</feature>
+  </ship>
+
+  <ship name="Imperial Clipper" manf="Gutamaya"
+		jname="empire_trader" size="large" crew="2" price="22296860">
+	<hardpoints medium="2" large="2"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="6"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="6"/>
+	<core module="scanner" class="5"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="2"/>
+	<internal size="6" count="1"/>
+	<internal size="7" count="1"/>
+	<feature type="agility">138</feature>
+	<feature type="hardness">60</feature>
+	<feature type="max-speed">348</feature>
+	<feature type="max-boost">441</feature>
+	<feature type="max-jump">27.6</feature>
+	<feature type="max-cargo">248</feature>
+	<feature type="max-passengers">60</feature>
+  </ship>
+
+  <ship name="Imperial Courier" manf="Gutamaya"
+		jname="empire_courier" size="small" crew="1" price="2542930">
+	<hardpoints medium="3"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="3"/>
+	<core module="fsd" class="3"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="3"/>
+	<core module="scanner" class="2"/>
+	<core module="fuel-tank" class="3"/>
+	<internal size="1" count="1"/>
+	<internal size="2" count="3"/>
+	<internal size="3" count="2"/>
+	<feature type="agility">144</feature>
+	<feature type="hardness">30</feature>
+	<feature type="max-speed">448</feature>
+	<feature type="max-boost">608</feature>
+	<feature type="max-jump">33.7</feature>
+	<feature type="max-cargo">30</feature>
+	<feature type="max-passengers">14</feature>
+  </ship>
+
+  <ship name="Imperial Cutter" manf="Gutamaya"
+		jname="cutter" size="large" crew="3" price="208969450"
+		fighter="true">
+	<hardpoints medium="4" large="2" huge="1"/>
+	<utilitiy mounts="8"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="8"/>
+	<core module="thrusters" class="8"/>
+	<core module="fsd" class="7"/>
+	<core module="life-support" class="7"/>
+	<core module="power-distributor" class="7"/>
+	<core module="scanner" class="7"/>
+	<core module="fuel-tank" class="6"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="1"/>
+	<internal size="5" count="2" restriction="military"/>
+	<internal size="5" count="2"/>
+	<internal size="6" count="3"/>
+	<internal size="8" count="2"/>
+	<feature type="agility">71</feature>
+	<feature type="hardness">70</feature>
+	<feature type="max-speed">232</feature>
+	<feature type="max-boost">371</feature>
+	<feature type="max-jump">26.7</feature>
+	<feature type="max-cargo">792</feature>
+	<feature type="max-passengers">140</feature>
+  </ship>
+
+  <ship name="Imperial Eagle" manf="Core Dynamics"
+		jname="empire_eagle" size="small" crew="1" price="110830">
+	<hardpoints small="2" medium="1"/>
+	<utilitiy mounts="1"/>
+	<core module="armour" class="1"/>
 	<core module="powerplant" class="3"/>
 	<core module="thrusters" class="3"/>
 	<core module="fsd" class="3"/>
 	<core module="life-support" class="1"/>
 	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
+	<core module="scanner" class="2"/>
+	<core module="fuel-tank" class="2"/>
+	<internal size="1" count="2"/>
+	<internal size="2" count="1" restriction="military"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="1"/>
+	<feature type="agility">155</feature>
+	<feature type="hardness">28</feature>
+	<feature type="max-speed">480</feature>
+	<feature type="max-boost">640</feature>
+	<feature type="max-jump">25.4</feature>
+	<feature type="max-cargo">16</feature>
+	<feature type="max-passengers">6</feature>
   </ship>
 
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
+  <ship name="Keelback" manf="Lakon"
+		jname="independant_trader" size="medium" crew="2" price="3126150"
+		fighter="true">
+	<hardpoints small="2" medium="2"/>
+	<utilitiy mounts="3"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="3"/>
+	<core module="scanner" class="2"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="1"/>
+	<internal size="5" count="2"/>
+	<feature type="agility">142</feature>
+	<feature type="hardness">45</feature>
+	<feature type="max-speed">232</feature>
+	<feature type="max-boost">348</feature>
+	<feature type="max-jump">29.0</feature>
+	<feature type="max-cargo">96</feature>
+	<feature type="max-passengers">48</feature>
+  </ship>
+
+  <ship name="Orca" manf="Saud Kruger"
+		jname="orca" size="large" crew="2" price="48539900">
+	<hardpoints medium="2" large="1"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="5"/>
+	<core module="thrusters" class="6"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="6"/>
+	<core module="power-distributor" class="5"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="5"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="1"/>
+	<internal size="5" count="2"/>
+	<internal size="5" count="1" restriction="tourist"/>
+	<internal size="6" count="1" restriction="tourist"/>
+	<feature type="agility">98</feature>
+	<feature type="hardness">55</feature>
+	<feature type="max-speed">348</feature>
+	<feature type="max-boost">441</feature>
+	<feature type="max-jump">36.2</feature>
+	<feature type="max-cargo">192</feature>
+	<feature type="max-passengers">96</feature>
+  </ship>
+
+  <ship name="Python" manf="Faulcon DeLacy"
+		jname="python" size="medium" crew="2" price="56978180">
+	<hardpoints medium="2" large="3"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="7"/>
+	<core module="thrusters" class="6"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="4"/>
+	<core module="power-distributor" class="7"/>
+	<core module="scanner" class="6"/>
+	<core module="fuel-tank" class="5"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="1"/>
+	<internal size="5" count="2"/>
+	<internal size="6" count="3"/>
+	<feature type="agility">129</feature>
+	<feature type="hardness">65</feature>
+	<feature type="max-speed">230</feature>
+	<feature type="max-boost">300</feature>
+	<feature type="max-jump">30.8</feature>
+	<feature type="max-cargo">292</feature>
+	<feature type="max-passengers">146</feature>
+  </ship>
+
+  <ship name="Sidewinder" manf="Faulcon DeLacy"
+		jname="sidewinder" size="small" crew="1" price="32000">
+	<hardpoints small="2"/>
 	<utilitiy mounts="2"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="2"/>
+	<core module="thrusters" class="2"/>
+	<core module="fsd" class="2"/>
+	<core module="life-support" class="1"/>
+	<core module="power-distributor" class="1"/>
+	<core module="scanner" class="1"/>
+	<core module="fuel-tank" class="1"/>
+	<internal size="1" count="2"/>
+	<internal size="2" count="2"/>
+	<feature type="agility">168</feature>
+	<feature type="hardness">20</feature>
+	<feature type="max-speed">352</feature>
+	<feature type="max-boost">512</feature>
+	<feature type="max-jump">24.4</feature>
+	<feature type="max-cargo">12</feature>
+	<feature type="max-passengers">4</feature>
+  </ship>
+
+  <ship name="Type-10 Defender" manf="Lakon"
+		jname="type9_military" size="large" crew="3" price="124754863"
+		fighter="true">
+	<hardpoints small="2" medium="3" large="4"/>
+	<utilitiy mounts="8"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="8"/>
+	<core module="thrusters" class="7"/>
+	<core module="fsd" class="7"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="7"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="6"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="2"/>
+	<internal size="5" count="1"/>
+	<internal size="5" count="2" restriction="military"/>
+	<internal size="6" count="1"/>
+	<internal size="7" count="1"/>
+	<internal size="8" count="1"/>
+	<feature type="agility">46</feature>
+	<feature type="hardness">75</feature>
+	<feature type="max-speed">200</feature>
+	<feature type="max-boost">244</feature>
+	<feature type="max-jump">25.8</feature>
+	<feature type="max-cargo">532</feature>
+	<feature type="max-passengers">74</feature>
+  </ship>
+
+  <ship name="Type-6 Transporter" manf="Lakon"
+		jname="type6" size="medium" crew="1" price="1045950">
+	<hardpoints small="2"/>
+	<utilitiy mounts="3"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="3"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="2"/>
+	<core module="power-distributor" class="3"/>
+	<core module="scanner" class="2"/>
+	<core module="fuel-tank" class="4"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="2"/>
+	<internal size="5" count="2"/>
+	<feature type="agility">147</feature>
+	<feature type="hardness">35</feature>
+	<feature type="max-speed">255</feature>
+	<feature type="max-boost">406</feature>
+	<feature type="max-jump">33.0</feature>
+	<feature type="max-cargo">112</feature>
+	<feature type="max-passengers">56</feature>
+  </ship>
+
+  <ship name="Type-7 Transporter" manf="Lakon"
+		jname="type7" size="large" crew="1" price="17472260">
+	<hardpoints small="4"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="5"/>
+	<core module="thrusters" class="5"/>
+	<core module="fsd" class="5"/>
+	<core module="life-support" class="4"/>
+	<core module="power-distributor" class="4"/>
+	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="5"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="2"/>
+	<internal size="5" count="3"/>
+	<internal size="6" count="3"/>
+	<feature type="agility">104</feature>
+	<feature type="hardness">54</feature>
+	<feature type="max-speed">209</feature>
+	<feature type="max-boost">348</feature>
+	<feature type="max-jump">31.9</feature>
+	<feature type="max-cargo">308</feature>
+	<feature type="max-passengers">154</feature>
+  </ship>
+
+  <ship name="Type-9 Heavy" manf="Lakon"
+		jname="type9" size="large" crew="3" price="76555840"
+		fighter="true">
+	<hardpoints small="2" medium="3"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="6"/>
+	<core module="thrusters" class="7"/>
+	<core module="fsd" class="6"/>
+	<core module="life-support" class="5"/>
+	<core module="power-distributor" class="6"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="6"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="2"/>
+	<internal size="4" count="2"/>
+	<internal size="5" count="1"/>
+	<internal size="6" count="1"/>
+	<internal size="7" count="1"/>
+	<internal size="8" count="2"/>
+	<feature type="agility">48</feature>
+	<feature type="hardness">65</feature>
+	<feature type="max-speed">151</feature>
+	<feature type="max-boost">232</feature>
+	<feature type="max-jump">23.7</feature>
+	<feature type="max-cargo">788</feature>
+	<feature type="max-passengers">74</feature>
+  </ship>
+
+  <ship name="Viper MkIII" manf="Faulcon DeLacy"
+		jname="viper" size="small" crew="1" price="142930">
+	<hardpoints small="2" medium="2"/>
+	<utilitiy mounts="2"/>
+	<core module="armour" class="1"/>
 	<core module="powerplant" class="3"/>
 	<core module="thrusters" class="3"/>
 	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
+	<core module="life-support" class="2"/>
+	<core module="power-distributor" class="3"/>
 	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="2"/>
 	<internal size="1" count="1"/>
+	<internal size="2" count="1"/>
+	<internal size="3" count="1" restriction="military"/>
+	<internal size="3" count="2"/>
+	<feature type="agility">140</feature>
+	<feature type="hardness">35</feature>
+	<feature type="max-speed">512</feature>
+	<feature type="max-boost">640</feature>
+	<feature type="max-jump">24.8</feature>
+	<feature type="max-cargo">22</feature>
+	<feature type="max-passengers">10</feature>
   </ship>
 
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
+  <ship name="Viper MkIV" manf="Faulcon DeLacy"
+		jname="viper_mkiv" size="small" crew="1" price="437930">
+	<hardpoints small="2" medium="2"/>
 	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="4"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="2"/>
+	<core module="power-distributor" class="3"/>
 	<core module="scanner" class="3"/>
+	<core module="fuel-tank" class="4"/>
 	<internal size="1" count="1"/>
+	<internal size="2" count="2"/>
+	<internal size="3" count="1" restriction="military"/>
+	<internal size="3" count="1"/>
+	<internal size="4" count="2"/>
+	<feature type="agility">132</feature>
+	<feature type="hardness">35</feature>
+	<feature type="max-speed">313</feature>
+	<feature type="max-boost">394</feature>
+	<feature type="max-jump">27.4</feature>
+	<feature type="max-cargo">50</feature>
+	<feature type="max-passengers">24</feature>
   </ship>
 
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
+  <ship name="Vulture" manf="Core Dynamics"
+		jname="vulture" size="small" crew="2" price="4925620">
+	<hardpoints large="2"/>
+	<utilitiy mounts="4"/>
+	<core module="armour" class="1"/>
+	<core module="powerplant" class="4"/>
+	<core module="thrusters" class="5"/>
+	<core module="fsd" class="4"/>
+	<core module="life-support" class="3"/>
+	<core module="power-distributor" class="5"/>
+	<core module="scanner" class="4"/>
+	<core module="fuel-tank" class="3"/>
+	<internal size="1" count="2"/>
+	<internal size="2" count="1"/>
+	<internal size="4" count="1"/>
+	<internal size="5" count="1" restriction="military"/>
+	<internal size="5" count="1"/>
+	<feature type="agility">169</feature>
+	<feature type="hardness">55</feature>
+	<feature type="max-speed">244</feature>
+	<feature type="max-boost">394</feature>
+	<feature type="max-jump">22.8</feature>
+	<feature type="max-cargo">56</feature>
+	<feature type="max-passengers">26</feature>
   </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
-  <ship jname="" size="" crew="" price=""
-		manf="">
-	<hardpoints small="2" medium="1"/>
-	<utilitiy mounts="2"/>
-	<core module="powerplant" class="3"/>
-	<core module="thrusters" class="3"/>
-	<core module="fsd" class="3"/>
-	<core module="life-support" class="1"/>
-	<core module="power-distributor" class="2"/>
-	<core module="scanner" class="3"/>
-	<internal size="1" count="1"/>
-  </ship>
-
 </ship-types>

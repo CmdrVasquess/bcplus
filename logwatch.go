@@ -22,6 +22,14 @@ import (
 
 const sleepMax = 5000
 
+var journalStatsFiles = map[string]bool{
+	"Market.json":      true,
+	"ModulesInfo.json": true,
+	"Outfitting.json":  true,
+	"Shipyard.json":    true,
+	"Status.json":      true,
+}
+
 // Unix: \n; Win: \r\n; Apple <= OS 9: \r
 func splitLogLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if i := bytes.IndexAny(data, "\n\r"); i < 0 {
@@ -105,6 +113,11 @@ func pollFile(watchFiles chan string, doPerLine func(line []byte)) {
 	}
 }
 
+func isStatsFile(name string) (itIs bool, itsOn bool) {
+	on, ok := journalStatsFiles[name]
+	return ok, on
+}
+
 func isJournalFile(name string) bool {
 	return str.HasPrefix(name, "Journal.") &&
 		str.HasSuffix(name, ".log")
@@ -155,7 +168,10 @@ func WatchJournal(done <-chan bool,
 	for {
 		select {
 		case fse := <-watch.Events:
-			if !isJournalFile(filepath.Base(fse.Name)) {
+			fseBase := filepath.Base(fse.Name)
+			if ok, on := isStatsFile(fseBase); ok {
+				glog.Logf(l.Info, "FSevent on stats %s (%t): %v", fseBase, on, fse)
+			} else if !isJournalFile(filepath.Base(fse.Name)) {
 				glog.Logf(l.Debug, "ignore event %s on non-journal file: %s",
 					fse.Op,
 					fse.Name)

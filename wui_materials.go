@@ -89,7 +89,8 @@ var endRescScript *gx.Template
 
 func loadRescTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("materials.html"), "resources", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("materials.html"), "resources", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	dynRescStyles = pgLocStyleFix(tmpls)
@@ -174,10 +175,10 @@ func emitRawMats(wr io.Writer, bt *gx.BounT, cmdr *cmdr.Commander, ndSyn []cmdr.
 	if theGame.Cmdr.Loc.Ref != nil {
 		best = bestRawMats(theGame.Cmdr.Loc.System())
 	}
-	btSrc := gxtRowSrc2.NewBounT()
+	btSrc := gxtRowSrc2.NewBounT(nil)
 	bt.Bind(gxtSecRow.Source, btSrc)
 	bt.BindP(gxtSecRow.ManIdx, 1)
-	btNeed := gxtRowNeed.NewBounT()
+	btNeed := gxtRowNeed.NewBounT(nil)
 	for _, mat := range rawSorted {
 		bt.Bind(gxtSecRow.MatId, nmap(&nmMatsId, mat))
 		if m, ok := theGalaxy.Materials[mat]; !ok || m.Commons < 0 {
@@ -247,7 +248,7 @@ func emitMatLs(
 	ndSyn []cmdr.SynthRef) (n int) {
 	src.Bind(gxtRowSrc1.Value, webGuiTBD)
 	bt.BindP(gxtSecRow.ManIdx, 0)
-	btNeed := gxtRowNeed.NewBounT()
+	btNeed := gxtRowNeed.NewBounT(nil)
 	for _, mat := range mats {
 		bt.Bind(gxtSecRow.MatId, nmap(&nmMatsId, mat))
 		if m, ok := theGalaxy.Materials[mat]; !ok || m.Commons < 0 {
@@ -314,7 +315,7 @@ func cmdrNeedsSynths(cmdr *cmdr.Commander) (res []cmdr.SynthRef) {
 }
 
 func needsHdrs(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (n int) {
-	btThSyn := gxtThSynRcp.NewBounT()
+	btThSyn := gxtThSynRcp.NewBounT(nil)
 	var j int
 	for i := 0; i < len(needSynths); i = j {
 		snm, _ := needSynths[i].Split()
@@ -334,7 +335,7 @@ func needsHdrs(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (
 }
 
 func needsLvls(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (n int) {
-	btThLvl := gxtThSynLvl.NewBounT()
+	btThLvl := gxtThSynLvl.NewBounT(nil)
 	for _, sr := range needSynths {
 		count := cmdr.Synth[sr]
 		_, lvl := sr.Split()
@@ -350,7 +351,7 @@ func secTitle(bt *gx.BounT, wr io.Writer, cat string, have, need, needs int) (n 
 	bt.BindP(gxtSecTitle.Cat, cat)
 	bt.Bind(gxtSecTitle.Category, gxw.EscHtml{gx.Print{catNm}})
 	bt.BindP(gxtSecTitle.Have, have)
-	btSecNeed := gxtSecNeed.NewInitBounT(gx.Empty)
+	btSecNeed := gxtSecNeed.NewInitBounT(gx.Empty, nil)
 	bt.BindGen(gxtSecTitle.Needs, func(wr io.Writer) (n int) {
 		for needs > 0 {
 			n += btSecNeed.Emit(wr)
@@ -363,9 +364,9 @@ func secTitle(bt *gx.BounT, wr io.Writer, cat string, have, need, needs int) (n 
 }
 
 func wuiMats(w http.ResponseWriter, r *http.Request) {
-	btEndScript := endRescScript.NewBounT()
+	btEndScript := endRescScript.NewBounT(nil)
 	btEndScript.BindGenName("hide-cats", func(wr io.Writer) (n int) {
-		btHide := gxtHideCat.NewBounT()
+		btHide := gxtHideCat.NewBounT(nil)
 		for cat, doHide := range theGame.MatCatHide {
 			if doHide {
 				btHide.BindP(gxtHideCat.Cat, cat)
@@ -375,7 +376,7 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 		return n
 	})
 	btEmit, btBind, hook := preparePage(dynRescStyles, gx.Empty, btEndScript, activeTopic(r))
-	btFrame := gxtRescFrame.NewBounT()
+	btFrame := gxtRescFrame.NewBounT(nil)
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr
 	haveRaw, needRaw := resourceCount(cmdr.MatsRaw)
@@ -398,9 +399,9 @@ func wuiMats(w http.ResponseWriter, r *http.Request) {
 		btFrame.BindP(gxtRescFrame.FltHave, "alor")
 		btFrame.BindP(gxtRescFrame.FltNeed, true)
 	}
-	btSec := gxtSecTitle.NewBounT()
-	btRow := gxtSecRow.NewBounT()
-	btSrc1 := gxtRowSrc1.NewBounT()
+	btSec := gxtSecTitle.NewBounT(nil)
+	btRow := gxtSecRow.NewBounT(nil)
+	btSrc1 := gxtRowSrc1.NewBounT(nil)
 	btFrame.BindGen(gxtRescFrame.Sections, func(wr io.Writer) (n int) {
 		n += secTitle(btSec, wr, "raw", haveRaw, needRaw, len(needSynths))
 		n += emitRawMats(wr, btRow, cmdr, needSynths)

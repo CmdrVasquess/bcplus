@@ -76,7 +76,8 @@ var dynBdyStyles gx.Content
 
 func loadBdyTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("bodies.html"), "bodies", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("bodies.html"), "bodies", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	dynBdyStyles = pgLocStyleFix(tmpls)
@@ -95,7 +96,7 @@ func loadBdyTemplates() {
 func emitBodies(wr io.Writer, matLs []string) (n int) {
 	cmdr := &theGame.Cmdr
 	if cmdr.Loc.Nil() || len(cmdr.Loc.System().Bodies) == 0 {
-		btNone := gxtBdyTerence.NewInitBounT(webGuiTBD)
+		btNone := gxtBdyTerence.NewInitBounT(webGuiTBD, nil)
 		n += btNone.Emit(wr)
 	} else {
 		bdys := make([]*gxy.SysBody, len(cmdr.Loc.System().Bodies))
@@ -104,11 +105,11 @@ func emitBodies(wr io.Writer, matLs []string) (n int) {
 			di, dj := bdys[i].Dist, bdys[j].Dist
 			return di < dj
 		})
-		btStar := gxtBdyStar.NewBounT()
-		btPlnt := gxtBdyPlanet.NewBounT()
-		btBelt := gxtBdyBelt.NewBounT()
-		btMat0 := gxtBdyPMat0.NewBounT()
-		btMat1 := gxtBdyPMatN.NewBounT()
+		btStar := gxtBdyStar.NewBounT(nil)
+		btPlnt := gxtBdyPlanet.NewBounT(nil)
+		btBelt := gxtBdyBelt.NewBounT(nil)
+		btMat0 := gxtBdyPMat0.NewBounT(nil)
+		btMat1 := gxtBdyPMatN.NewBounT(nil)
 		for _, bdy := range bdys {
 			switch bdy.Cat {
 			case gxy.Star:
@@ -152,7 +153,7 @@ func emitPlanet(wr io.Writer, bt, btM0, btMN *gx.BounT, matLs []string, p *gxy.S
 	if len(p.Mats) == 0 {
 		bt.Bind(gxtBdyPlanet.Materials, gx.Empty)
 	} else {
-		btMats := gxtMatSec.NewBounT()
+		btMats := gxtMatSec.NewBounT(nil)
 		bt.Bind(gxtBdyPlanet.Materials, btMats)
 		btMats.BindGen(gxtMatSec.Mats, func(wr io.Writer) (n int) {
 			if len(p.Mats) == 0 {
@@ -199,7 +200,7 @@ func wuiBdys(w http.ResponseWriter, r *http.Request) {
 	sort.Slice(matLs,
 		func(i, j int) bool { return cmprMatByL7d(matLs, i, j) })
 	btEmit, btBind, hook := preparePage(dynBdyStyles, gx.Empty, gx.Empty, activeTopic(r))
-	btFrame := gxtBdyFrame.NewBounT()
+	btFrame := gxtBdyFrame.NewBounT(nil)
 	btBind.Bind(hook, btFrame)
 	btFrame.BindGen(gxtBdyFrame.Bodies, func(wr io.Writer) int {
 		return emitBodies(wr, matLs)

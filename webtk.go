@@ -28,7 +28,8 @@ var gxTkLocStn struct {
 
 func loadWebTkTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("tk.html"), "tk", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("tk.html"), "tk", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	gx.MustIndexMap(&gxTkLocSys, needTemplate(tmpls, "loc-system"), idxMapNames.Convert)
@@ -44,14 +45,14 @@ func (l CntLoc) Emit(wr io.Writer) (n int) {
 	var bt *gx.BounT
 	switch loc := l.loc.(type) {
 	case *gxy.StarSys:
-		bt = gxTkLocSys.NewBounT()
+		bt = gxTkLocSys.NewBounT(nil)
 		bt.BindP(gxTkLocSys.Name, gxw.HtmlEsc(loc.Name()))
 	case *gxy.SysBody:
-		bt = gxTkLocBdy.NewBounT()
+		bt = gxTkLocBdy.NewBounT(nil)
 		bt.BindP(gxTkLocBdy.Sys, gxw.HtmlEsc(loc.System().Name()))
 		bt.BindP(gxTkLocBdy.Name, gxw.HtmlEsc(loc.Name))
 	case *gxy.Station:
-		bt = gxTkLocStn.NewBounT()
+		bt = gxTkLocStn.NewBounT(nil)
 		bt.BindP(gxTkLocBdy.Sys, gxw.HtmlEsc(loc.System().Name()))
 		bt.BindP(gxTkLocStn.Name, loc.Name)
 	default:

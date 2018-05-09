@@ -11,6 +11,7 @@ import (
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	edsm "github.com/CmdrVasquess/goEDSM"
 	gx "github.com/fractalqb/goxic"
 	gxm "github.com/fractalqb/goxic/textmessage"
 	gxw "github.com/fractalqb/goxic/web"
@@ -90,7 +91,8 @@ var endTrvlScrpit gx.Content
 
 func loadTrvlTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("travel.html"), "travel", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("travel.html"), "travel", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	dynTrvlStyles = pgLocStyleFix(tmpls)
@@ -314,7 +316,7 @@ func collectTags() (res []string) {
 
 func emitJumpStats(btFrame *gx.BounT, times []time.Duration, paths, dists []float64) {
 	btFrame.BindGen(gxtTrvlFrame.AvgHeads, func(wr io.Writer) (n int) {
-		btAvgHead := gxtTrvlAvgHead.NewBounT()
+		btAvgHead := gxtTrvlAvgHead.NewBounT(nil)
 		for i := 0; i < len(theAvgSteps); i++ {
 			btAvgHead.BindP(gxtTrvlAvgHead.Num, theAvgSteps[i])
 			n += btAvgHead.Emit(wr)
@@ -323,9 +325,9 @@ func emitJumpStats(btFrame *gx.BounT, times []time.Duration, paths, dists []floa
 		n += btAvgHead.Emit(wr)
 		return n
 	})
-	btAvgRow := gxtTrvlAvgRow.NewBounT()
-	btAvgVal1 := gxtTrvlAvgVal1.NewBounT()
-	btAvgVal2 := gxtTrvlAvgVal2.NewBounT()
+	btAvgRow := gxtTrvlAvgRow.NewBounT(nil)
+	btAvgVal1 := gxtTrvlAvgVal1.NewBounT(nil)
+	btAvgVal2 := gxtTrvlAvgVal2.NewBounT(nil)
 	btFrame.BindGen(gxtTrvlFrame.AvgRows, func(wr io.Writer) (n int) {
 		btAvgRow.BindP(gxtTrvlAvgRow.Title, "Distance / Path")
 		btAvgRow.BindGen(gxtTrvlAvgRow.Vals, func(wr io.Writer) (n int) {
@@ -416,8 +418,8 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			glog.Logf(l.Debug, "avg jumprange exceeds ships max: %f > %f", dpjAvg, dpjMax)
 		}
 	}
-	btShipOpt := gxtShipOpt.NewBounT()
-	btShipOptSel := gxtShipOptSel.NewBounT()
+	btShipOpt := gxtShipOpt.NewBounT(nil)
+	btShipOptSel := gxtShipOptSel.NewBounT(nil)
 	btFrame.BindGen(gxtTrvlFrame.ShipOpts, func(wr io.Writer) (n int) {
 		curship := cmdr.CurShip.Ship
 		if curship != nil {
@@ -466,7 +468,7 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 		btFrame.Bind(gxtTrvlFrame.TagsHdr, gxcTagsNof)
 	}
 	btFrame.BindP(gxtTrvlFrame.TspLimit, tspLimit)
-	btDest := gxtTrvlDestRow.NewBounT()
+	btDest := gxtTrvlDestRow.NewBounT(nil)
 	btFrame.BindGen(gxtTrvlFrame.Dests, func(wr io.Writer) (n int) {
 		for i, dst := range cmdr.Dests {
 			btDest.BindP(gxtTrvlDestRow.DstId, i)
@@ -516,7 +518,7 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 
 func wuiTravel(w http.ResponseWriter, r *http.Request) {
 	btEmit, btBind, hook := preparePage(dynTrvlStyles, hdrTrvlScrpit, endTrvlScrpit, activeTopic(r))
-	btFrame := gxtTrvlFrame.NewBounT()
+	btFrame := gxtTrvlFrame.NewBounT(nil)
 	btBind.Bind(hook, btFrame)
 	cmdr := &theGame.Cmdr
 	if len(cmdr.Dests) == 0 && !cmdr.Home.Nil() { // TODO not very well placed here!!!
@@ -613,7 +615,8 @@ func trvlAddDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 			snm := loc.System().Name()
 			glog.Logf(l.Debug, "lookup coos from EDSM for '%s'", snm)
 			go func() {
-				if rsy := theEdsm.System(snm); rsy != nil {
+				rsy, err := theEdsm.System(snm, edsm.SYSTEM_ID|edsm.SYSTEM_COOS)
+				if err == nil && rsy != nil {
 					sys := loc.System()
 					// Unsynchronized writes! Unlikely to make problems!?!?!?
 					sys.EdsmId = rsy.Id

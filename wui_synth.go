@@ -74,7 +74,8 @@ var dynSynStyles gx.Content
 
 func loadSynTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("synth.html"), "synth", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("synth.html"), "synth", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	dynSynStyles = pgLocStyleFix(tmpls)
@@ -92,10 +93,10 @@ func loadSynTemplates() {
 
 func emitLevels(matLs []string, rcp *gxy.Synthesis, builds []int, wr io.Writer) (n int) {
 	cmdr := &theGame.Cmdr
-	btLvl := gxtMatLvl.NewBounT()
-	btMatNo := gxtLvlMatNone.NewBounT()
-	btMatGo := gxtLvlMatGood.NewBounT()
-	btMatNd := gxtLvlMatNeed.NewBounT()
+	btLvl := gxtMatLvl.NewBounT(nil)
+	btMatNo := gxtLvlMatNone.NewBounT(nil)
+	btMatGo := gxtLvlMatGood.NewBounT(nil)
+	btMatNd := gxtLvlMatNeed.NewBounT(nil)
 	for i, lvl := range rcp.Levels {
 		btLvl.BindP(gxtMatLvl.Level, i+1)
 		btLvl.BindP(gxtMatLvl.Bonus, gxw.HtmlEsc(lvl.Bonus))
@@ -162,11 +163,11 @@ func recipeBuilds(recipe *gxy.Synthesis) (res []int) {
 func wuiSyn(w http.ResponseWriter, r *http.Request) {
 	cmdr := &theGame.Cmdr
 	btEmit, btBind, hook := preparePage(dynSynStyles, gx.Empty, gx.Empty, activeTopic(r))
-	btFrame := gxtSynFrame.NewBounT()
+	btFrame := gxtSynFrame.NewBounT(nil)
 	btBind.Bind(hook, btFrame)
 	btFrame.BindGen(gxtSynFrame.Recipes, func(wr io.Writer) (n int) {
-		btRcp := gxtRecipe.NewBounT()
-		btHdrMat := gxtHdrMat.NewBounT()
+		btRcp := gxtRecipe.NewBounT(nil)
+		btHdrMat := gxtHdrMat.NewBounT(nil)
 		for rcpid, recipe := range theGalaxy.Synth {
 			var matSet = make(map[string]bool)
 			for _, lvl := range recipe.Levels {
@@ -186,8 +187,8 @@ func wuiSyn(w http.ResponseWriter, r *http.Request) {
 			btRcp.BindP(gxtRecipe.Imprv, gxw.HtmlEsc(recipe.Improves))
 			builds := recipeBuilds(&recipe)
 			btRcp.BindGen(gxtRecipe.Builds, func(wr io.Writer) (n int) {
-				btBld0 := gxtRcpBuild0.NewBounT()
-				btBldN := gxtRcpBuildN.NewBounT()
+				btBld0 := gxtRcpBuild0.NewBounT(nil)
+				btBldN := gxtRcpBuildN.NewBounT(nil)
 				for i, b := range builds {
 					var cls string
 					if need, _ := cmdr.Synth[c.MkSynthRef(&recipe, i)]; need == 0 {

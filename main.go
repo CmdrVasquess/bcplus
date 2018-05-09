@@ -96,7 +96,7 @@ var credsKey []byte
 var eventq = make(chan bcEvent, 128)
 var signals = make(chan os.Signal, 1)
 
-var theEdsm = edsm.NewService()
+var theEdsm = edsm.NewService(edsm.Life)
 
 var jrnlDir string
 var dataDir string
@@ -168,6 +168,32 @@ func saveState(beta bool) {
 	saveMacros(filepath.Join(dataDir, "macros.xsx"))
 }
 
+func loadState(cmdrNm string, beta bool) bool {
+	var fnm string
+	if beta {
+		fnm = fmt.Sprintf("%s-beta.json", cmdrNm)
+		if _, err := os.Stat(fnm); os.IsNotExist(err) {
+			fnm = fmt.Sprintf("%s.json", cmdrNm)
+		}
+	} else {
+		fnm = fmt.Sprintf("%s.json", cmdrNm)
+	}
+	fnm = filepath.Join(dataDir, fnm)
+	glog.Logf(l.Info, "load state from %s", fnm)
+	if r, err := os.Open(fnm); os.IsNotExist(err) {
+		return false
+	} else if err == nil {
+		defer r.Close()
+		theGame.Load(r)
+		if len(credsKey) > 0 {
+			loadCreds(cmdrNm)
+		}
+		return true
+	} else {
+		panic("load commander: " + err.Error())
+	}
+}
+
 func loadCreds(cmdrNm string) error {
 	if theGame.Creds == nil {
 		theGame.Creds = &c.CmdrCreds{}
@@ -191,32 +217,6 @@ func loadCreds(cmdrNm string) error {
 		theGame.Creds = nil
 	}
 	return nil
-}
-
-func loadState(cmdrNm string, beta bool) bool {
-	var fnm string
-	if beta {
-		fnm = fmt.Sprintf("%s-beta.json", cmdrNm)
-		if _, err := os.Stat(fnm); os.IsNotExist(err) {
-			fnm = fmt.Sprintf("%s.json", cmdrNm)
-		}
-	} else {
-		fnm = fmt.Sprintf("%s.json", cmdrNm)
-	}
-	fnm = filepath.Join(dataDir, fnm)
-	glog.Logf(l.Info, "load state from %s", fnm)
-	if r, err := os.Open(fnm); os.IsNotExist(err) {
-		return false
-	} else if err == nil {
-		defer r.Close()
-		theGame.Load(r)
-		if len(credsKey) > 0 {
-			// TODO
-		}
-		return true
-	} else {
-		panic("load commander: " + err.Error())
-	}
 }
 
 var (

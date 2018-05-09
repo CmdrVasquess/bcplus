@@ -22,7 +22,8 @@ func PromptCredsKey() []byte {
 }
 
 type CmdrCreds struct {
-	Edsm edsm.Credentials `json:",omitempty"`
+	changed bool
+	Edsm    edsm.Credentials `json:",omitempty"`
 }
 
 func (cc *CmdrCreds) Clear() {
@@ -39,6 +40,9 @@ func (cc *CmdrCreds) Write(wr io.Writer, key []byte) error {
 	//		return err
 	//	}
 	//	defer f.Close()
+	if !cc.changed {
+		return nil
+	}
 	arm, err := armor.Encode(wr, "PGP MESSAGE", nil)
 	if err != nil {
 		return err
@@ -81,5 +85,6 @@ func (cc *CmdrCreds) Read(rd io.Reader, key []byte) error {
 	if err != nil {
 		return err
 	}
+	cc.changed = false
 	return nil
 }

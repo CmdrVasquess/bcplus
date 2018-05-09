@@ -32,7 +32,8 @@ var gxtSMcMacro struct {
 
 func loadSMcTemplates() {
 	tmpls := make(map[string]*gx.Template)
-	if err := gxw.ParseHtmlTemplate(assetPath("st-macros.html"), "macros", tmpls); err != nil {
+	tpars := gxw.NewHtmlParser()
+	if err := tpars.ParseFile(assetPath("st-macros.html"), "macros", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}
 	//	dynShpStyles = pgLocStyleFix(tmpls)
@@ -48,13 +49,13 @@ func loadSMcTemplates() {
 }
 
 func suiMacros(w http.ResponseWriter, r *http.Request) {
-	btEmit := gxtSMcPage.NewBounT()
+	btEmit := gxtSMcPage.NewBounT(nil)
 	if enableJMacros {
 		btEmit.Bind(gxtSMcPage.Disabled, gx.Empty)
 	} else {
 		btEmit.Bind(gxtSMcPage.Disabled, gxcDisable)
 	}
-	btMacro := gxtSMcMacro.NewBounT()
+	btMacro := gxtSMcMacro.NewBounT(nil)
 	btEmit.BindGen(gxtSMcPage.Events, func(wr io.Writer) (n int) {
 		strb := bytes.NewBuffer(nil)
 		xwr := xsx.Indenting(strb, " ")
