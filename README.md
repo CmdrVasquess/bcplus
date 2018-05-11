@@ -1,7 +1,7 @@
 Goal reached: Know Go language and have an overview of what pure 
 HTML/CSS/JS can do! Web frontend definitley needs better structure.
-Don't know when I will rework the thing for a good (which?) web
-framework.
+Don't know when I will rework the thing for a good (which? … maybe
+[vue.js](https://vuejs.org/)) web framework.
 
 ![Logo](bcplus.d/s/img/Logo.png)
 # BoardComputer+ for E:D
