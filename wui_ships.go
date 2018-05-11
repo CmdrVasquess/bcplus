@@ -61,15 +61,15 @@ func wuiShp(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			shTy, _ := nmShipType.MapNm(ship.Type, "lang:")
-			btCShip.BindP(gxtCShip.Ident, gxw.HtmlEsc(ship.Ident))
-			btCShip.BindP(gxtCShip.Name, gxw.HtmlEsc(ship.Name))
-			btCShip.BindP(gxtCShip.Type, gxw.HtmlEsc(shTy))
+			btCShip.BindP(gxtCShip.Ident, gxw.EscHtml(ship.Ident))
+			btCShip.BindP(gxtCShip.Name, gxw.EscHtml(ship.Name))
+			btCShip.BindP(gxtCShip.Type, gxw.EscHtml(shTy))
 			btCShip.BindFmt(gxtCShip.Jump, "%.2f", ship.Jump.DistMax)
 			if ship.Loc.Nil() {
 				btCShip.Bind(gxtCShip.Loc, webGuiNOC)
 				btCShip.Bind(gxtCShip.Dist, webGuiNOC)
 			} else {
-				btCShip.Bind(gxtCShip.Loc, CntLoc{ship.Loc.Ref}) //gxw.HtmlEsc(ship.Loc.String()))
+				btCShip.Bind(gxtCShip.Loc, CntLoc{ship.Loc.Ref}) //gxw.EscHtml(ship.Loc.String()))
 				btCShip.Bind(gxtCShip.Dist,
 					gxm.Msg(wuiL7d, "%.2f", gxy.Dist(ship.Loc.Ref, cmdr.Loc.Ref)))
 			}

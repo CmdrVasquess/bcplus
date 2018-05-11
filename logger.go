@@ -10,7 +10,7 @@ import (
 
 const lNotice int = qblog.Warn / 2
 
-var glog = qblog.Std("bcplus:")
+var glog = qblog.Std("bc+   :")
 var nmlog = glog.NewSub("bc+nmp:")
 var ejlog = glog.NewSub("bc+evj:")
 var eulog = glog.NewSub("bc+evu:")

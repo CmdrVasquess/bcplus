@@ -211,7 +211,7 @@ func emitRawMats(wr io.Writer, bt *gx.BounT, cmdr *cmdr.Commander, ndSyn []cmdr.
 		}
 		if bm, ok := best[mat]; ok {
 			btSrc.BindFmt(gxtRowSrc2.Val1, "%.2f %%", bm.percent)
-			btSrc.Bind(gxtRowSrc2.Val2, gxw.EscHtml{gx.Print{bm.body.Name}})
+			btSrc.Bind(gxtRowSrc2.Val2, gxw.HtmlEsc{gx.Print{bm.body.Name}})
 		} else {
 			btSrc.Bind(gxtRowSrc2.Val1, gx.Empty)
 			btSrc.Bind(gxtRowSrc2.Val2, gx.Empty)
@@ -327,7 +327,7 @@ func needsHdrs(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (
 			}
 			j++
 		}
-		btThSyn.BindP(gxtThSynRcp.Name, gxw.HtmlEsc(snm))
+		btThSyn.BindP(gxtThSynRcp.Name, gxw.EscHtml(snm))
 		btThSyn.BindP(gxtThSynRcp.Repeat, j-i)
 		n += btThSyn.Emit(wr)
 	}
@@ -349,7 +349,7 @@ func needsLvls(wr io.Writer, cmdr *cmdr.Commander, needSynths []cmdr.SynthRef) (
 func secTitle(bt *gx.BounT, wr io.Writer, cat string, have, need, needs int) (n int) {
 	catNm, _ := nmMatType.Map(cat)
 	bt.BindP(gxtSecTitle.Cat, cat)
-	bt.Bind(gxtSecTitle.Category, gxw.EscHtml{gx.Print{catNm}})
+	bt.Bind(gxtSecTitle.Category, gxw.HtmlEsc{gx.Print{catNm}})
 	bt.BindP(gxtSecTitle.Have, have)
 	btSecNeed := gxtSecNeed.NewInitBounT(gx.Empty, nil)
 	bt.BindGen(gxtSecTitle.Needs, func(wr io.Writer) (n int) {

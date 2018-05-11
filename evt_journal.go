@@ -102,6 +102,7 @@ func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 	if enableJMacros {
 		jEventMacro(evtNm)
 	}
+	historic := false
 	hdlr, ok := dispatch[evtNm]
 	if ok {
 		t, err := eventTime(jsonEvt)
@@ -134,12 +135,22 @@ func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 			}
 		} else {
 			ejlog.Logf(lNotice, "historic event: %s < %s", t, time.Time(state.T))
+			historic = true
 		}
 
 	} else if t, err := eventTime(jsonEvt); err == nil {
 		ejlog.Logf(l.Debug, "no handler for event: %s (%s)", evtNm, t)
 	} else {
 		ejlog.Logf(l.Debug, "no handler for event: %s", evtNm)
+	}
+	if !historic && theEdsm != nil {
+		if _, ok := edsmDiscard[evtNm]; !ok {
+			ejlog.Logf(l.Debug, "send %s-event to EDSM", evtNm)
+			err := theEdsm.Journal(theGame.Creds.Edsm.EdsmCmdr, string(event))
+			if err != nil {
+				ejlog.Log(l.Error, err)
+			}
+		}
 	}
 }
 

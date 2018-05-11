@@ -451,9 +451,9 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			} else {
 				btShipOpt.BindP(gxtShipOpt.Id, ship.ID)
 				btShipOpt.BindFmt(gxtShipOpt.Ship, "%s: %s / %s",
-					gxw.HtmlEsc(shTy),
-					gxw.HtmlEsc(ship.Name),
-					gxw.HtmlEsc(ship.Ident))
+					gxw.EscHtml(shTy),
+					gxw.EscHtml(ship.Name),
+					gxw.EscHtml(ship.Ident))
 				btShipOpt.BindFmt(gxtShipOpt.Jump, "%.2f", ship.Jump.DistMax)
 				n += btShipOpt.Emit(wr)
 			}
@@ -507,9 +507,9 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 				btDest.Bind(gxtTrvlDestRow.CooY, webGuiNOC)
 				btDest.Bind(gxtTrvlDestRow.CooZ, webGuiNOC)
 			}
-			btDest.BindP(gxtTrvlDestRow.Note, gxw.HtmlEsc(dst.Note))
+			btDest.BindP(gxtTrvlDestRow.Note, gxw.EscHtml(dst.Note))
 			btDest.BindP(gxtTrvlDestRow.Tags,
-				gxw.HtmlEsc(str.Join(dst.Tags, ", ")))
+				gxw.EscHtml(str.Join(dst.Tags, ", ")))
 			n += btDest.Emit(wr)
 		}
 		return n
@@ -613,27 +613,29 @@ func trvlAddDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 		}
 		if !gxy.V3dValid(loc.GCoos()) {
 			snm := loc.System().Name()
-			glog.Logf(l.Debug, "lookup coos from EDSM for '%s'", snm)
-			go func() {
-				rsy, err := theEdsm.System(snm, edsm.SYSTEM_ID|edsm.SYSTEM_COOS)
-				if err == nil && rsy != nil {
-					sys := loc.System()
-					// Unsynchronized writes! Unlikely to make problems!?!?!?
-					sys.EdsmId = rsy.Id
-					sys.Coos[gxy.Xk] = rsy.Coords.X
-					sys.Coos[gxy.Yk] = rsy.Coords.Y
-					sys.Coos[gxy.Zk] = rsy.Coords.Z
-					wscSendTo <- true
-					glog.Logf(l.Debug, "coos for '%s': %f / %f / %f",
-						snm,
-						rsy.Coords.X,
-						rsy.Coords.Y,
-						rsy.Coords.Z,
-					)
-				} else {
-					glog.Logf(l.Debug, "no coos for '%s'", snm)
-				}
-			}()
+			if theEdsm != nil {
+				glog.Logf(l.Debug, "lookup coos from EDSM for '%s'", snm)
+				go func() {
+					rsy, err := theEdsm.System(snm, edsm.SYSTEM_ID|edsm.SYSTEM_COOS)
+					if err == nil && rsy != nil {
+						sys := loc.System()
+						// Unsynchronized writes! Unlikely to make problems!?!?!?
+						sys.EdsmId = rsy.Id
+						sys.Coos[gxy.Xk] = rsy.Coords.X
+						sys.Coos[gxy.Yk] = rsy.Coords.Y
+						sys.Coos[gxy.Zk] = rsy.Coords.Z
+						wscSendTo <- true
+						glog.Logf(l.Debug, "coos for '%s': %f / %f / %f",
+							snm,
+							rsy.Coords.X,
+							rsy.Coords.Y,
+							rsy.Coords.Z,
+						)
+					} else {
+						glog.Logf(l.Debug, "no coos for '%s'", snm)
+					}
+				}()
+			}
 		}
 		dst.Note = note
 		dst.Tags = strings.Split(tags, ",")

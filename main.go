@@ -96,11 +96,12 @@ var credsKey []byte
 var eventq = make(chan bcEvent, 128)
 var signals = make(chan os.Signal, 1)
 
-var theEdsm = edsm.NewService(edsm.Life)
+var theEdsm *edsm.Service
 
 var jrnlDir string
 var dataDir string
 var enableJMacros bool
+var verybose bool
 
 var nmNavItem namemap.FromTo
 var nmRnkCombat namemap.FromTo
@@ -203,7 +204,7 @@ func loadCreds(cmdrNm string) error {
 	filenm := filepath.Join(dataDir, cmdrNm+".pgp")
 	glog.Logf(l.Info, "load credentials from %s", filenm)
 	if _, err := os.Stat(filenm); os.IsNotExist(err) {
-		glog.Logf(l.Warn, "commander %s's credentials do not exists", cmdrNm)
+		glog.Logf(l.Warn, "commander %s's credentials do not exist", cmdrNm)
 		return nil
 	}
 	f, err := os.Open(filenm)
@@ -234,7 +235,31 @@ const (
 	esrcUsr     = 'u'
 )
 
+var edsmDiscard map[string]bool
+
 func eventLoop() {
+	if theEdsm != nil {
+		glog.Log(l.Info, "loading event discard list from EDSM…")
+		var dscs []string
+		err := theEdsm.Discard(&dscs)
+		if err != nil {
+			glog.Logf(l.Error, "cannot load discard list from EDSM: %s", err)
+			edsmDiscard = nil
+		} else {
+			edsmDiscard = make(map[string]bool)
+			for _, d := range dscs {
+				edsmDiscard[d] = true
+			}
+			glog.Logf(l.Debug, "EDSM discard list has %d entries", len(edsmDiscard))
+			if verybose {
+				for e, _ := range edsmDiscard {
+					glog.Logf(l.Trace, "EDSM discard: %s", e)
+				}
+			}
+			theEdsm.Game = theGame
+			theEdsm.Creds = &theGame.Creds.Edsm
+		}
+	}
 	glog.Log(l.Info, "starting main event loop…")
 	for e := range eventq {
 		switch e.source {
@@ -269,7 +294,7 @@ func main() {
 		"web GUI port")
 	pun := flag.Bool("l", false, "pickup newest existing log")
 	verbose := flag.Bool("v", false, "verbose logging")
-	verybose := flag.Bool("vv", false, "very verbose logging")
+	flag.BoolVar(&verybose, "vv", false, "very verbose logging")
 	flag.BoolVar(&acceptHistory, "hist", false, "accept historic events")
 	loadCmdr := flag.String("cmdr", "", "preload commander")
 	promptKey := flag.Bool("pmk", false, "prompt for credential master key")
@@ -277,6 +302,7 @@ func main() {
 		"set the delay between macro elements")
 	flag.BoolVar(&enableJMacros, "jmacros", true, "enable journal macro engine")
 	flag.IntVar(&tspLimit, "tsp-limit", 120, "set the limit for TSP in travel planning")
+	feedEdsm := flag.Bool("edsm", false, "send events to EDSM (s.a. pmk & credentials)")
 	showHelp := flag.Bool("h", false, "show help")
 	flag.Parse()
 	if *showHelp {
@@ -285,7 +311,7 @@ func main() {
 		flag.Usage()
 		os.Exit(0)
 	}
-	if *verybose {
+	if verybose {
 		glog.SetLevel(l.Trace)
 	} else if *verbose {
 		glog.SetLevel(l.Debug)
@@ -294,7 +320,7 @@ func main() {
 	glog.Logf(l.Info, "data    : %s\n", dataDir)
 	var err error
 	if *promptKey {
-		credsKey = c.PromptCredsKey()
+		credsKey = c.PromptCredsKey("")
 	}
 	if _, err = os.Stat(dataDir); os.IsNotExist(err) {
 		err = os.MkdirAll(dataDir, 0777)
@@ -313,6 +339,10 @@ func main() {
 	c.SetTheGalaxy(theGalaxy)
 	if len(*loadCmdr) > 0 {
 		loadState(*loadCmdr, false)
+	}
+	if *feedEdsm {
+		glog.Log(l.Debug, "create EDSM service object")
+		theEdsm = edsm.NewService(edsm.Life)
 	}
 	stopWatch := make(chan bool)
 	go WatchJournal(stopWatch, *pun, jrnlDir, func(line []byte) {

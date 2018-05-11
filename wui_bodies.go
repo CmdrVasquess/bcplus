@@ -116,7 +116,7 @@ func emitBodies(wr io.Writer, matLs []string) (n int) {
 				emitStar(wr, btStar, bdy)
 			case gxy.Planet:
 				if bdy.IsBelt() {
-					btBelt.BindP(gxtBdyBelt.Name, gxw.HtmlEsc(bdy.Name))
+					btBelt.BindP(gxtBdyBelt.Name, gxw.EscHtml(bdy.Name))
 					btBelt.Bind(gxtBdyBelt.Dist, gxm.Msg(wuiL7d, "%.2f", bdy.Dist))
 					n += btBelt.Emit(wr)
 				} else {
@@ -134,7 +134,7 @@ func emitBodies(wr io.Writer, matLs []string) (n int) {
 }
 
 func emitStar(wr io.Writer, bt *gx.BounT, s *gxy.SysBody) (n int) {
-	bt.BindP(gxtBdyStar.Name, gxw.HtmlEsc(s.Name))
+	bt.BindP(gxtBdyStar.Name, gxw.EscHtml(s.Name))
 	bt.Bind(gxtBdyStar.Dist, gxm.Msg(wuiL7d, "%.2f", s.Dist))
 	bt.BindFmt(gxtBdyStar.R, "%.2f", s.Radius)
 	bt.Bind(gxtBdyStar.RotPrd, webGuiTBD)
@@ -146,7 +146,7 @@ func emitStar(wr io.Writer, bt *gx.BounT, s *gxy.SysBody) (n int) {
 }
 
 func emitPlanet(wr io.Writer, bt, btM0, btMN *gx.BounT, matLs []string, p *gxy.SysBody) (n int) {
-	bt.BindP(gxtBdyPlanet.Name, gxw.HtmlEsc(p.Name))
+	bt.BindP(gxtBdyPlanet.Name, gxw.EscHtml(p.Name))
 	bt.Bind(gxtBdyPlanet.Dist, gxm.Msg(wuiL7d, "%.2f", p.Dist))
 	bt.BindP(gxtBdyPlanet.Land, p.Landable)
 	bt.Bind(gxtBdyPlanet.R, gxm.Msg(wuiL7d, "%.2f", p.Radius))
@@ -170,13 +170,13 @@ func emitPlanet(wr io.Writer, bt, btM0, btMN *gx.BounT, matLs []string, p *gxy.S
 						nm, _ := nmMats.Map(mat)
 						if first {
 							btM0.BindP(gxtBdyPMat0.Class, cls)
-							btM0.BindP(gxtBdyPMat0.Name, gxw.HtmlEsc(nm))
+							btM0.BindP(gxtBdyPMat0.Name, gxw.EscHtml(nm))
 							btM0.Bind(gxtBdyPMat0.Frac, gxm.Msg(wuiL7d, "%.2f", f))
 							n += btM0.Emit(wr)
 							first = false
 						} else {
 							btMN.BindP(gxtBdyPMatN.Class, cls)
-							btMN.BindP(gxtBdyPMatN.Name, gxw.HtmlEsc(nm))
+							btMN.BindP(gxtBdyPMatN.Name, gxw.EscHtml(nm))
 							btMN.Bind(gxtBdyPMatN.Frac, gxm.Msg(wuiL7d, "%.2f", f))
 							n += btMN.Emit(wr)
 						}

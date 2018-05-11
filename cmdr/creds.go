@@ -15,15 +15,20 @@ import (
 
 const prompt = "credentials masterkey: "
 
-func PromptCredsKey() []byte {
-	fmt.Print("enter credentials masterkey: ")
+func PromptCredsKey(prompt string) []byte {
+	if len(prompt) > 0 {
+		fmt.Print(prompt)
+	} else {
+		fmt.Print("enter credentials masterkey: ")
+	}
 	res, _ := terminal.ReadPassword(int(os.Stdin.Fd()))
+	fmt.Println()
 	return res
 }
 
 type CmdrCreds struct {
-	changed bool
-	Edsm    edsm.Credentials `json:",omitempty"`
+	Changed bool `json:"-"`
+	Edsm    edsm.Credentials
 }
 
 func (cc *CmdrCreds) Clear() {
@@ -40,7 +45,7 @@ func (cc *CmdrCreds) Write(wr io.Writer, key []byte) error {
 	//		return err
 	//	}
 	//	defer f.Close()
-	if !cc.changed {
+	if !cc.Changed {
 		return nil
 	}
 	arm, err := armor.Encode(wr, "PGP MESSAGE", nil)
@@ -85,6 +90,6 @@ func (cc *CmdrCreds) Read(rd io.Reader, key []byte) error {
 	if err != nil {
 		return err
 	}
-	cc.changed = false
+	cc.Changed = false
 	return nil
 }

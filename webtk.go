@@ -46,14 +46,14 @@ func (l CntLoc) Emit(wr io.Writer) (n int) {
 	switch loc := l.loc.(type) {
 	case *gxy.StarSys:
 		bt = gxTkLocSys.NewBounT(nil)
-		bt.BindP(gxTkLocSys.Name, gxw.HtmlEsc(loc.Name()))
+		bt.BindP(gxTkLocSys.Name, gxw.EscHtml(loc.Name()))
 	case *gxy.SysBody:
 		bt = gxTkLocBdy.NewBounT(nil)
-		bt.BindP(gxTkLocBdy.Sys, gxw.HtmlEsc(loc.System().Name()))
-		bt.BindP(gxTkLocBdy.Name, gxw.HtmlEsc(loc.Name))
+		bt.BindP(gxTkLocBdy.Sys, gxw.EscHtml(loc.System().Name()))
+		bt.BindP(gxTkLocBdy.Name, gxw.EscHtml(loc.Name))
 	case *gxy.Station:
 		bt = gxTkLocStn.NewBounT(nil)
-		bt.BindP(gxTkLocBdy.Sys, gxw.HtmlEsc(loc.System().Name()))
+		bt.BindP(gxTkLocBdy.Sys, gxw.EscHtml(loc.System().Name()))
 		bt.BindP(gxTkLocStn.Name, loc.Name)
 	default:
 		panic(reflect.TypeOf(l.loc).String())

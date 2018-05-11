@@ -99,7 +99,7 @@ func emitLevels(matLs []string, rcp *gxy.Synthesis, builds []int, wr io.Writer) 
 	btMatNd := gxtLvlMatNeed.NewBounT(nil)
 	for i, lvl := range rcp.Levels {
 		btLvl.BindP(gxtMatLvl.Level, i+1)
-		btLvl.BindP(gxtMatLvl.Bonus, gxw.HtmlEsc(lvl.Bonus))
+		btLvl.BindP(gxtMatLvl.Bonus, gxw.EscHtml(lvl.Bonus))
 		if builds[i] > 0 {
 			btLvl.BindP(gxtMatLvl.Have, builds[i])
 		} else {
@@ -183,8 +183,8 @@ func wuiSyn(w http.ResponseWriter, r *http.Request) {
 			sort.Slice(matLs,
 				func(i, j int) bool { return cmprMatByL7d(matLs, i, j) })
 			btRcp.BindP(gxtRecipe.RcpId, rcpid)
-			btRcp.BindP(gxtRecipe.Name, gxw.HtmlEsc(recipe.Name))
-			btRcp.BindP(gxtRecipe.Imprv, gxw.HtmlEsc(recipe.Improves))
+			btRcp.BindP(gxtRecipe.Name, gxw.EscHtml(recipe.Name))
+			btRcp.BindP(gxtRecipe.Imprv, gxw.EscHtml(recipe.Improves))
 			builds := recipeBuilds(&recipe)
 			btRcp.BindGen(gxtRecipe.Builds, func(wr io.Writer) (n int) {
 				btBld0 := gxtRcpBuild0.NewBounT(nil)
@@ -215,7 +215,7 @@ func wuiSyn(w http.ResponseWriter, r *http.Request) {
 						cmns = fmt.Sprintf("%d", gxmat.Commons)
 					}
 					name, _ := nmMats.Map(mat)
-					btHdrMat.BindP(gxtHdrMat.Name, gxw.HtmlEsc(name))
+					btHdrMat.BindP(gxtHdrMat.Name, gxw.EscHtml(name))
 					if cmat := cmdr.Material(mat); cmat == nil || cmat.Have == 0 {
 						btHdrMat.BindP(gxtHdrMat.Have, 0)
 						btHdrMat.BindP(gxtHdrMat.MatGrade, cmns)

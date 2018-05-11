@@ -153,7 +153,7 @@ func prepareOfflinePage(title *gx.Template, tOffline, tDeny *gx.Template) {
 		btOffline.BindFmt(gxtPage.Version, "%d.%d.%d%s",
 			BCpMajor, BCpMinor, BCpBugfix, BCpQuality)
 	}
-	btOffline.BindP(gxtPage.FullVersion, gxw.HtmlEsc(BCpDescStr()))
+	btOffline.BindP(gxtPage.FullVersion, gxw.EscHtml(BCpDescStr()))
 	if stat, ok := title.Static(); !ok {
 		glog.Fatal("no offline title")
 	} else {
@@ -230,12 +230,12 @@ var wuiL7d = message.NewPrinter(language.Make("en"))
 
 func nmap(nm *namemap.FromTo, term string) gx.Content {
 	str, _ := nm.Map(term)
-	return gxw.EscHtml{gx.Print{str}}
+	return gxw.HtmlEsc{gx.Print{str}}
 }
 
 func nmapI(nm *namemap.FromTo, rank int) gx.Content {
 	str, _ := nm.Map(strconv.Itoa(rank))
-	return gxw.EscHtml{gx.Print{str}}
+	return gxw.HtmlEsc{gx.Print{str}}
 }
 
 // TODO should be taken from a package for localized input. Is there a reverse
@@ -330,7 +330,7 @@ func emitNavItems(wr io.Writer, active string) (n int) {
 
 func preparePage(styles, hdrScript, endScript gx.Content, active string) (emit, bindto *gx.BounT, hook []int) {
 	cmdr := &theGame.Cmdr
-	cmdrNameEsc := gxw.HtmlEsc(cmdr.Name)
+	cmdrNameEsc := gxw.EscHtml(cmdr.Name)
 	btPage := gxtPage.NewBounT(nil)
 
 	btTitle := gxtTitle.NewBounT(nil)
@@ -340,8 +340,8 @@ func preparePage(styles, hdrScript, endScript gx.Content, active string) (emit, 
 		btPage.BindFmt(gxtPage.Version, "%d.%d.%d%s",
 			BCpMajor, BCpMinor, BCpBugfix, BCpQuality)
 	}
-	btPage.BindP(gxtPage.FullVersion, gxw.HtmlEsc(BCpDescStr()))
-	btPage.Bind(gxtPage.PgTitle, gxw.EscHtml{btTitle})
+	btPage.BindP(gxtPage.FullVersion, gxw.EscHtml(BCpDescStr()))
+	btPage.Bind(gxtPage.PgTitle, gxw.HtmlEsc{btTitle})
 	btPage.Bind(gxtPage.Styles, styles)
 	btPage.Bind(gxtPage.ScriptHdr, hdrScript)
 	btTitle.BindP(gxtTitle.CmdrName, cmdrNameEsc)
@@ -389,7 +389,7 @@ func preparePage(styles, hdrScript, endScript gx.Content, active string) (emit, 
 		btFrame.Bind(gxtFrame.LocY, webGuiNOC)
 		btFrame.Bind(gxtFrame.LocZ, webGuiNOC)
 	} else {
-		btFrame.Bind(gxtFrame.Loc, gxw.EscHtml{gx.Print{cmdr.Loc.String()}})
+		btFrame.Bind(gxtFrame.Loc, gxw.HtmlEsc{gx.Print{cmdr.Loc.String()}})
 		sysCoos := cmdr.Loc.Ref.GCoos()
 		btFrame.Bind(gxtFrame.LocX, gxm.Msg(wuiL7d, "%.2f", sysCoos[gxy.Xk]))
 		btFrame.Bind(gxtFrame.LocY, gxm.Msg(wuiL7d, "%.2f", sysCoos[gxy.Yk]))
@@ -404,19 +404,19 @@ func preparePage(styles, hdrScript, endScript gx.Content, active string) (emit, 
 		if len(cshp.Name) == 0 {
 			btFrame.Bind(gxtFrame.ShipName, webGuiNOC)
 		} else {
-			btFrame.Bind(gxtFrame.ShipName, gxw.EscHtml{gx.Print{cshp.Name}})
+			btFrame.Bind(gxtFrame.ShipName, gxw.HtmlEsc{gx.Print{cshp.Name}})
 		}
 		if len(cshp.Ident) == 0 {
 			btFrame.Bind(gxtFrame.ShipIdent, webGuiNOC)
 		} else {
-			btFrame.Bind(gxtFrame.ShipIdent, gxw.EscHtml{gx.Print{cshp.Ident}})
+			btFrame.Bind(gxtFrame.ShipIdent, gxw.HtmlEsc{gx.Print{cshp.Ident}})
 		}
 	}
 	if cmdr.Home.Ref == nil {
 		btFrame.Bind(gxtFrame.Home, webGuiNOC)
 		btFrame.Bind(gxtFrame.HomeDist, webGuiNOC)
 	} else {
-		btFrame.Bind(gxtFrame.Home, gxw.EscHtml{gx.Print{cmdr.Home.String()}})
+		btFrame.Bind(gxtFrame.Home, gxw.HtmlEsc{gx.Print{cmdr.Home.String()}})
 		btFrame.Bind(gxtFrame.HomeDist,
 			gxm.Msg(wuiL7d, "%.2f", gxy.Dist(cmdr.Home.Ref, cmdr.Loc.Ref)))
 	}
