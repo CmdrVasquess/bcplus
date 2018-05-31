@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/CmdrVasquess/goEDSM"
+	"github.com/CmdrVasquess/goEDSMc"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 	"golang.org/x/crypto/ssh/terminal"

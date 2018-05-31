@@ -1,0 +1,43 @@
+{
+   "required": [
+      "Flags", 
+      "event", 
+      "timestamp"
+   ], 
+   "type": "object", 
+   "properties": {
+      "Pips": {
+         "items": {
+            "type": "integer"
+         }, 
+         "type": "array"
+      }, 
+      "GuiFocus": {
+         "type": "integer"
+      }, 
+      "timestamp": {
+         "type": "string"
+      }, 
+      "Altitude": {
+         "type": "integer"
+      }, 
+      "Longitude": {
+         "type": "number"
+      }, 
+      "Heading": {
+         "type": "integer"
+      }, 
+      "FireGroup": {
+         "type": "integer"
+      }, 
+      "Latitude": {
+         "type": "number"
+      }, 
+      "Flags": {
+         "type": "integer"
+      }, 
+      "event": {
+         "type": "string"
+      }
+   }
+}

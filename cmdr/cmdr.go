@@ -66,6 +66,7 @@ type GmState struct {
 	Cmdr         Commander
 	Tj2j         time.Duration // min. time: jump to jump
 	TrvlPlanShip ShipRef
+	TrvlSurfCoo  []float64       `json:",omitempty"`
 	JumpHist     []*Jump         `json:",omitempty"`
 	MatCatHide   map[string]bool `json:",omitempty"`
 	TrvlDstTgAll bool

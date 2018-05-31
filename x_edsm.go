@@ -1,11 +1,18 @@
-package cmdr
+package main
 
 import (
+	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/galaxy"
-	edsm "github.com/CmdrVasquess/goEDSM"
+	edsm "github.com/CmdrVasquess/goEDSMc"
 )
 
-func (gs *GmState) CmdrName() string {
+var theEdsm = edsm.NewService(edsm.Life)
+var edsmDiscard map[string]bool
+var feedEdsm = false
+
+type EdsmState cmdr.GmState
+
+func (gs *EdsmState) CmdrName() string {
 	if edsmCmdr := gs.Creds.Edsm.EdsmCmdr; len(edsmCmdr) == 0 {
 		return gs.Cmdr.Name
 	} else {
@@ -13,16 +20,16 @@ func (gs *GmState) CmdrName() string {
 	}
 }
 
-func (gs *GmState) SysAddr() int64 {
+func (gs *EdsmState) SysAddr() int64 {
 	// TODO
 	return edsm.Unknown
 }
 
-func (gs *GmState) SysName() string {
+func (gs *EdsmState) SysName() string {
 	return gs.Cmdr.Loc.System().Name()
 }
 
-func (gs *GmState) SysCoo() []float64 {
+func (gs *EdsmState) SysCoo() []float64 {
 	coos := &(gs.Cmdr.Loc.System().Coos)
 	if galaxy.V3dValid(coos) {
 		return coos[:]
@@ -32,12 +39,12 @@ func (gs *GmState) SysCoo() []float64 {
 
 }
 
-func (gs *GmState) StationId() int64 {
+func (gs *EdsmState) StationId() int64 {
 	// TODO
 	return edsm.Unknown
 }
 
-func (gs *GmState) StationName() string {
+func (gs *EdsmState) StationName() string {
 	if stn, ok := gs.Cmdr.Loc.Ref.(*galaxy.Station); ok {
 		return stn.Name
 	} else {
@@ -45,7 +52,7 @@ func (gs *GmState) StationName() string {
 	}
 }
 
-func (gs *GmState) ShipId() int {
+func (gs *EdsmState) ShipId() int {
 	if shp := gs.Cmdr.CurShip.Ship; shp == nil {
 		return edsm.Unknown
 	} else {
@@ -53,7 +60,7 @@ func (gs *GmState) ShipId() int {
 	}
 }
 
-func (gs *GmState) Command() edsm.Command {
+func (gs *EdsmState) Command() edsm.Command {
 	// TODO
 	return edsm.Unknown
 }

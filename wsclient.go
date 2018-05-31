@@ -11,7 +11,7 @@ import (
 
 var wscResister = make(chan *WsClient, 8)
 var wscUnregister = make(chan *WsClient, 8)
-var wscSendTo = make(chan bool)
+var wscSendTo = make(chan interface{})
 
 func wscHub() {
 	var wscls = make(map[*WsClient]bool)
@@ -49,18 +49,10 @@ const (
 
 type WsClient struct {
 	conn   *wsock.Conn
-	events chan bool
+	events chan interface{}
 }
 
-var cmdReload = func() []byte {
-	cmd := map[string]string{
-		"cmd": "reload"}
-	res, err := json.Marshal(cmd)
-	if err != nil {
-		panic("cannot prepare web-socket command 'reload'")
-	}
-	return res
-}()
+var wscReload = map[string]string{"cmd": "reload"}
 
 func (wsc *WsClient) talkTo() {
 	ticker := time.NewTicker(pingPeriod)
@@ -70,7 +62,12 @@ func (wsc *WsClient) talkTo() {
 	}()
 	for {
 		select {
-		case _, ok := <-wsc.events:
+		case evt, ok := <-wsc.events:
+			msg, err := json.Marshal(evt)
+			if err != nil {
+				glog.Log(l.Error, "web-socket: cannot marshal message:", err)
+				return
+			}
 			wsc.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -82,7 +79,7 @@ func (wsc *WsClient) talkTo() {
 				glog.Log(l.Error, "web-socket: cannot get writer:", err)
 				return
 			}
-			wr.Write(cmdReload)
+			wr.Write(msg)
 
 			// Add queued chat messages to the current websocket message.
 			//			n := len(wsc.send)
@@ -147,7 +144,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		glog.Log(l.Error, "cannot upgrade to seb-socket:", err)
 		return
 	}
-	client := &WsClient{conn: conn, events: make(chan bool, 16)}
+	client := &WsClient{conn: conn, events: make(chan interface{}, 16)}
 	wscResister <- client
 
 	go client.talkTo()

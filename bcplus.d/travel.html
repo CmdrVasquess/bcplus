@@ -84,17 +84,38 @@ main span.hide { display: none; }
 .btopt:hover {
 	background-image: url('s/img/TrvlShort.png');
 }
+#land td { text-align: center; }
+#land input { width: 6em; text-align: center; }
+.goleft::before { content: "◀ "; }
+.goright::after { content: " ▶"; }
 	</style>
 <!-- <<< local-style <<< -->
 <!-- >>> hdr-script >>> -->
    <script src="s/jqui/external/jquery/jquery.js"></script>
   	<script src="s/jqui/jquery-ui.min.js"></script>
+  	<script src="s/js/vue.js"></script>
 <!-- <<< hdr-script <<< -->
   </head>
   <body>
   <main>
 </select>
 <!-- >>> topic >>> -->
+	<table id="land">
+		<tr>
+			<td rowspan="2">Planetary<br>Landing</td>
+			<th>Dest Lat</th><th>Dest Lon</th>
+			<th>Lat</th><th>Lon</th><th>Alt</th><th>Head</th>
+			<th>Bearing</th>
+		</tr>
+		<tr>
+			<td><input placeholder="Latitude" min="-90" max="90"
+			           v-model.lazy="dest.lat" v-on:change="chgSurfLat"></td>
+			<td><input placeholder="Longitude" min="-180" max="180"
+			           v-model.lazy="dest.lon" v-on:change="chgSurfLon"></td>
+			<td>{{ship.lat}}</td><td>{{ship.lon}}</td><td>{{ship.alt}}</td><td>{{ship.head}}</td>
+			<td style="font-weight: bold"><span v-bind:class="{goleft: goLeft, goright: goRight}">{{bearing | num2frac}}</span></td>
+		</tr>
+	</table>
 	<h1 id="dsthdr" class="hide" onclick="tglDstForm()">Destinations</h1>
 	<form id="addest" class="hide">
 		<span id="btnadst" onclick="addDst()">Save Destination</span>
@@ -219,12 +240,15 @@ Plan with <select name="shipopt" onchange="selShip(value)">
 		<tbody>
 	</table>
 	<script>
+/* What a hack – WebUI needs complete overhaul */
 tspLimit=`tsp-limit`;
+initSurfLat = `surf-lat`;
+initSurfLon = `surf-lon`;
   	</script>
 <!-- <<< topic <<< -->
   </main>
-  </body>
 <!-- >>> end-script >>> -->
 	<script src="s/js/travel.js"></script>
 <!-- <<< end-script <<< \-->
+  </body>
 </html>

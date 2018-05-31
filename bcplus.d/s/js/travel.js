@@ -161,3 +161,86 @@ $( "#dests tbody" ).sortable({
 		wsock.send(msg);			
 	}
 });
+
+function toRad(x) { return x * Math.PI / 180; }
+function toDeg(x) { return x * 180 / Math.PI; }
+function cmpBrng(p2, l2, p1, l1) {
+  	p1 = toRad(p1);
+  	l1 = toRad(l1);
+  	p2 = toRad(p2);
+  	l2 = toRad(l2);
+	var y = Math.sin(l2-l1) * Math.cos(p2);
+	var x = Math.cos(p1) * Math.sin(p2) -
+   	     Math.sin(p1) * Math.cos(p2) * Math.cos(l2-l1);
+	var b = Math.round(toDeg(Math.atan2(y, x))) + 180;
+	return b >= 360 ? b - 360 : b;
+} 
+function turnTo(h, b) {
+	d = b - h;
+	if (d < -180) {
+		return d + 360;
+	} else if (d > 180) {
+		return d - 360;
+	}
+	return d;
+}
+var land = new Vue({
+	el: '#land',
+	data: {
+		dest: {lat: "", lon: ""},
+		ship: {lat: "–", lon: "–", alt: "–", head: "–"}
+	},
+	computed: {
+		bearing: function () {
+			if ($.isNumeric(this.ship.lat)) {
+				var b = cmpBrng(this.ship.lat, this.ship.lon,
+				            this.dest.lat, this.dest.lon);
+				return b;
+			} else {
+				return "–";
+			}
+		},
+		goLeft: function () {
+			var b = cmpBrng(this.ship.lat, this.ship.lon,
+				             this.dest.lat, this.dest.lon);
+			return turnTo(this.ship.head, b) < -3;
+		},
+		goRight: function () {
+			var b = cmpBrng(this.ship.lat, this.ship.lon,
+				             this.dest.lat, this.dest.lon);
+			return turnTo(this.ship.head, b) > 3;
+		}
+	},
+	filters: {
+		num2frac: function (x) {
+			return x.toLocaleString(undefined,{maximumFractionDigits:2});
+		}
+	},
+	methods: {
+		statStatus: function (stat) {
+			this.ship.lat = stat.Latitude;
+			this.ship.lon = stat.Longitude;
+			this.ship.alt = stat.Altitude;
+			this.ship.head = stat.Heading;
+		},
+		chgSurfLat: function (evt) {
+			var msg = JSON.stringify({
+				topic: "travel",
+				op: "chgSurfLat",
+				lat: parseFloat(evt.target.value)
+			});
+			wsock.send(msg);			
+		},
+		chgSurfLon: function (evt) {
+			var msg = JSON.stringify({
+				topic: "travel",
+				op: "chgSurfLon",
+				lon: parseFloat(evt.target.value) 
+			});
+			wsock.send(msg);			
+		}
+	}
+});
+wsStatfile.status = land.statStatus
+land.dest.lat = initSurfLat;
+land.dest.lon = initSurfLon;

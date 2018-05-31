@@ -133,6 +133,7 @@ header div.rank {
 	flex-direction: row;
 	align-items: center;
 	grid-row: span 2;
+	justify-content: center
 }
 header div.locinfo {
 	grid-column: span 2;

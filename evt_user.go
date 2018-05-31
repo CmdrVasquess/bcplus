@@ -11,7 +11,7 @@ import (
 
 type userHanlder func(*c.GmState, map[string]interface{}) (reload bool)
 
-func DispatchUser(lock *sync.RWMutex, state *c.GmState, event map[string]interface{}) {
+func dispatchUser(lock *sync.RWMutex, state *c.GmState, event map[string]interface{}) {
 	topic, hasTopic := attStr(event, "topic")
 	oprtn, hasOp := attStr(event, "op")
 	if !hasOp {
@@ -44,7 +44,7 @@ func DispatchUser(lock *sync.RWMutex, state *c.GmState, event map[string]interfa
 		if reload {
 			eulog.Log(l.Debug, "reload after user-event")
 			select {
-			case wscSendTo <- true:
+			case wscSendTo <- wscReload:
 				eulog.Log(l.Debug, "sent web-socket event")
 			default:
 				eulog.Log(l.Debug, "no web-socket event sent – channel blocked")

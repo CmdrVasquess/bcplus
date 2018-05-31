@@ -1,5 +1,6 @@
 var wsurl = "ws://"+location.hostname+":"+location.port+"/ws";
 var wsock = new WebSocket(wsurl);
+var wsStatfile = {};
 function startWs() {
 	// https://www.tutorialspoint.com/html5/html5_websocket.htm
 	// .onerror(err); .onopen; .onmessage(msg); .onclose
@@ -15,9 +16,19 @@ function startWs() {
 	}
 	wsock.onmessage = function(evt) {
 		var cmd = JSON.parse(evt.data)
-	 	if (cmd.cmd == "reload") {
+	 	switch (cmd.cmd) {
+	 	case "reload":
 	   	location.reload(true);
-	  	} else {
+	   	break;
+	   case "statfile":
+	   	var hdlr = wsStatfile[cmd.stat];
+	   	if (hdlr) {
+	   		hdlr(cmd.file);
+	   	} else {
+	   		showStatus("handler for statfile: ["+hdlr+"]");
+	   	}
+	   	break;
+	  	default:
 	     	showStatus('Event: ['+evt.data+']');
 	   }
 	}	   

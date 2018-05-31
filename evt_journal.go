@@ -1,16 +1,79 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
+	"sort"
 	str "strings"
 	"sync"
 	"time"
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
+	"github.com/CmdrVasquess/watched"
 	l "github.com/fractalqb/qblog"
 )
+
+func readJournal(jfnm string) {
+	ejlog.Logf(l.Info, "reading missed events from '%s'", jfnm)
+	jf, err := os.Open(jfnm)
+	if err != nil {
+		ejlog.Logf(l.Error, "cannot open journal: %s", err)
+		return
+	}
+	defer jf.Close()
+	scn := bufio.NewScanner(jf)
+	for scn.Scan() {
+		dispatchJournal(nil, theGame, scn.Bytes())
+	}
+}
+
+func takeTimeFromName(jfnm string) (time.Time, error) {
+	jfnm = jfnm[8:20]
+	res, err := time.Parse("060102150405", jfnm)
+	return res, err
+}
+
+func catchUpWithJournal(startAt time.Time, dir string) {
+	ejlog.Logf(l.Debug, "cat up starting from %s", startAt)
+	rddir, err := os.Open(dir)
+	if err != nil {
+		ejlog.Log(l.Error, "fail to scan journal-dir: ", err)
+		return
+	}
+	defer rddir.Close()
+	var jfls []string
+	var maxBeforeStart time.Time // Zero should be a reasonable start
+	var jBefore string
+	infos, err := rddir.Readdir(1)
+	for len(infos) > 0 && err == nil {
+		info := infos[0]
+		if watched.IsJournalFile(info.Name()) {
+			jft, err := takeTimeFromName(info.Name())
+			if err != nil {
+				continue
+			}
+			if jft.After(startAt) {
+				jfls = append(jfls, info.Name())
+			} else if jft.After(maxBeforeStart) {
+				maxBeforeStart = info.ModTime()
+				jBefore = info.Name()
+			}
+		}
+		infos, err = rddir.Readdir(1)
+	}
+	if len(jBefore) > 0 {
+		jfls = append(jfls, jBefore)
+	}
+	sort.Strings(jfls)
+	for _, j := range jfls {
+		jfnm := filepath.Join(dir, j)
+		readJournal(jfnm)
+	}
+}
 
 type event = map[string]interface{}
 
@@ -83,7 +146,15 @@ func eventTime(evt map[string]interface{}) (time.Time, error) {
 
 var acceptHistory = false
 
+// dispatchJournal processes a single journal event. It operates in two
+// different modes:
+// 1. replay-mode – to catch up with the actual state, i.e. read unseen jouranls
+//                  to update internal state without "external effects" like
+//                  notifications to other E:D tools, macro system, WebGUI…
+// 2. operationa-mode – shoudl be obvious…
+// To run in replay-mode pass 'nil' to 'lock'
 func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
+	notReplayMode := lock != nil
 	if len(event) == 0 {
 		ejlog.Logf(l.Warn, "empty journal event")
 		return
@@ -99,7 +170,7 @@ func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 		ejlog.Logf(l.Warn, "cannot determine journal event from: %s", string(event))
 		return
 	}
-	if enableJMacros {
+	if enableJMacros && notReplayMode {
 		jEventMacro(evtNm)
 	}
 	historic := false
@@ -115,23 +186,27 @@ func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 			state.EvtBacklog = append(state.EvtBacklog, jsonEvt)
 		} else if acceptHistory || !t.Before(time.Time(state.T)) {
 			ejlog.Logf(l.Info, "process event: %s @%s", evtNm, t)
-			lock.Lock()
-			defer lock.Unlock()
+			if notReplayMode {
+				lock.Lock()
+				defer lock.Unlock()
+			}
 			credBefore := state.Cmdr.Credits
 			hdlr(state, jsonEvt, t)
 			credAfter := state.Cmdr.Credits
-			if credAfter != credBefore {
+			if credAfter != credBefore { // TODO remove when credit handling is OK
 				ejlog.Logf(l.Info, "credits change: %s %d → %d diff: %d",
 					evtNm, credBefore, credAfter, credAfter-credBefore)
 			}
 			if !cmdrSwitch {
 				state.T = c.Timestamp(t)
 			}
-			select {
-			case wscSendTo <- true:
-				ejlog.Log(l.Debug, "sent web-socket event")
-			default:
-				ejlog.Log(l.Debug, "no web-socket event sent – channel blocked")
+			if notReplayMode {
+				select {
+				case wscSendTo <- wscReload:
+					ejlog.Log(l.Debug, "sent web-socket event")
+				default:
+					ejlog.Log(l.Debug, "no web-socket event sent – channel blocked")
+				}
 			}
 		} else {
 			ejlog.Logf(lNotice, "historic event: %s < %s", t, time.Time(state.T))
@@ -143,12 +218,14 @@ func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 	} else {
 		ejlog.Logf(l.Debug, "no handler for event: %s", evtNm)
 	}
-	if !historic && theEdsm != nil {
-		if _, ok := edsmDiscard[evtNm]; !ok {
-			ejlog.Logf(l.Debug, "send %s-event to EDSM", evtNm)
-			err := theEdsm.Journal(theGame.Creds.Edsm.EdsmCmdr, string(event))
-			if err != nil {
-				ejlog.Log(l.Error, err)
+	if notReplayMode && !historic { // external tools: EDSM, etc.
+		if feedEdsm && !state.IsOffline() {
+			if _, ok := edsmDiscard[evtNm]; !ok {
+				ejlog.Logf(l.Debug, "send %s-event to EDSM", evtNm)
+				err := theEdsm.Journal(theGame.Creds.Edsm.EdsmCmdr, string(event))
+				if err != nil {
+					ejlog.Log(l.Error, err)
+				}
 			}
 		}
 	}

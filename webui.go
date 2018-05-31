@@ -124,6 +124,7 @@ var gxtNavActv struct {
 func loadTmpls() {
 	tmpls := make(map[string]*gx.Template)
 	tpars := gxw.NewHtmlParser()
+	tpars.PrepLine = strings.TrimSpace
 	if err := tpars.ParseFile(assetPath("appframe.html"), "frame", tmpls); err != nil {
 		panic("failed loading templates: " + err.Error())
 	}

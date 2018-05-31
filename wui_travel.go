@@ -11,7 +11,7 @@ import (
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	edsm "github.com/CmdrVasquess/goEDSM"
+	edsm "github.com/CmdrVasquess/goEDSMc"
 	gx "github.com/fractalqb/goxic"
 	gxm "github.com/fractalqb/goxic/textmessage"
 	gxw "github.com/fractalqb/goxic/web"
@@ -29,6 +29,8 @@ var gxtTrvlFrame struct {
 	ShipOpts []int `goxic:"shipopts"`
 	TagsHdr  []int
 	TspLimit []int
+	SurfLat  []int
+	SurfLon  []int
 }
 
 var gxtShipOpt struct {
@@ -418,6 +420,17 @@ func emitDests(btFrame *gx.BounT, times []time.Duration, paths, dists []float64)
 			glog.Logf(l.Debug, "avg jumprange exceeds ships max: %f > %f", dpjAvg, dpjMax)
 		}
 	}
+	switch len(theGame.TrvlSurfCoo) {
+	case 0:
+		btFrame.BindP(gxtTrvlFrame.SurfLat, "''")
+		btFrame.BindP(gxtTrvlFrame.SurfLon, "''")
+	case 1:
+		btFrame.BindP(gxtTrvlFrame.SurfLat, theGame.TrvlSurfCoo[0])
+		btFrame.BindP(gxtTrvlFrame.SurfLon, theGame.TrvlSurfCoo[0])
+	default:
+		btFrame.BindP(gxtTrvlFrame.SurfLat, theGame.TrvlSurfCoo[0])
+		btFrame.BindP(gxtTrvlFrame.SurfLon, theGame.TrvlSurfCoo[1])
+	}
 	btShipOpt := gxtShipOpt.NewBounT(nil)
 	btShipOptSel := gxtShipOptSel.NewBounT(nil)
 	btFrame.BindGen(gxtTrvlFrame.ShipOpts, func(wr io.Writer) (n int) {
@@ -534,12 +547,14 @@ func wuiTravel(w http.ResponseWriter, r *http.Request) {
 }
 
 var trvlUsrOps = map[string]userHanlder{
-	"planShip":  trvlPlanShip,
-	"tglHomeId": trvlTglHmid,
-	"addDst":    trvlAddDest,
-	"delDst":    trvlDelDest,
-	"sortDst":   trvlSortDest,
-	"optmz":     trvlOptimize,
+	"planShip":   trvlPlanShip,
+	"tglHomeId":  trvlTglHmid,
+	"addDst":     trvlAddDest,
+	"delDst":     trvlDelDest,
+	"sortDst":    trvlSortDest,
+	"optmz":      trvlOptimize,
+	"chgSurfLat": trvlChgSurfLat,
+	"chgSurfLon": trvlChgSurfLon,
 }
 
 func trvlPlanShip(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
@@ -624,7 +639,7 @@ func trvlAddDest(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 						sys.Coos[gxy.Xk] = rsy.Coords.X
 						sys.Coos[gxy.Yk] = rsy.Coords.Y
 						sys.Coos[gxy.Zk] = rsy.Coords.Z
-						wscSendTo <- true
+						wscSendTo <- wscReload
 						glog.Logf(l.Debug, "coos for '%s': %f / %f / %f",
 							snm,
 							rsy.Coords.X,
@@ -685,6 +700,26 @@ func trvlOptimize(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
 	return false
 }
 
+func trvlChgSurfLat(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	switch len(gstat.TrvlSurfCoo) {
+	case 0, 1:
+		gstat.TrvlSurfCoo = []float64{evt["lat"].(float64), 0}
+	default:
+		gstat.TrvlSurfCoo[0] = evt["lat"].(float64)
+	}
+	return false
+}
+
+func trvlChgSurfLon(gstat *c.GmState, evt map[string]interface{}) (reload bool) {
+	switch len(gstat.TrvlSurfCoo) {
+	case 0, 1:
+		gstat.TrvlSurfCoo = []float64{0, evt["lat"].(float64)}
+	default:
+		gstat.TrvlSurfCoo[1] = evt["lon"].(float64)
+	}
+	return false
+}
+
 func destDist(d1, d2 *c.Destination) float32 {
 	s1 := d1.Loc.System()
 	s2 := d2.Loc.System()
@@ -729,7 +764,7 @@ func trvlOptLoop(dests []*c.Destination) {
 	perm, _ := tspSolver(am)
 	trvlReorder(theGame.Cmdr.Dests, perm)
 	glog.Logf(l.Debug, "…TSP for %d nodes done", len(dests))
-	wscSendTo <- true
+	wscSendTo <- wscReload
 }
 
 func trvlOptRoute(dests []*c.Destination) {
@@ -752,5 +787,5 @@ func trvlOptRoute(dests []*c.Destination) {
 	perm, _ := tspSolver(am)
 	trvlReorder(theGame.Cmdr.Dests, perm)
 	glog.Logf(l.Debug, "…TSP for %d nodes done", len(dests))
-	wscSendTo <- true
+	wscSendTo <- wscReload
 }

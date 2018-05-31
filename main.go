@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -15,7 +16,8 @@ import (
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	edsm "github.com/CmdrVasquess/goEDSM"
+	edsm "github.com/CmdrVasquess/goEDSMc"
+	"github.com/CmdrVasquess/watched"
 	"github.com/fractalqb/namemap"
 	l "github.com/fractalqb/qblog"
 )
@@ -96,8 +98,6 @@ var credsKey []byte
 var eventq = make(chan bcEvent, 128)
 var signals = make(chan os.Signal, 1)
 
-var theEdsm *edsm.Service
-
 var jrnlDir string
 var dataDir string
 var enableJMacros bool
@@ -140,6 +140,13 @@ func BCpDescStr() string {
 }
 
 func saveState(beta bool) {
+	var w *os.File
+	var err error
+	defer func() {
+		if w != nil {
+			w.Close()
+		}
+	}()
 	if theGame.Cmdr.Name == "" {
 		glog.Logf(l.Info, "empty state, nothing to save")
 	} else {
@@ -151,19 +158,33 @@ func saveState(beta bool) {
 		}
 		fnm = filepath.Join(dataDir, fnm)
 		tnm := fnm + "~"
-		if w, err := os.Create(tnm); err == nil {
-			defer w.Close()
+		w, err = os.Create(tnm)
+		if err != nil {
+			glog.Logf(l.Error, "cannot save game status to '%s': %s", fnm, err)
+		} else {
 			glog.Logf(l.Info, "save state to %s", fnm)
 			err := theGame.Save(w)
 			w.Close()
+			w = nil
 			if err != nil {
 				glog.Log(l.Error, err)
 			} else if err = os.Rename(tnm, fnm); err != nil {
 				glog.Log(l.Error, err)
 			}
-		} else {
-			glog.Logf(l.Error, "cannot save game status to '%s': %s", fnm, err)
+			fnm = filepath.Join(dataDir, "latestevent")
+			if beta {
+				fnm += ".beta"
+			}
+			w, err = os.Create(fnm)
+			if err != nil {
+				glog.Logf(l.Error, "cannot write latest event time to %s: %s", fnm, err)
+			} else if err = json.NewEncoder(w).Encode(&theGame.T); err != nil {
+				glog.Logf(l.Error, "cannot write latest event time to %s: %s", fnm, err)
+			}
+			w.Close()
+			w = nil
 		}
+
 	}
 	theGalaxy.Close()
 	saveMacros(filepath.Join(dataDir, "macros.xsx"))
@@ -201,6 +222,7 @@ func loadCreds(cmdrNm string) error {
 	} else {
 		theGame.Creds.Clear()
 	}
+	theEdsm.Creds = &theGame.Creds.Edsm
 	filenm := filepath.Join(dataDir, cmdrNm+".pgp")
 	glog.Logf(l.Info, "load credentials from %s", filenm)
 	if _, err := os.Stat(filenm); os.IsNotExist(err) {
@@ -231,14 +253,11 @@ func assetPath(relPathSlash string) string {
 }
 
 const (
-	esrcJournal = 'j'
-	esrcUsr     = 'u'
+	esrcUsr = 'u'
 )
 
-var edsmDiscard map[string]bool
-
 func eventLoop() {
-	if theEdsm != nil {
+	if feedEdsm {
 		glog.Log(l.Info, "loading event discard list from EDSM…")
 		var dscs []string
 		err := theEdsm.Discard(&dscs)
@@ -256,14 +275,16 @@ func eventLoop() {
 					glog.Logf(l.Trace, "EDSM discard: %s", e)
 				}
 			}
-			theEdsm.Game = theGame
-			theEdsm.Creds = &theGame.Creds.Edsm
+			theEdsm.Game = (*EdsmState)(theGame)
+			if theGame.Creds != nil {
+				theEdsm.Creds = &theGame.Creds.Edsm
+			}
 		}
 	}
 	glog.Log(l.Info, "starting main event loop…")
 	for e := range eventq {
 		switch e.source {
-		case esrcJournal:
+		case watched.EscrJournal:
 			func() {
 				defer func() {
 					if r := recover(); r != nil {
@@ -279,10 +300,38 @@ func eventLoop() {
 						glog.Logf(l.Error, "user event error: %s", r)
 					}
 				}()
-				DispatchUser(&theStateLock, theGame, e.data.(map[string]interface{}))
+				dispatchUser(&theStateLock, theGame, e.data.(map[string]interface{}))
 			}()
+		case watched.EscrStatus:
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						glog.Logf(l.Error, "user event error: %s", r)
+					}
+				}()
+				dispStfStatus(&theStateLock, theGame, e.data.(string))
+			}()
+		default:
+			glog.Logf(l.Warn, "no handler for event source: %c", e.source)
 		}
 	}
+}
+
+func checkJournals(jrnlDir string) {
+	var lets time.Time
+	tsfnm := filepath.Join(dataDir, "latestevent")
+	rd, err := os.Open(tsfnm)
+	if err != nil {
+		glog.Log(l.Error, "failed to read latest timestamp: %s", err)
+		return
+	}
+	defer rd.Close()
+	err = json.NewDecoder(rd).Decode(&lets)
+	if err != nil {
+		glog.Log(l.Error, "failed to read latest timestamp: %s", err)
+		return
+	}
+	catchUpWithJournal(lets, jrnlDir)
 }
 
 func main() {
@@ -292,7 +341,6 @@ func main() {
 		"directory with journal files")
 	flag.UintVar(&webGuiPort, "p", 1337,
 		"web GUI port")
-	pun := flag.Bool("l", false, "pickup newest existing log")
 	verbose := flag.Bool("v", false, "verbose logging")
 	flag.BoolVar(&verybose, "vv", false, "very verbose logging")
 	flag.BoolVar(&acceptHistory, "hist", false, "accept historic events")
@@ -302,7 +350,8 @@ func main() {
 		"set the delay between macro elements")
 	flag.BoolVar(&enableJMacros, "jmacros", true, "enable journal macro engine")
 	flag.IntVar(&tspLimit, "tsp-limit", 120, "set the limit for TSP in travel planning")
-	feedEdsm := flag.Bool("edsm", false, "send events to EDSM (s.a. pmk & credentials)")
+	flag.BoolVar(&feedEdsm, "edsm", false, "WiP: send events to EDSM (s.a. pmk & credentials)")
+	edsmTestSvc := flag.Bool("edsm.test", false, "run against EDSM test server")
 	showHelp := flag.Bool("h", false, "show help")
 	flag.Parse()
 	if *showHelp {
@@ -340,21 +389,30 @@ func main() {
 	if len(*loadCmdr) > 0 {
 		loadState(*loadCmdr, false)
 	}
-	if *feedEdsm {
-		glog.Log(l.Debug, "create EDSM service object")
-		theEdsm = edsm.NewService(edsm.Life)
+	if *edsmTestSvc {
+		glog.Log(l.Info, "switch to EDSM test servers")
+		theEdsm = edsm.NewService(edsm.Test)
 	}
-	stopWatch := make(chan bool)
-	go WatchJournal(stopWatch, *pun, jrnlDir, func(line []byte) {
-		cpy := make([]byte, len(line))
-		copy(cpy, line)
-		eventq <- bcEvent{esrcJournal, cpy}
-	})
+	checkJournals(jrnlDir)
+	jdir := watched.JournalDir{
+		Dir: jrnlDir,
+		PerJLine: func(line []byte) {
+			cpy := make([]byte, len(line))
+			copy(cpy, line)
+			eventq <- bcEvent{watched.EscrJournal, cpy}
+		},
+		OnStatChg: func(tag rune, statFile string) {
+			eventq <- bcEvent{tag, statFile}
+		},
+		Quit: make(chan bool),
+	}
+	go jdir.Watch()
 	go eventLoop()
 	runWebGui()
 	signal.Notify(signals, os.Interrupt)
+	// up & running – wait for Ctrl-C…
 	<-signals
-	stopWatch <- true
+	jdir.Quit <- true
 	glog.Log(l.Info, "BC+ interrupted")
 	theStateLock.RLock()
 	saveState(theGame.IsBeta)
