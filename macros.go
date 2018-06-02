@@ -346,7 +346,7 @@ func playKey(m *gem.Sequence, hint string) {
 	}
 	switch action {
 	case 0:
-		robi.KeyTap(cmd)
+		robi.KeyTap(cmd[0], cmd[1:])
 	default:
 		tmp := cmd[0]
 		cmd[0] = cmd[1]
