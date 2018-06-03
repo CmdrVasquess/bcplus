@@ -44,11 +44,6 @@ Pfade beim Start auf der Kommandozeile übergeben.
 
 - -d <ordner> ::  Setzt den Ordner, in dem BC+ seine Dateien ablegt
 
-- -l :: Liest nach dem Start die jüngste Journal Datei ein. Sonst
-        wartet BC+ bis E:D beim Start die neue Journal Datei
-        anlegt. (kann gut verwendet werden, wenn man BC+ bei laufendem
-        Spiel startet)
-
 - -p :: Setzt den Socket Port, auf dem BC+ auf HTTP Anfragen
         lauscht. Per Voreinstellung ist der Wert auf =1337=
         gesetzt. Wenn es hier zu Problemen kommt, bspw. weil ein

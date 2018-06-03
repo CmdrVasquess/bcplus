@@ -68,9 +68,6 @@ package. So be prepared to start options with '-' not '/'.
 * `-d <directory>` set the directory where BC+ collects data about your
   commander and the visited galaxy (BC+ can handle multiple commanders)
 
-* `-l` pick up the lates journal file when starting. This is useful if
-  you run BC+ after E:D already started to write the journal file.
-
 * `-h` show help information, i.e. the complete and up-to-date list of
   options.
 

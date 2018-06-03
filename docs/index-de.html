@@ -3,29 +3,22 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-02-22 Do 08:18 -->
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BC+ – BoardComputer+ Dokumentation</title>
-<meta name="generator" content="Org mode" />
+<!-- 2018-06-03 So 19:04 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  .title  { text-align: center;
-             margin-bottom: .2em; }
-  .subtitle { text-align: center;
-              font-size: medium;
-              font-weight: bold;
-              margin-top:0; }
+  .title  { text-align: center; }
   .todo   { font-family: monospace; color: red; }
-  .done   { font-family: monospace; color: green; }
-  .priority { font-family: monospace; color: orange; }
+  .done   { color: green; }
   .tag    { background-color: #eee; font-family: monospace;
             padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
-  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
-  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
   .underline { text-decoration: underline; }
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
@@ -52,111 +45,27 @@
     border: 1px solid black;
   }
   pre.src:hover:before { display: inline;}
-  /* Languages per Org manual */
-  pre.src-asymptote:before { content: 'Asymptote'; }
-  pre.src-awk:before { content: 'Awk'; }
-  pre.src-C:before { content: 'C'; }
-  /* pre.src-C++ doesn't work in CSS */
-  pre.src-clojure:before { content: 'Clojure'; }
-  pre.src-css:before { content: 'CSS'; }
-  pre.src-D:before { content: 'D'; }
-  pre.src-ditaa:before { content: 'ditaa'; }
-  pre.src-dot:before { content: 'Graphviz'; }
-  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
   pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
-  pre.src-fortran:before { content: 'Fortran'; }
-  pre.src-gnuplot:before { content: 'gnuplot'; }
-  pre.src-haskell:before { content: 'Haskell'; }
-  pre.src-hledger:before { content: 'hledger'; }
-  pre.src-java:before { content: 'Java'; }
-  pre.src-js:before { content: 'Javascript'; }
-  pre.src-latex:before { content: 'LaTeX'; }
-  pre.src-ledger:before { content: 'Ledger'; }
-  pre.src-lisp:before { content: 'Lisp'; }
-  pre.src-lilypond:before { content: 'Lilypond'; }
-  pre.src-lua:before { content: 'Lua'; }
-  pre.src-matlab:before { content: 'MATLAB'; }
-  pre.src-mscgen:before { content: 'Mscgen'; }
-  pre.src-ocaml:before { content: 'Objective Caml'; }
-  pre.src-octave:before { content: 'Octave'; }
-  pre.src-org:before { content: 'Org mode'; }
-  pre.src-oz:before { content: 'OZ'; }
-  pre.src-plantuml:before { content: 'Plantuml'; }
-  pre.src-processing:before { content: 'Processing.js'; }
-  pre.src-python:before { content: 'Python'; }
-  pre.src-R:before { content: 'R'; }
-  pre.src-ruby:before { content: 'Ruby'; }
-  pre.src-sass:before { content: 'Sass'; }
-  pre.src-scheme:before { content: 'Scheme'; }
-  pre.src-screen:before { content: 'Gnu Screen'; }
-  pre.src-sed:before { content: 'Sed'; }
-  pre.src-sh:before { content: 'shell'; }
-  pre.src-sql:before { content: 'SQL'; }
-  pre.src-sqlite:before { content: 'SQLite'; }
-  /* additional languages in org.el's org-babel-load-languages alist */
-  pre.src-forth:before { content: 'Forth'; }
-  pre.src-io:before { content: 'IO'; }
-  pre.src-J:before { content: 'J'; }
-  pre.src-makefile:before { content: 'Makefile'; }
-  pre.src-maxima:before { content: 'Maxima'; }
-  pre.src-perl:before { content: 'Perl'; }
-  pre.src-picolisp:before { content: 'Pico Lisp'; }
-  pre.src-scala:before { content: 'Scala'; }
-  pre.src-shell:before { content: 'Shell Script'; }
-  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
-  /* additional language identifiers per "defun org-babel-execute"
-       in ob-*.el */
-  pre.src-cpp:before  { content: 'C++'; }
-  pre.src-abc:before  { content: 'ABC'; }
-  pre.src-coq:before  { content: 'Coq'; }
-  pre.src-groovy:before  { content: 'Groovy'; }
-  /* additional language identifiers from org-babel-shell-names in
-     ob-shell.el: ob-shell is the only babel language using a lambda to put
-     the execution function name together. */
-  pre.src-bash:before  { content: 'bash'; }
-  pre.src-csh:before  { content: 'csh'; }
-  pre.src-ash:before  { content: 'ash'; }
-  pre.src-dash:before  { content: 'dash'; }
-  pre.src-ksh:before  { content: 'ksh'; }
-  pre.src-mksh:before  { content: 'mksh'; }
-  pre.src-posh:before  { content: 'posh'; }
-  /* Additional Emacs modes also supported by the LaTeX listings package */
-  pre.src-ada:before { content: 'Ada'; }
-  pre.src-asm:before { content: 'Assembler'; }
-  pre.src-caml:before { content: 'Caml'; }
-  pre.src-delphi:before { content: 'Delphi'; }
-  pre.src-html:before { content: 'HTML'; }
-  pre.src-idl:before { content: 'IDL'; }
-  pre.src-mercury:before { content: 'Mercury'; }
-  pre.src-metapost:before { content: 'MetaPost'; }
-  pre.src-modula-2:before { content: 'Modula-2'; }
-  pre.src-pascal:before { content: 'Pascal'; }
-  pre.src-ps:before { content: 'PostScript'; }
-  pre.src-prolog:before { content: 'Prolog'; }
-  pre.src-simula:before { content: 'Simula'; }
-  pre.src-tcl:before { content: 'tcl'; }
-  pre.src-tex:before { content: 'TeX'; }
-  pre.src-plain-tex:before { content: 'Plain TeX'; }
-  pre.src-verilog:before { content: 'Verilog'; }
-  pre.src-vhdl:before { content: 'VHDL'; }
-  pre.src-xml:before { content: 'XML'; }
-  pre.src-nxml:before { content: 'XML'; }
-  /* add a generic configuration mode; LaTeX export needs an additional
-     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
-  pre.src-conf:before { content: 'Configuration File'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
 
   table { border-collapse:collapse; }
   caption.t-above { caption-side: top; }
   caption.t-bottom { caption-side: bottom; }
   td, th { vertical-align:top;  }
-  th.org-right  { text-align: center;  }
-  th.org-left   { text-align: center;   }
-  th.org-center { text-align: center; }
-  td.org-right  { text-align: right;  }
-  td.org-left   { text-align: left;   }
-  td.org-center { text-align: center; }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
   dt { font-weight: bold; }
-  .footpara { display: inline; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
   .footdef  { margin-bottom: 1em; }
   .figure { padding: 1em; }
   .figure p { text-align: center; }
@@ -176,7 +85,6 @@
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
   /*]]>*/-->
 </style>
 <link rel="stylesheet" href="bcpdoc.css" type="text/css"/>
@@ -185,7 +93,7 @@
 @licstart  The following is the entire license notice for the
 JavaScript code in this tag.
 
-Copyright (C) 2012-2017 Free Software Foundation, Inc.
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
 
 The JavaScript code in this tag is free software: you can
 redistribute it and/or modify it under the terms of the GNU
@@ -226,36 +134,56 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
-<script type="text/x-mathjax-config">
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
     MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
         displayAlign: "center",
-        displayIndent: "0em",
+        displayIndent: "2em",
 
-        "HTML-CSS": { scale: 100,
-                        linebreaks: { automatic: "false" },
-                        webFont: "TeX"
-                       },
-        SVG: {scale: 100,
-              linebreaks: { automatic: "false" },
-              font: "TeX"},
-        NativeMML: {scale: 100},
-        TeX: { equationNumbers: {autoNumber: "AMS"},
-               MultLineWidth: "85%",
-               TagSide: "right",
-               TagIndent: ".8em"
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
              }
-});
+        }
+    });
+/*]]>*///-->
 </script>
-<script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="content">
 <h1 class="title">BC+ – BoardComputer+ Dokumentation</h1>
 
-<div id="outline-container-org96ce345" class="outline-2">
-<h2 id="org96ce345">Download</h2>
-<div class="outline-text-2" id="text-org96ce345">
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Download</h2>
+<div class="outline-text-2" id="text-1">
 <p>
 <a href="https://github.com/CmdrVasquess/BCplus/releases">Binary Downloads</a> findet man auch auf Github. Die „Basisversion“ ist
 unter <code>BCplus-&lt;version&gt;.zip</code> zu finden. Sobald ich von dieser Version
@@ -265,9 +193,9 @@ auch eine lokalisierte, deutsche Fassung habe wird die dort auch unter
 </div>
 </div>
 
-<div id="outline-container-orgfedad5a" class="outline-2">
-<h2 id="orgfedad5a">Installation</h2>
-<div class="outline-text-2" id="text-orgfedad5a">
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Installation</h2>
+<div class="outline-text-2" id="text-2">
 <p>
 BC+ wird z.Z. nur für den Win-PC gebaut. Um es laufen zu lassen werden
 keine zusätzlichen Laufzeitumgebungen benötigt. Auch kommt BC+ ohne
@@ -276,20 +204,23 @@ laufen lassen. Das bedeutet
 </p>
 
 <ul class="org-ul">
-<li>Es gibt keine Berechtigungsprobleme wenn man BC+ installiert.</li>
+<li>Es gibt keine Berechtigungsprobleme wenn man BC+ installiert.
+</li>
 
 <li>Neue Versionen können einfach installiert werden, indem man den
 alten Ordner wegschmeißt und das neue ZIP Archiv
-auspackt. (Ggf. vewahrt man die alte Version erst mal…?!)</li>
+auspackt. (Ggf. vewahrt man die alte Version erst mal…?!)
+</li>
 
-<li>Es werden aber auch keine Startmenü Einträge und Icons eingerichtet.</li>
+<li>Es werden aber auch keine Startmenü Einträge und Icons eingerichtet.
+</li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org4775288" class="outline-2">
-<h2 id="org4775288">Starten und Beenden</h2>
-<div class="outline-text-2" id="text-org4775288">
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Starten und Beenden</h2>
+<div class="outline-text-2" id="text-3">
 <p>
 BC+ sollte gestartet werden, bevor E:D startet. BC+ beobachtet den
 Ordner mit Journal Dateien und fängt an diese zu lesen, sobald eine
@@ -303,9 +234,11 @@ nötige:
 </p>
 
 <ul class="org-ul">
-<li>Den Ordner mit den E:D Journal Dateien</li>
+<li>Den Ordner mit den E:D Journal Dateien
+</li>
 
-<li>Den Ordner, in dem BC+ seine Daten ablegt</li>
+<li>Den Ordner, in dem BC+ seine Daten ablegt
+</li>
 </ul>
 
 <p>
@@ -315,26 +248,25 @@ Pfade beim Start auf der Kommandozeile übergeben.
 </p>
 </div>
 
-<div id="outline-container-org270e626" class="outline-3">
-<h3 id="org270e626">Startoptionen für BC+</h3>
-<div class="outline-text-3" id="text-org270e626">
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">Startoptionen für BC+</h3>
+<div class="outline-text-3" id="text-3-1">
 <dl class="org-dl">
-<dt>-h</dt><dd>Zeigt eine kurze Beschreibung der Startoptionen an.</dd>
+<dt> -h </dt><dd>Zeigt eine kurze Beschreibung der Startoptionen an.
+</dd>
 
-<dt>-j &lt;ordner&gt;</dt><dd>Setzt den Ordner, in dem E:D die Journal Dateien anlegt.</dd>
+<dt> -j &lt;ordner&gt; </dt><dd>Setzt den Ordner, in dem E:D die Journal Dateien anlegt.
+</dd>
 
-<dt>-d &lt;ordner&gt;</dt><dd>Setzt den Ordner, in dem BC+ seine Dateien ablegt</dd>
+<dt> -d &lt;ordner&gt; </dt><dd>Setzt den Ordner, in dem BC+ seine Dateien ablegt
+</dd>
 
-<dt>-l</dt><dd>Liest nach dem Start die jüngste Journal Datei ein. Sonst
-wartet BC+ bis E:D beim Start die neue Journal Datei
-anlegt. (kann gut verwendet werden, wenn man BC+ bei laufendem
-Spiel startet)</dd>
-
-<dt>-p</dt><dd>Setzt den Socket Port, auf dem BC+ auf HTTP Anfragen
+<dt> -p </dt><dd>Setzt den Socket Port, auf dem BC+ auf HTTP Anfragen
 lauscht. Per Voreinstellung ist der Wert auf <code>1337</code>
 gesetzt. Wenn es hier zu Problemen kommt, bspw. weil ein
 anderes Programm diesen Port bereits belegt, kann eine andere
-Nummer 1024–65535 gewählt werden.</dd>
+Nummer 1024–65535 gewählt werden.
+</dd>
 </dl>
 
 <p>
@@ -345,9 +277,9 @@ haben. Wenn doch: <code>-h</code> hilft ein wenig weiter. Wenn das nicht reicht:
 </div>
 </div>
 
-<div id="outline-container-org7228326" class="outline-3">
-<h3 id="org7228326">Web Browser verbinden</h3>
-<div class="outline-text-3" id="text-org7228326">
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2">Web Browser verbinden</h3>
+<div class="outline-text-3" id="text-3-2">
 <p>
 Neben dem Konsole Fenster wird auf dem Computer mit E:D nicht viel
 passieren. Die Idee ist ja, dass man einen Web Browser auf einem
@@ -373,9 +305,9 @@ anlegen). Dann schaltet BC+ in den „online“ Modus.
 </div>
 </div>
 
-<div id="outline-container-org09e07d3" class="outline-3">
-<h3 id="org09e07d3">BC+ Beenden</h3>
-<div class="outline-text-3" id="text-org09e07d3">
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3">BC+ Beenden</h3>
+<div class="outline-text-3" id="text-3-3">
 <p>
 BC+ sammelt laufend Infos aus dem Journal. Einige dieser Informationen
 sind im Journal nicht „leicht“ zu finden. – Beispiel: Beim Start
@@ -405,9 +337,9 @@ Fensters zu drücken!
 </div>
 </div>
 
-<div id="outline-container-org4912de1" class="outline-3">
-<h3 id="org4912de1">Ein Wort zur Sicherheit</h3>
-<div class="outline-text-3" id="text-org4912de1">
+<div id="outline-container-sec-3-4" class="outline-3">
+<h3 id="sec-3-4">Ein Wort zur Sicherheit</h3>
+<div class="outline-text-3" id="text-3-4">
 <p>
 Z.Z. verbindet sich BC+ über HTTP (ohne ‘S’). D.h. dass die
 Netzkommunikation im Klartext in Eurem lokalen Netz läuft. In der
@@ -425,18 +357,20 @@ Web Browser mit dem BC+ verbinden und damit all das tun, was der
 </div>
 </div>
 
-<div id="outline-container-orge86c3c6" class="outline-2">
-<h2 id="orge86c3c6">Deinstallation</h2>
-<div class="outline-text-2" id="text-orge86c3c6">
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Deinstallation</h2>
+<div class="outline-text-2" id="text-4">
 <p>
 Braucht man nicht! Wer würde diese <b>unglaublich</b> nützliche Tool je
 wieder deinstallieren wollen. Spaß bei Seite: Es reicht, wenn man 
 </p>
 
 <ol class="org-ol">
-<li>den BCplus Ordner aus dem Download-ZIP und</li>
+<li>den BCplus Ordner aus dem Download-ZIP und
+</li>
 <li>den Ordner mit den eigenen BC+ Dateien (C:\Users\&lt;user&gt;\bcplus)
-löscht.</li>
+löscht.
+</li>
 </ol>
 
 <p>
@@ -447,7 +381,8 @@ wegschmeißen ;)
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2018-02-22 Do 08:18</p>
+<p class="date">Created: 2018-06-03 So 19:04</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 25.1.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

@@ -317,7 +317,7 @@ func eventLoop() {
 	}
 }
 
-func checkJournals(jrnlDir string) {
+func checkJournals(jrnlDir string) (lastJournal string) {
 	var lets time.Time
 	tsfnm := filepath.Join(dataDir, "latestevent")
 	rd, err := os.Open(tsfnm)
@@ -331,7 +331,7 @@ func checkJournals(jrnlDir string) {
 		glog.Log(l.Error, "failed to read latest timestamp: %s", err)
 		return
 	}
-	catchUpWithJournal(lets, jrnlDir)
+	return catchUpWithJournal(lets, jrnlDir)
 }
 
 func main() {
@@ -393,7 +393,6 @@ func main() {
 		glog.Log(l.Info, "switch to EDSM test servers")
 		theEdsm = edsm.NewService(edsm.Test)
 	}
-	checkJournals(jrnlDir)
 	jdir := watched.JournalDir{
 		Dir: jrnlDir,
 		PerJLine: func(line []byte) {
@@ -406,7 +405,7 @@ func main() {
 		},
 		Quit: make(chan bool),
 	}
-	go jdir.Watch()
+	go jdir.Watch(checkJournals(jrnlDir))
 	go eventLoop()
 	runWebGui()
 	signal.Notify(signals, os.Interrupt)

@@ -304,6 +304,7 @@ type SysBody struct {
 	ssys     *StarSys
 	Name     string
 	Cat      BodyCat `json:"Category"`
+	Type     string  `json:"omitempty"`
 	stations []*StationPos
 	Dist     float32
 	TLock    bool

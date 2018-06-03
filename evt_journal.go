@@ -37,7 +37,7 @@ func takeTimeFromName(jfnm string) (time.Time, error) {
 	return res, err
 }
 
-func catchUpWithJournal(startAt time.Time, dir string) {
+func catchUpWithJournal(startAt time.Time, dir string) (lastj string) {
 	ejlog.Logf(l.Debug, "cat up starting from %s", startAt)
 	rddir, err := os.Open(dir)
 	if err != nil {
@@ -68,11 +68,15 @@ func catchUpWithJournal(startAt time.Time, dir string) {
 	if len(jBefore) > 0 {
 		jfls = append(jfls, jBefore)
 	}
+	if len(jfls) == 0 {
+		return ""
+	}
 	sort.Strings(jfls)
-	for _, j := range jfls {
+	for _, j := range jfls[:len(jfls)-1] {
 		jfnm := filepath.Join(dir, j)
 		readJournal(jfnm)
 	}
+	return jfls[len(jfls)-1]
 }
 
 type event = map[string]interface{}
@@ -209,7 +213,7 @@ func dispatchJournal(lock *sync.RWMutex, state *c.GmState, event []byte) {
 				}
 			}
 		} else {
-			ejlog.Logf(lNotice, "historic event: %s < %s", t, time.Time(state.T))
+			ejlog.Logf(l.Debug, "historic event: %s < %s", t, time.Time(state.T))
 			historic = true
 		}
 
@@ -715,12 +719,14 @@ func jeScan(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	bdyNm, _ := attStr(evt, "BodyName")
 	body := ssys.GetBody(stripSystemName(ssys.Name(), bdyNm))
 	body.Dist, _ = attF32(evt, "DistanceFromArrivalLS")
-	_, ok := attStr(evt, "StarType")
+	bty, ok := attStr(evt, "StarType")
 	if ok {
 		body.Cat = gxy.Star
+		body.Type = bty
 		body.Landable = false
 	} else {
 		body.Cat = gxy.Planet
+		body.Type, _ = attStr(evt, "PlanetClass")
 		updBool(evt, "Landable", &body.Landable)
 		if mats, ok := evt["Materials"].([]interface{}); ok {
 			if body.Mats == nil {

@@ -51,10 +51,6 @@ start options with '-' not '/'.
                     your commander and the visited galaxy (BC+ can
                     handle multiple commanders)
 
-- -l :: pick up the lates journal file when starting. This is useful
-        if you run BC+ after E:D already started to write the journal
-        file.
-
 - -p <port> :: set the port on which the web server is listening
                (default: 1337).
 

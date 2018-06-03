@@ -25,6 +25,7 @@ var gxtBdyTerence struct {
 
 var gxtBdyStar struct {
 	*gx.Template
+	Type   []int
 	Name   []int
 	Dist   []int
 	R      []int
@@ -35,6 +36,7 @@ var gxtBdyStar struct {
 
 var gxtBdyPlanet struct {
 	*gx.Template
+	Type      []int
 	Name      []int
 	Dist      []int
 	Land      []int
@@ -50,16 +52,18 @@ var gxtMatSec struct {
 
 var gxtBdyPMat0 struct {
 	*gx.Template
-	Class []int
-	Name  []int
-	Frac  []int
+	Class   []int
+	Name    []int
+	Frac    []int
+	Matitle []int
 }
 
 var gxtBdyPMatN struct {
 	*gx.Template
-	Class []int
-	Name  []int
-	Frac  []int
+	Class   []int
+	Name    []int
+	Frac    []int
+	Matitle []int
 }
 
 var gxtBdyBelt struct {
@@ -134,6 +138,7 @@ func emitBodies(wr io.Writer, matLs []string) (n int) {
 }
 
 func emitStar(wr io.Writer, bt *gx.BounT, s *gxy.SysBody) (n int) {
+	bt.BindP(gxtBdyStar.Type, gxw.EscHtml(s.Type))
 	bt.BindP(gxtBdyStar.Name, gxw.EscHtml(s.Name))
 	bt.Bind(gxtBdyStar.Dist, gxm.Msg(wuiL7d, "%.2f", s.Dist))
 	bt.BindFmt(gxtBdyStar.R, "%.2f", s.Radius)
@@ -146,6 +151,7 @@ func emitStar(wr io.Writer, bt *gx.BounT, s *gxy.SysBody) (n int) {
 }
 
 func emitPlanet(wr io.Writer, bt, btM0, btMN *gx.BounT, matLs []string, p *gxy.SysBody) (n int) {
+	bt.BindP(gxtBdyPlanet.Type, gxw.EscHtml(p.Type))
 	bt.BindP(gxtBdyPlanet.Name, gxw.EscHtml(p.Name))
 	bt.Bind(gxtBdyPlanet.Dist, gxm.Msg(wuiL7d, "%.2f", p.Dist))
 	bt.BindP(gxtBdyPlanet.Land, p.Landable)
@@ -164,8 +170,28 @@ func emitPlanet(wr io.Writer, bt, btM0, btMN *gx.BounT, matLs []string, p *gxy.S
 				for _, mat := range matLs {
 					if f, ok := p.Mats[mat]; ok {
 						cls := ""
-						if cmdr.NeedsMat(mat) > 0 {
-							cls = "mneed"
+						if need := cmdr.NeedsMat(mat); need > 0 {
+							cmat := cmdr.Material(mat)
+							if need > int(cmat.Have) {
+								cls = "miss"
+							} else {
+								cls = "engh"
+							}
+							if first {
+								btM0.BindFmt(gxtBdyPMat0.Matitle, "%d / %d",
+									cmat.Have,
+									need)
+							} else {
+								btMN.BindFmt(gxtBdyPMatN.Matitle, "%d / %d",
+									cmat.Have,
+									need)
+							}
+						} else {
+							if first {
+								btM0.Bind(gxtBdyPMat0.Matitle, gx.Empty)
+							} else {
+								btMN.Bind(gxtBdyPMatN.Matitle, gx.Empty)
+							}
 						}
 						nm, _ := nmMats.Map(mat)
 						if first {
