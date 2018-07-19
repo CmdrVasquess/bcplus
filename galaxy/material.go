@@ -9,10 +9,10 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	l "github.com/fractalqb/qblog"
-	"github.com/fractalqb/xsx"
-	"github.com/fractalqb/xsx/gem"
-	xsxtab "github.com/fractalqb/xsx/table"
+	l "git.fractalqb.de/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/xsx"
+	"git.fractalqb.de/fractalqb/xsx/gem"
+	xsxtab "git.fractalqb.de/fractalqb/xsx/table"
 )
 
 //go:generate stringer -type MatCategory

@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	gx "github.com/fractalqb/goxic"
-	gxw "github.com/fractalqb/goxic/web"
+	gx "git.fractalqb.de/fractalqb/goxic"
+	gxw "git.fractalqb.de/fractalqb/goxic/web"
 )
 
 var gxcDshb gx.Content

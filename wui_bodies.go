@@ -6,10 +6,10 @@ import (
 	"sort"
 
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	gx "github.com/fractalqb/goxic"
-	gxm "github.com/fractalqb/goxic/textmessage"
-	gxw "github.com/fractalqb/goxic/web"
-	l "github.com/fractalqb/qblog"
+	gx "git.fractalqb.de/fractalqb/goxic"
+	gxm "git.fractalqb.de/fractalqb/goxic/textmessage"
+	gxw "git.fractalqb.de/fractalqb/goxic/web"
+	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 var _ *l.Logger = (*l.Logger)(nil)
@@ -41,6 +41,8 @@ var gxtBdyPlanet struct {
 	Dist      []int
 	Land      []int
 	R         []int
+	Volc      []int
+	VolcType  []int
 	Materials []int
 	Rings     []int
 }
@@ -156,6 +158,13 @@ func emitPlanet(wr io.Writer, bt, btM0, btMN *gx.BounT, matLs []string, p *gxy.S
 	bt.Bind(gxtBdyPlanet.Dist, gxm.Msg(wuiL7d, "%.2f", p.Dist))
 	bt.BindP(gxtBdyPlanet.Land, p.Landable)
 	bt.Bind(gxtBdyPlanet.R, gxm.Msg(wuiL7d, "%.2f", p.Radius))
+	if len(p.Volcano) > 0 {
+		bt.BindP(gxtBdyPlanet.Volc, "Volcano")
+		bt.BindP(gxtBdyPlanet.VolcType, gxw.EscHtml(p.Volcano))
+	} else {
+		bt.Bind(gxtBdyPlanet.Volc, gx.Empty)
+		bt.Bind(gxtBdyPlanet.VolcType, gx.Empty)
+	}
 	if len(p.Mats) == 0 {
 		bt.Bind(gxtBdyPlanet.Materials, gx.Empty)
 	} else {

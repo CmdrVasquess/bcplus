@@ -18,8 +18,8 @@ import (
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	edsm "github.com/CmdrVasquess/goEDSMc"
 	"github.com/CmdrVasquess/watched"
-	"github.com/fractalqb/namemap"
-	l "github.com/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/namemap"
+	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 func init() {

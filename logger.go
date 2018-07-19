@@ -6,7 +6,7 @@ import (
 
 	"github.com/CmdrVasquess/BCplus/galaxy"
 	"github.com/CmdrVasquess/watched"
-	"github.com/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/qblog"
 )
 
 const lNotice int = qblog.Warn / 2

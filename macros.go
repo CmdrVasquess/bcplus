@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	l "github.com/fractalqb/qblog"
-	"github.com/fractalqb/xsx"
-	"github.com/fractalqb/xsx/gem"
-	"github.com/fractalqb/xsx/table"
+	l "git.fractalqb.de/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/xsx"
+	"git.fractalqb.de/fractalqb/xsx/gem"
+	"git.fractalqb.de/fractalqb/xsx/table"
 	robi "github.com/go-vgo/robotgo"
 )
 

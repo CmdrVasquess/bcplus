@@ -8,9 +8,9 @@ import (
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	gx "github.com/fractalqb/goxic"
-	gxw "github.com/fractalqb/goxic/web"
-	l "github.com/fractalqb/qblog"
+	gx "git.fractalqb.de/fractalqb/goxic"
+	gxw "git.fractalqb.de/fractalqb/goxic/web"
+	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 var gxtSynFrame struct {

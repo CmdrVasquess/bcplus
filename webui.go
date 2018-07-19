@@ -10,19 +10,20 @@ import (
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	gx "github.com/fractalqb/goxic"
-	gxm "github.com/fractalqb/goxic/textmessage"
-	gxw "github.com/fractalqb/goxic/web"
-	"github.com/fractalqb/namemap"
-	"github.com/fractalqb/nmconv"
-	l "github.com/fractalqb/qblog"
+	gx "git.fractalqb.de/fractalqb/goxic"
+	gxm "git.fractalqb.de/fractalqb/goxic/textmessage"
+	gxw "git.fractalqb.de/fractalqb/goxic/web"
+	"git.fractalqb.de/fractalqb/namemap"
+	"git.fractalqb.de/fractalqb/nmconv"
+	l "git.fractalqb.de/fractalqb/qblog"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
 var idxMapNames = nmconv.Conversion{
 	Norm:   nmconv.Uncamel,
-	Denorm: nmconv.SepX(strings.ToLower, "-"),
+	Xform:  nmconv.PerSegment(strings.ToLower),
+	Denorm: nmconv.Sep("-"),
 }
 
 func cmprMatByL7d(jnms []string, i, j int) bool {

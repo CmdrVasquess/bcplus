@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	gx "github.com/fractalqb/goxic"
-	gxm "github.com/fractalqb/goxic/textmessage"
-	gxw "github.com/fractalqb/goxic/web"
+	gx "git.fractalqb.de/fractalqb/goxic"
+	gxm "git.fractalqb.de/fractalqb/goxic/textmessage"
+	gxw "git.fractalqb.de/fractalqb/goxic/web"
 )
 
 var gxtShpFrame struct {

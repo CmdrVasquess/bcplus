@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
-	l "github.com/fractalqb/qblog"
+	l "git.fractalqb.de/fractalqb/qblog"
 	robi "github.com/go-vgo/robotgo"
 )
 

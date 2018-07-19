@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
-	l "github.com/fractalqb/qblog"
+	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 func skipStatEvent(evtFile string) bool {
@@ -15,7 +15,7 @@ func skipStatEvent(evtFile string) bool {
 }
 
 func readStatFile(nm string) map[string]interface{} {
-	eslog.Log(l.Trace, "read status file: '%s'", nm)
+	eslog.Logf(l.Debug, "read status file: '%s'", nm)
 	f, err := os.Open(nm)
 	if err != nil {
 		panic(err)

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
-	l "github.com/fractalqb/qblog"
+	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 var log = l.Std("BC+cdr:")

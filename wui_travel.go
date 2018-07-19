@@ -12,11 +12,11 @@ import (
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	edsm "github.com/CmdrVasquess/goEDSMc"
-	gx "github.com/fractalqb/goxic"
-	gxm "github.com/fractalqb/goxic/textmessage"
-	gxw "github.com/fractalqb/goxic/web"
-	"github.com/fractalqb/groph"
-	l "github.com/fractalqb/qblog"
+	gx "git.fractalqb.de/fractalqb/goxic"
+	gxm "git.fractalqb.de/fractalqb/goxic/textmessage"
+	gxw "git.fractalqb.de/fractalqb/goxic/web"
+	"git.fractalqb.de/fractalqb/groph"
+	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 var gxtTrvlFrame struct {

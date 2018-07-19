@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	l "github.com/fractalqb/qblog"
+	l "git.fractalqb.de/fractalqb/qblog"
 	wsock "github.com/gorilla/websocket"
 )
 

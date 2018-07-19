@@ -11,7 +11,7 @@ import (
 	str "strings"
 	"unicode/utf8"
 
-	l "github.com/fractalqb/qblog"
+	l "git.fractalqb.de/fractalqb/qblog"
 	"github.com/ungerik/go3d/float64/vec3"
 )
 
@@ -312,6 +312,7 @@ type SysBody struct {
 	Radius   float32
 	Grav     float32
 	Temprt   float32
+	Volcano  string `json:"omitempty"`
 	Landable bool
 	Mats     map[string]float32 `json:"Materials,omitempty"`
 }

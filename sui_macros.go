@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	c "github.com/CmdrVasquess/BCplus/cmdr"
-	gx "github.com/fractalqb/goxic"
-	gxw "github.com/fractalqb/goxic/web"
-	l "github.com/fractalqb/qblog"
-	"github.com/fractalqb/xsx"
-	"github.com/fractalqb/xsx/gem"
+	gx "git.fractalqb.de/fractalqb/goxic"
+	gxw "git.fractalqb.de/fractalqb/goxic/web"
+	l "git.fractalqb.de/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/xsx"
+	"git.fractalqb.de/fractalqb/xsx/gem"
 )
 
 var gxtSMcPage struct {

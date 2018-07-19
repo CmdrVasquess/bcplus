@@ -14,7 +14,7 @@ import (
 	c "github.com/CmdrVasquess/BCplus/cmdr"
 	gxy "github.com/CmdrVasquess/BCplus/galaxy"
 	"github.com/CmdrVasquess/watched"
-	l "github.com/fractalqb/qblog"
+	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 func readJournal(jfnm string) {
@@ -377,6 +377,15 @@ func attF32(e event, name string) (float32, bool) {
 	return float32(v), ok
 }
 
+func updF32(e event, name string, dst *float32) bool {
+	if v, ok := attF32(e, name); ok {
+		*dst = v
+		return true
+	} else {
+		return false
+	}
+}
+
 func jeFileheader(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 	if !gstat.IsOffline() {
 		saveState(gstat.IsBeta)
@@ -724,10 +733,16 @@ func jeScan(gstat *c.GmState, evt map[string]interface{}, t time.Time) {
 		body.Cat = gxy.Star
 		body.Type = bty
 		body.Landable = false
+		updF32(evt, "Radius", &body.Radius)
 	} else {
 		body.Cat = gxy.Planet
-		body.Type, _ = attStr(evt, "PlanetClass")
+		updStr(evt, "PlanetClass", &body.Type)
 		updBool(evt, "Landable", &body.Landable)
+		updF32(evt, "MassEM", &body.Mass)
+		updF32(evt, "Radius", &body.Radius)
+		updF32(evt, "SurfaceGravity", &body.Grav)
+		updF32(evt, "SurfaceTemperature", &body.Temprt)
+		updStr(evt, "Volcanism", &body.Volcano)
 		if mats, ok := evt["Materials"].([]interface{}); ok {
 			if body.Mats == nil {
 				body.Mats = make(map[string]float32)
