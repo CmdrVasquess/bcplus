@@ -74,7 +74,7 @@ package. So be prepared to start options with '-' not '/'.
 ## Credits
 
 1. Thanks to the [GO](https://golang.org) community to provide such a nice
-   programming environment (BC+ primarily exists because I needed a project
+   programming environment (BC+ primarily exists because I neede a project
    to learn GO).
 
 2. Frontier Development for the nice game.

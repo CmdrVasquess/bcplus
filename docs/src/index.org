@@ -1,4 +1,0 @@
-#+TITLE: BC+ – BoardComputer+ Document Index
------
-[[file:index-en.org][English]] – [[file:index-de.org][Deutsch]]
------
