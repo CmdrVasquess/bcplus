@@ -3,6 +3,9 @@ HTML/CSS/JS can do! Web frontend definitley needs better structure.
 Don't know when I will rework the thing for a good (which? … maybe
 [vue.js](https://vuejs.org/)) web framework.
 
+…rewriting the thing on branch ng/master – feature set will probably
+change!
+
 ![Logo](bcplus.d/s/img/Logo.png)
 # BoardComputer+ for E:D
 
