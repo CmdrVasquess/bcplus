@@ -14,28 +14,34 @@ import (
 	"sync"
 	"time"
 
+	l "git.fractalqb.de/fractalqb/qblog"
 	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/galaxy"
+	"github.com/CmdrVasquess/BCplus/webui"
 	eddn "github.com/CmdrVasquess/goEDDNc"
 	"github.com/CmdrVasquess/watched"
-	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 //go:generate versioner -bno build_no -p BCp -t Date ./VERSION ./version.go
-var appDesc string
+var appDesc, appVersion string
 
 func init() {
-	appDesc = fmt.Sprintf(appNameLong+" v%d.%d.%d%s / %s on %s (#%d %s)",
+	appVersion = fmt.Sprintf("%d.%d.%d%s",
 		BCpMajor,
 		BCpMinor,
 		BCpBugfix,
 		BCpQuality,
+	)
+	appDesc = fmt.Sprintf(appNameLong+" v%s / %s on %s (#%d %s)",
+		appVersion,
 		runtime.Version(),
 		runtime.GOOS,
 		BCpBuildNo,
-		BCpDate)
+		BCpDate,
+	)
 	bcpRoot, _ = filepath.Abs(os.Args[0])
 	bcpRoot = filepath.Dir(bcpRoot)
+	bcpState.Commanders = make(map[string]time.Time)
 }
 
 func resFile(resName string) string {
@@ -43,7 +49,13 @@ func resFile(resName string) string {
 }
 
 type State struct {
+	Version struct {
+		Major, Minor, Bugfix int
+		Quality              string
+		Build                int
+	}
 	LastEDEvent time.Time
+	Commanders  map[string]time.Time
 }
 
 func (s *State) Clear() {
@@ -116,6 +128,8 @@ func eventLoop() {
 			jstatStatus(evt.data.(string))
 		case watched.EscrMarket:
 			jstatMarket(evt.data.(string))
+		case watched.EscrShipyard:
+			jstatShipyard(evt.data.(string))
 		}
 	}
 }
@@ -174,9 +188,17 @@ func cmdrDir(name string) string {
 	return res
 }
 
-func cmdrStateFile(name string) string {
-	res := cmdrDir(name)
-	res = filepath.Join(res, "state.json")
+const (
+	cmdrState = "state.json"
+)
+
+func cmdrFile(cmdr, file string) string {
+	res := cmdrDir(cmdr)
+	res = filepath.Join(res, file)
+	dir := filepath.Dir(res)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.MkdirAll(dir, 0777)
+	}
 	return res
 }
 
@@ -185,15 +207,16 @@ func switchToCommander(name string) {
 		if theCmdr.Name == name {
 			return
 		}
-		err := theCmdr.Save(cmdrStateFile(theCmdr.Name))
+		err := theCmdr.Save(cmdrFile(theCmdr.Name, cmdrState))
 		if err != nil {
 			log.Log(l.Error, "error while saving commander state:", err)
 		}
+		bcpState.Commanders[theCmdr.Name] = bcpState.LastEDEvent
 	}
 	theGalaxy.ClearCache()
 	if len(name) > 0 {
 		theCmdr = cmdr.NewState(theCmdr)
-		err := theCmdr.Load(cmdrStateFile(name))
+		err := theCmdr.Load(cmdrFile(name, cmdrState))
 		if os.IsNotExist(err) {
 			theCmdr.Name = name
 			err = nil
@@ -203,6 +226,7 @@ func switchToCommander(name string) {
 			return
 		}
 		flagCheckEddn()
+		bcpState.Commanders[theCmdr.Name] = bcpState.LastEDEvent
 		var upldr string
 		switch eddnMode {
 		case "cmdr":
@@ -221,7 +245,7 @@ func switchToCommander(name string) {
 		}
 		vstr := fmt.Sprintf("%d.%d.%d%s", BCpMajor, BCpMinor, BCpBugfix, BCpQuality)
 		theEddn = &eddn.Upload{Vaildate: true, TestUrl: eddnMode == "test"}
-		theEddn.Http.Timeout = 5 * time.Second
+		theEddn.Http.Timeout = eddnTimeout
 		theEddn.Header.Uploader = upldr
 		theEddn.Header.SwName = appNameShort
 		theEddn.Header.SwVersion = vstr
@@ -243,20 +267,23 @@ const (
 	appNameShort    = "BC+"
 	flagEddnDefault = "off"
 	flagEddnOff     = "off"
+	eddnTimeout     = 8 * time.Second
 )
 
 var (
-	flagJDir  string
-	flagDDir  string
-	flagEddn  string
-	bcpRoot   string
-	bcpEventQ = make(chan bcpEvent, 128)
-	bcpState  State
-	theGalaxy *galaxy.Repo
-	theCmdr   *cmdr.State
-	theEddn   *eddn.Upload
-	eddnMode  string
-	stateLock sync.RWMutex
+	flagJDir    string
+	flagDDir    string
+	flagEddn    string
+	flagWuiPort uint
+	flagMacros  string
+	bcpRoot     string
+	bcpEventQ   = make(chan bcpEvent, 128)
+	bcpState    State
+	theGalaxy   *galaxy.Repo
+	theCmdr     *cmdr.State
+	theEddn     *eddn.Upload
+	eddnMode    string
+	stateLock   sync.RWMutex
 )
 
 func usage() {
@@ -290,6 +317,8 @@ func main() {
 	flag.StringVar(&flagJDir, "j", defaultJournalDir(), "Game directory with journal files")
 	flag.StringVar(&flagDDir, "d", defaultDataDir(), appNameShort+" data directory")
 	flag.StringVar(&flagEddn, "eddn", "", "Send to EDDN {off, anon, scramble, cmdr, test}")
+	flag.UintVar(&flagWuiPort, "p", 1337, "port number for the web ui")
+	flag.StringVar(&flagMacros, "macros", "", "use macro file")
 	flag.BoolVar(&logV, "v", false, "Log verbose (aka debug level)")
 	flag.BoolVar(&logVV, "vv", false, "Log very verbose (aka trace level)")
 	flag.Usage = usage
@@ -299,10 +328,26 @@ func main() {
 	var err error
 	log.Logf(l.Debug, "BC+ root: '%s'", bcpRoot)
 	bcpState.Load(stateFileName())
+	bcpState.Version.Major = BCpMajor
+	bcpState.Version.Minor = BCpMinor
+	bcpState.Version.Bugfix = BCpBugfix
+	bcpState.Version.Quality = BCpQuality
+	bcpState.Version.Build = BCpBuildNo
 	theGalaxy = openGalaxy()
+	if len(flagMacros) > 0 {
+		loadMacros(flagMacros)
+	}
 	goWatchingJournals(flagJDir, bcpEventQ)
 	go eventLoop()
-
+	webui.Run(&webui.Init{
+		DataDir:     flagDDir,
+		ResourceDir: filepath.Join(bcpRoot, "res"),
+		CommonName:  appNameLong,
+		Port:        flagWuiPort,
+		BCpVersion:  appVersion,
+		StateLock:   &stateLock,
+		CmdrGetter:  func() *cmdr.State { return theCmdr },
+	})
 	// up & running – wait for Ctrl-C…
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
@@ -311,7 +356,7 @@ func main() {
 	log.Log(l.Info, "closing galaxy repo")
 	theGalaxy.Close()
 	if theCmdr != nil {
-		err = theCmdr.Save(cmdrStateFile(theCmdr.Name))
+		err = theCmdr.Save(cmdrFile(theCmdr.Name, cmdrState))
 		if err != nil {
 			log.Log(l.Error, "error while saving commander state:", err)
 		}

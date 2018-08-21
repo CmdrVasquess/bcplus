@@ -9,9 +9,11 @@ import (
 	"sort"
 	"time"
 
+	"git.fractalqb.de/fractalqb/ggja"
+	l "git.fractalqb.de/fractalqb/qblog"
+	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 	"github.com/CmdrVasquess/watched"
-	l "git.fractalqb.de/fractalqb/qblog"
 )
 
 func takeTimeFromName(jfnm string) (time.Time, error) {
@@ -79,42 +81,49 @@ func readJournal(jfnm string) {
 	}
 }
 
-type jEvent = map[string]interface{}
-
-type jEventHdlr func(ts time.Time, evt jEvent) (backlog bool)
+type jEventHdlr func(ts time.Time, evt ggja.GenObj) (backlog bool)
 
 var jEventHdlrs = map[string]jEventHdlr{
-	"Commander":       jevtCommander,
-	"Docked":          jevtDocked,
-	"Fileheader":      jevtFileheader,
-	"FSDJump":         jevtFsdJump,
-	"Location":        jevtLocation,
-	"LoadGame":        jevtLoadGame,
-	"Progress":        jevtProgress,
-	"Rank":            jevtRank,
-	"Reputation":      jevtReputation,
-	"Scan":            jevtScan,
-	"StartJump":       jevtStartJump,
-	"SupercruiseExit": jevtSupercruiseExit,
-	"Undocked":        jevtUndocked,
+	"Commander":        jevtCommander,
+	"Docked":           jevtDocked,
+	"Fileheader":       jevtFileheader,
+	"FSDJump":          jevtFsdJump,
+	"Location":         jevtLocation,
+	"LoadGame":         jevtLoadGame,
+	"Loadout":          jevtLoadout,
+	"Materials":        jevtMaterials,
+	"MissionCompleted": jevtMissionCompleted,
+	"Progress":         jevtProgress,
+	"Rank":             jevtRank,
+	"Reputation":       jevtReputation,
+	"Scan":             jevtScan,
+	"ShipyardBuy":      jevtShipyardBuy,
+	"ShipyardNew":      jevtShipyardNew,
+	"ShipyardSell":     jevtShipyardSell,
+	"ShipyardSwap":     jevtShipyardSwap,
+	"ShipyardTransfer": jevtShipyardTransfer,
+	"StartJump":        jevtStartJump,
+	"SupercruiseExit":  jevtSupercruiseExit,
+	"Undocked":         jevtUndocked,
 }
 
-var jevtBacklog []jEvent
+var jevtBacklog []ggja.GenObj
 
 func journalEvent(jLine []byte) {
-	evt := make(jEvent)
-	err := json.Unmarshal(jLine, &evt)
+	eJson := make(ggja.GenObj)
+	err := json.Unmarshal(jLine, &eJson)
 	if err != nil {
 		log.Logf(l.Error, "cannot parse journal event: %s: %s", err, string(jLine))
 		return
 	}
 	defer func() {
 		if p := recover(); p != nil {
-			log.Logf(l.Error, "recover journal panic:", p)
+			log.Log(l.Error, "recover journal panic:", p)
 		}
 	}()
-	ets := jrmgTs(evt, "timestamp")
-	enm := jrgStr(evt, "event", "")
+	evt := ggja.Obj{Bare: eJson}
+	ets := evt.MTime("timestamp")
+	enm := evt.Str("event", "")
 	if len(enm) == 0 {
 		log.Logf(l.Error, "no event name in journal event: %s", string(jLine))
 		return
@@ -126,35 +135,39 @@ func journalEvent(jLine []byte) {
 			bcpState.LastEDEvent.Format(time.RFC3339))
 		switch enm {
 		case "Commander":
-			cmdr := jrmgStr(evt, "Name")
+			cmdr := evt.MStr("Name")
 			switchToCommander(cmdr)
 		case "LoadGame":
-			cmdr := jrmgStr(evt, "Commander")
+			cmdr := evt.MStr("Commander")
 			switchToCommander(cmdr)
 		case "Fileheader":
 			switchToCommander("")
 		}
 		return
 	}
+	if theCmdr != nil {
+		jEventMacro(enm, theCmdr.JStatFlags)
+	}
 	hdlr, ok := jEventHdlrs[enm]
 	if ok {
 		log.Logf(l.Debug, "dispatch to '%s' handler", enm)
-		backlog := hdlr(ets, evt)
+		backlog := hdlr(ets, eJson)
 		if backlog {
 			log.Log(l.Debug, "putting event to backlog")
-			jevtBacklog = append(jevtBacklog, evt)
+			jevtBacklog = append(jevtBacklog, eJson)
 		} else {
 			bcpState.LastEDEvent = ets
 			if len(jevtBacklog) > 0 {
-				var nbl []jEvent
-				for _, evt := range jevtBacklog {
-					ets := jrmgTs(evt, "timestamp")
-					enm := jrgStr(evt, "event", "")
+				var nbl []ggja.GenObj
+				for _, jEvt := range jevtBacklog {
+					evt := ggja.Obj{Bare: jEvt}
+					ets := evt.MTime("timestamp")
+					enm := evt.MStr("event")
 					hdlr, _ = jEventHdlrs[enm]
 					log.Logf(l.Debug, "dispatch from backlog to '%s' handler", enm)
-					if hdlr(ets, evt) {
+					if hdlr(ets, jEvt) {
 						log.Log(l.Debug, "keeping event in backlog")
-						nbl = append(nbl, evt)
+						nbl = append(nbl, jEvt)
 					}
 				}
 				jevtBacklog = nbl
@@ -165,14 +178,13 @@ func journalEvent(jLine []byte) {
 	}
 }
 
-func sysByName(name string, coos interface{}) (res *galaxy.System) {
+func sysByName(name string, coos *ggja.Arr) (res *galaxy.System) {
 	var err error
 	if coos == nil {
 		res, err = theGalaxy.MustSystem(name, nil)
 	} else {
-		tmp := coos.([]interface{})
 		res, err = theGalaxy.MustSystemCoos(name,
-			tmp[galaxy.Xk].(float64), tmp[galaxy.Yk].(float64), tmp[galaxy.Zk].(float64),
+			coos.MF64(0), coos.MF64(1), coos.MF64(2),
 			nil)
 	}
 	if err != nil {
@@ -189,29 +201,31 @@ func partFromSys(sys *galaxy.System, typ galaxy.PartType, partName string) *gala
 	return res
 }
 
-func jevtFileheader(ts time.Time, evt jEvent) bool {
+func jevtFileheader(ts time.Time, evt ggja.GenObj) bool {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	switchToCommander("")
 	return false
 }
 
-func jevtCommander(ts time.Time, evt jEvent) bool {
-	name := jrmgStr(evt, "Name")
+func jevtCommander(ts time.Time, jEvt ggja.GenObj) bool {
+	evt := ggja.Obj{Bare: jEvt}
+	name := evt.MStr("Name")
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	switchToCommander(name)
 	return false
 }
 
-func jevtDocked(ts time.Time, evt jEvent) bool {
+func jevtDocked(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
 	stateLock.Lock()
 	defer stateLock.Unlock()
-	ssys := sysByName(jrmgStr(evt, "StarSystem"), nil)
-	port, err := ssys.MustPart(galaxy.Port, jrmgStr(evt, "StationName"))
+	evt := ggja.Obj{Bare: jEvt}
+	ssys := sysByName(evt.MStr("StarSystem"), nil)
+	port, err := ssys.MustPart(galaxy.Port, evt.MStr("StationName"))
 	theCmdr.Loc.SysId = ssys.Id
 	theCmdr.Loc.LocId = port.Id
 	theCmdr.Loc.Docked = true
@@ -219,12 +233,12 @@ func jevtDocked(ts time.Time, evt jEvent) bool {
 		log.Panic(err)
 	}
 	if eddnMode != flagEddnOff {
-		go eddnSendJournal(theEddn, ts, evt, ssys)
+		go eddnSendJournal(theEddn, ts, jEvt, ssys)
 	}
 	return false
 }
 
-func jevtUndocked(ts time.Time, evt jEvent) bool {
+func jevtUndocked(ts time.Time, evt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
@@ -235,80 +249,161 @@ func jevtUndocked(ts time.Time, evt jEvent) bool {
 	return false
 }
 
-func jevtLoadGame(ts time.Time, evt jEvent) bool {
-	name := jrmgStr(evt, "Commander")
+func jevtLoadGame(ts time.Time, jEvt ggja.GenObj) bool {
+	evt := ggja.Obj{Bare: jEvt}
+	name := evt.MStr("Commander")
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	switchToCommander(name)
-	jruInt64(&theCmdr.Creds, evt, "Credits")
-	jruInt64(&theCmdr.Loan, evt, "Loan")
+	theCmdr.Creds = evt.Int64("Credits", theCmdr.Creds)
+	theCmdr.Loan = evt.Int64("Loan", theCmdr.Loan)
+	ship := theCmdr.MustHaveShip(evt.MInt("ShipID"), evt.MStr("Ship"))
+	theCmdr.InShip = ship.Id
+	ship.BerthLoc = 0
+	ship.Ident = evt.Str("ShipIdent", ship.Ident)
+	ship.Name = evt.Str("ShipName", ship.Name)
 	return false
 }
 
-func jevtRank(ts time.Time, evt jEvent) bool {
+func jevtLoadout(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
+	evt := ggja.Obj{Bare: jEvt}
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	ship := theCmdr.MustHaveShip(evt.MInt("ShipID"), evt.MStr("Ship"))
+	theCmdr.InShip = ship.Id
+	ship.BerthLoc = 0
+	ship.Ident = evt.Str("ShipIdent", ship.Ident)
+	ship.Name = evt.Str("ShipName", ship.Name)
+	ship.Health = evt.F64("Health", ship.Health)
+	ship.Rebuy = evt.Int("Rebuy", ship.Rebuy)
+	ship.HullValue = evt.Int("HullValue", ship.HullValue)
+	ship.ModuleValue = evt.Int("ModulesValue", ship.ModuleValue)
+	return false
+}
+
+func jevtMaterials(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
 	stateLock.Lock()
 	defer stateLock.Unlock()
-	jruInt(&theCmdr.Ranks.Imps.Level, evt, "Empire")
-	jruInt(&theCmdr.Ranks.Feds.Level, evt, "Federation")
-	jruInt(&theCmdr.Ranks.Combat.Level, evt, "Combat")
-	jruInt(&theCmdr.Ranks.Trade.Level, evt, "Trade")
-	jruInt(&theCmdr.Ranks.Explore.Level, evt, "Explore")
-	jruInt(&theCmdr.Ranks.CQC.Level, evt, "CQC")
+	evt := ggja.Obj{Bare: jEvt}
+	setMats := func(kind cmdr.MatKind, matls ggja.GenArr) {
+		for _, tmp := range matls {
+			eMat := ggja.Obj{Bare: tmp.(ggja.GenObj), OnError: evt.OnError}
+			matKey := cmdr.MatDefine(kind, eMat.MStr("Name"))
+			if cMat, ok := theCmdr.Mats[matKey]; ok {
+				cMat.Have = eMat.MInt("Count")
+			} else {
+				cMat = &cmdr.MatState{Have: eMat.MInt("Count")}
+				theCmdr.Mats[matKey] = cMat
+			}
+		}
+	}
+	setMats(cmdr.MatRaw, evt.Arr("Raw").Bare)
+	setMats(cmdr.MatMan, evt.Arr("Manufactured").Bare)
+	setMats(cmdr.MatEnc, evt.Arr("Encoded").Bare)
 	return false
 }
 
-func jevtReputation(ts time.Time, evt jEvent) bool {
+func jevtMissionCompleted(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
 	stateLock.Lock()
 	defer stateLock.Unlock()
-	jruF32(&theCmdr.Rep.Imps, evt, "Empire")
-	jruF32(&theCmdr.Rep.Feds, evt, "Federation")
-	jruF32(&theCmdr.Rep.Allis, evt, "Alliance")
+	evt := ggja.Obj{Bare: jEvt}
+	if effs := evt.Arr("FactionEffects"); effs != nil {
+		for i := range effs.Bare {
+			eff := effs.MObj(i)
+			faction := eff.MStr("Faction")
+			rep := eff.Str("Reputation", "")
+			if rep == "" {
+				continue
+			}
+			switch rep {
+			case "UpGood":
+				level := theCmdr.MinorRep[faction]
+				theCmdr.MinorRep[faction] = level + 1
+			case "DownBad":
+				level := theCmdr.MinorRep[faction]
+				theCmdr.MinorRep[faction] = level - 1
+			default:
+				log.Logf(l.Warn, "illegal mission reputation trend: '%s'", rep)
+			}
+		}
+	}
 	return false
 }
 
-func jevtProgress(ts time.Time, evt jEvent) bool {
+func jevtRank(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
 	stateLock.Lock()
 	defer stateLock.Unlock()
-	jruInt(&theCmdr.Ranks.Imps.Progress, evt, "Empire")
-	jruInt(&theCmdr.Ranks.Feds.Progress, evt, "Federation")
-	jruInt(&theCmdr.Ranks.Combat.Progress, evt, "Combat")
-	jruInt(&theCmdr.Ranks.Trade.Progress, evt, "Trade")
-	jruInt(&theCmdr.Ranks.Explore.Progress, evt, "Explore")
-	jruInt(&theCmdr.Ranks.CQC.Progress, evt, "CQC")
+	evt := ggja.Obj{Bare: jEvt}
+	theCmdr.Ranks.Imps.Level = evt.Int("Empire", theCmdr.Ranks.Imps.Level)
+	theCmdr.Ranks.Feds.Level = evt.Int("Federation", theCmdr.Ranks.Feds.Level)
+	theCmdr.Ranks.Combat.Level = evt.Int("Combat", theCmdr.Ranks.Combat.Level)
+	theCmdr.Ranks.Trade.Level = evt.Int("Trade", theCmdr.Ranks.Trade.Level)
+	theCmdr.Ranks.Explore.Level = evt.Int("Explore", theCmdr.Ranks.Explore.Level)
+	theCmdr.Ranks.CQC.Level = evt.Int("CQC", theCmdr.Ranks.CQC.Level)
 	return false
 }
 
-func jevtLocation(ts time.Time, evt jEvent) bool {
+func jevtReputation(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
-	sysNm := jrmgStr(evt, "StarSystem")
-	coos, ok := evt["StarPos"]
-	if !ok {
-		panic(fmt.Errorf("system '%s' without coordinates", sysNm))
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	evt := ggja.Obj{Bare: jEvt}
+	theCmdr.Rep.Imps = evt.F32("Empire", theCmdr.Rep.Imps)
+	theCmdr.Rep.Feds = evt.F32("Federation", theCmdr.Rep.Feds)
+	theCmdr.Rep.Allis = evt.F32("Alliance", theCmdr.Rep.Allis)
+	return false
+}
+
+func jevtProgress(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
 	}
-	station := jrgStr(evt, "StationName", "")
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	evt := ggja.Obj{Bare: jEvt}
+	theCmdr.Ranks.Imps.Progress = evt.Int("Empire", theCmdr.Ranks.Imps.Progress)
+	theCmdr.Ranks.Feds.Progress = evt.Int("Federation", theCmdr.Ranks.Feds.Progress)
+	theCmdr.Ranks.Combat.Progress = evt.Int("Combat", theCmdr.Ranks.Combat.Progress)
+	theCmdr.Ranks.Trade.Progress = evt.Int("Trade", theCmdr.Ranks.Trade.Progress)
+	theCmdr.Ranks.Explore.Progress = evt.Int("Explore", theCmdr.Ranks.Explore.Progress)
+	theCmdr.Ranks.CQC.Progress = evt.Int("CQC", theCmdr.Ranks.CQC.Progress)
+	return false
+}
+
+func jevtLocation(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
+	evt := ggja.Obj{Bare: jEvt}
+	sysNm := evt.MStr("StarSystem")
+	coos := evt.MArr("StarPos")
+	station := evt.Str("StationName", "")
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	xa := theGalaxy.XaBegin()
 	defer xa.Rollback()
 	ssys := sysByName(sysNm, coos)
 	theCmdr.Loc.SysId = ssys.Id
-	theCmdr.Loc.Docked = jrgBool(evt, "Docked", false)
+	theCmdr.Loc.Docked = evt.Bool("Docked", false)
 	if len(station) > 0 {
 		stn := partFromSys(ssys, galaxy.Port, station)
 		putStn := false
 		theCmdr.Loc.LocId = stn.Id
-		if jrgStr(evt, "StationType", "") == "SurfaceStation" {
+		if evt.Str("StationType", "") == "SurfaceStation" {
 			if stn.Height != 0 {
 				stn.Height = 0
 				putStn = true
@@ -317,8 +412,8 @@ func jevtLocation(ts time.Time, evt jEvent) bool {
 			stn.Height = galaxy.NaN32
 			putStn = true
 		}
-		if jrgStr(evt, "BodyType", "") == "Planet" {
-			pnm := jrmgStr(evt, "Body")
+		if evt.Str("BodyType", "") == "Planet" {
+			pnm := evt.MStr("Body")
 			pnm = ssys.LocalName(pnm)
 			planet := partFromSys(ssys, galaxy.Planet, pnm)
 			if stn.TiedTo != planet.Id {
@@ -331,8 +426,8 @@ func jevtLocation(ts time.Time, evt jEvent) bool {
 				log.Panic(err)
 			}
 		}
-	} else if bdynm := jrgStr(evt, "Body", ""); len(bdynm) > 0 {
-		btype := jrmgStr(evt, "BodyType")
+	} else if bdynm := evt.Str("Body", ""); len(bdynm) > 0 {
+		btype := evt.MStr("BodyType")
 		var body *galaxy.SysPart
 		switch btype {
 		case "Planet":
@@ -348,34 +443,32 @@ func jevtLocation(ts time.Time, evt jEvent) bool {
 	}
 	xa.Commit()
 	if eddnMode != flagEddnOff {
-		go eddnSendJournal(theEddn, ts, evt, ssys)
+		go eddnSendJournal(theEddn, ts, jEvt, ssys)
 	}
 	return false
 }
 
-func jevtFsdJump(ts time.Time, evt jEvent) bool {
+func jevtFsdJump(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
 	stateLock.Lock()
 	defer stateLock.Unlock()
-	sysNm := jrmgStr(evt, "StarSystem")
-	coos, ok := evt["StarPos"]
-	if !ok {
-		panic(fmt.Errorf("system '%s' without coordinates", sysNm))
-	}
+	evt := ggja.Obj{Bare: jEvt}
+	sysNm := evt.MStr("StarSystem")
+	coos := evt.MArr("StarPos")
 	ssys := sysByName(sysNm, coos)
 	theCmdr.Loc.SysId = ssys.Id
 	theCmdr.Loc.LocId = 0
 	theCmdr.Loc.Docked = false
 	theCmdr.Jumps.Add(ssys.Id, ts)
 	if eddnMode != flagEddnOff {
-		go eddnSendJournal(theEddn, ts, evt, ssys)
+		go eddnSendJournal(theEddn, ts, jEvt, ssys)
 	}
 	return false
 }
 
-func jevtScan(ts time.Time, evt jEvent) bool {
+func jevtScan(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
@@ -389,17 +482,142 @@ func jevtScan(ts time.Time, evt jEvent) bool {
 			return false
 		}
 		if eddnMode != flagEddnOff {
-			go eddnSendJournal(theEddn, ts, evt, ssys)
+			go eddnSendJournal(theEddn, ts, jEvt, ssys)
 		}
 	}
 	return false
 }
 
-func jevtStartJump(ts time.Time, evt jEvent) bool {
+func jevtShipyardBuy(ts time.Time, jEvt ggja.GenObj) bool {
 	if theCmdr == nil {
 		return true
 	}
-	jty := jrmgStr(evt, "JumpType")
+	evt := ggja.Obj{Bare: jEvt}
+	storeId := evt.MInt("StoreShipID")
+	if storeId != theCmdr.InShip {
+		log.Logf(l.Warn, "inconsistent ids for current ship bc+:%d / event:%d",
+			theCmdr.InShip, storeId)
+	}
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	ship := theCmdr.MustHaveShip(storeId, evt.MStr("ShipType"))
+	ship.BerthLoc = theCmdr.Loc.LocId
+	theCmdr.InShip = cmdr.NoShip
+	return false
+}
+
+func jevtShipyardNew(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
+	evt := ggja.Obj{Bare: jEvt}
+	ship := &cmdr.Ship{
+		Id:     evt.MInt("NewShipID"),
+		Type:   evt.MStr("ShipType"),
+		Bought: ts,
+	}
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	if theCmdr.InShip > cmdr.NoShip {
+		log.Log(l.Warn, "commander in a ship %d when new ship arrives",
+			theCmdr.InShip)
+		if s2s, ok := theCmdr.Ships[theCmdr.InShip]; ok {
+			s2s.BerthLoc = theCmdr.Loc.LocId
+		}
+	}
+	theCmdr.Ships[ship.Id] = ship
+	theCmdr.InShip = ship.Id
+	return false
+}
+
+func saveSoldShip(cmdr string, ship *cmdr.Ship) {
+	var fnm string
+	if len(ship.Ident) > 0 {
+		if len(ship.Name) > 0 {
+			fnm = fmt.Sprintf("%s - %s", ship.Name, ship.Ident)
+		} else {
+			fnm = ship.Ident
+		}
+	} else if len(ship.Name) > 0 {
+		fnm = ship.Name
+	} else {
+		fnm = ship.Type
+	}
+	fnm = fmt.Sprintf("sold_ships/Ship%d %s.json", ship.Id, fnm)
+	fnm = cmdrFile(cmdr, fnm)
+	f, err := os.Create(fnm)
+	if err != nil {
+		log.Logf(l.Warn, "cannot save sold ship %d %s", ship.Id, fnm)
+		return
+	}
+	defer f.Close()
+	enc := json.NewEncoder(f)
+	err = enc.Encode(ship)
+}
+
+func jevtShipyardSell(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
+	evt := ggja.Obj{Bare: jEvt}
+	sid := evt.MInt("SellShipID")
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	if theCmdr.InShip == sid {
+		log.Logf(l.Warn, "commander in sold ship %d", sid)
+		theCmdr.InShip = cmdr.NoShip
+	}
+	if ship, ok := theCmdr.Ships[sid]; ok && ship != nil {
+		go saveSoldShip(theCmdr.Name, ship)
+	}
+	delete(theCmdr.Ships, sid)
+	return false
+}
+
+func jevtShipyardSwap(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
+	evt := ggja.Obj{Bare: jEvt}
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	ship := theCmdr.MustHaveShip(
+		evt.MInt("StoreShipID"),
+		evt.MStr("StoreOldShip"),
+	)
+	ship.BerthLoc = theCmdr.Loc.LocId
+	ship = theCmdr.MustHaveShip(
+		evt.MInt("ShipID"),
+		evt.MStr("ShipType"),
+	)
+	ship.BerthLoc = 0
+	theCmdr.InShip = ship.Id
+	return false
+}
+
+func jevtShipyardTransfer(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
+	evt := ggja.Obj{Bare: jEvt}
+	sid := evt.MInt("ShipID")
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	if theCmdr.InShip == sid {
+		log.Logf(l.Warn, "commander in transferred ship %d", sid)
+		theCmdr.InShip = cmdr.NoShip
+	}
+	ship := theCmdr.MustHaveShip(sid, evt.MStr("ShipType"))
+	ship.BerthLoc = theCmdr.Loc.LocId
+	return false
+}
+
+func jevtStartJump(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
+	evt := ggja.Obj{Bare: jEvt}
+	jty := evt.MStr("JumpType")
 	if jty == "Supercruise" {
 		stateLock.Lock()
 		defer stateLock.Unlock()
@@ -409,7 +627,10 @@ func jevtStartJump(ts time.Time, evt jEvent) bool {
 	return false
 }
 
-func jevtSupercruiseExit(ts time.Time, evt jEvent) bool {
+func jevtSupercruiseExit(ts time.Time, jEvt ggja.GenObj) bool {
+	if theCmdr == nil {
+		return true
+	}
 	// TODO NYI
 	return false
 }

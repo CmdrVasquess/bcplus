@@ -7,6 +7,7 @@ import (
 	"git.fractalqb.de/fractalqb/qblog"
 	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/galaxy"
+	"github.com/CmdrVasquess/BCplus/webui"
 	"github.com/CmdrVasquess/watched"
 )
 
@@ -21,6 +22,7 @@ func init() {
 	watched.LogConfig.SetParent(log)
 	galaxy.LogConfig.SetParent(log)
 	cmdr.LogConfig.SetParent(log)
+	webui.LogConfig.SetParent(log)
 	logFile, _ := os.Create("BCplus.log")
 	logWr := io.MultiWriter(logFile, os.Stderr)
 	log.SetOutput(logWr)

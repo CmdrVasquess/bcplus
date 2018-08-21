@@ -4,10 +4,15 @@ import (
 	"encoding/json"
 	"time"
 
+	"git.fractalqb.de/fractalqb/ggja"
+	l "git.fractalqb.de/fractalqb/qblog"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 	eddn "github.com/CmdrVasquess/goEDDNc"
-	l "git.fractalqb.de/fractalqb/qblog"
 )
+
+func ggjaFailLogErr(err error) {
+	log.Log(l.Error, err)
+}
 
 func eddnTraceMsg(msg map[string]interface{}) {
 	if logEddn.Logs(l.Trace) {
@@ -30,7 +35,7 @@ func eddnSendErr(err error, msg map[string]interface{}) {
 	}
 }
 
-func eddnSendJournal(upld *eddn.Upload, ts time.Time, e jEvent, ssys *galaxy.System) {
+func eddnSendJournal(upld *eddn.Upload, ts time.Time, e ggja.GenObj, ssys *galaxy.System) {
 	jump := eddn.NewMessage(eddn.Ts(ts))
 	err := eddn.SetJournal(jump, e, ssys.Name,
 		ssys.Coos[galaxy.Xk], ssys.Coos[galaxy.Yk], ssys.Coos[galaxy.Zk],
@@ -48,17 +53,17 @@ func eddnSendJournal(upld *eddn.Upload, ts time.Time, e jEvent, ssys *galaxy.Sys
 	eddnSendErr(err, jump)
 }
 
-func eddnSendCommodities(upld *eddn.Upload, stat map[string]interface{}) {
-	tstr := jrgStr(stat, "timestamp", "")
+func eddnSendCommodities(upld *eddn.Upload, jStat map[string]interface{}) {
+	stat := ggja.Obj{Bare: jStat, OnError: ggjaFailLogErr}
+	tstr := stat.MStr("timestamp")
 	if len(tstr) == 0 {
-		log.Log(l.Error, "cannot get timestamp from market state")
 		return
 	}
 	logEddn.Logf(l.Debug, "send commodities to EDDN (dry: %t, test: %t)",
 		upld.DryRun,
 		upld.TestUrl)
 	cmdt := eddn.NewMessage(tstr)
-	err := eddn.SetCommoditiesJ(cmdt, stat)
+	err := eddn.SetCommoditiesJ(cmdt, jStat)
 	if err != nil {
 		log.Logf(l.Error, "eddn commodities: %s", err)
 		return
@@ -66,5 +71,26 @@ func eddnSendCommodities(upld *eddn.Upload, stat map[string]interface{}) {
 	eddnTraceMsg(cmdt)
 	err = upld.Send(eddn.Scommodity, cmdt)
 	logEddn.Log(l.Trace, "done with commodities to EDDN")
+	eddnSendErr(err, cmdt)
+}
+
+func eddnSendShipyard(upld *eddn.Upload, jShy map[string]interface{}) {
+	shy := ggja.Obj{Bare: jShy, OnError: ggjaFailLogErr}
+	tstr := shy.MStr("timestamp")
+	if len(tstr) == 0 {
+		return
+	}
+	logEddn.Logf(l.Debug, "send shipyard to EDDN (dry: %t, test: %t)",
+		upld.DryRun,
+		upld.TestUrl)
+	cmdt := eddn.NewMessage(tstr)
+	err := eddn.SetShipyardJ(cmdt, jShy)
+	if err != nil {
+		log.Logf(l.Error, "eddn shipyard: %s", err)
+		return
+	}
+	eddnTraceMsg(cmdt)
+	err = upld.Send(eddn.Sshipyard, cmdt)
+	logEddn.Log(l.Trace, "done with shipyard to EDDN")
 	eddnSendErr(err, cmdt)
 }

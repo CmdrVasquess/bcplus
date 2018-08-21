@@ -1,1 +1,0 @@
-../res/galaxy/create-sqlite.sql

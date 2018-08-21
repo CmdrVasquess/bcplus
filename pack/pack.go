@@ -25,16 +25,23 @@ func must(err error) {
 }
 
 func purgeFilter(dir string, info os.FileInfo) bool {
+	skip := false
+	if !(info.IsDir() || info.Mode().IsRegular()) {
+		skip = true
+	}
 	name := info.Name()
 	switch {
 	case strings.HasSuffix(name, ".go"):
-		return false
+		skip = true
 	case strings.HasSuffix(name, "~"):
-		return false
+		skip = true
 	case strings.HasPrefix(name, "."):
-		return false
+		skip = true
 	}
-	return true
+	if skip {
+		log.Printf("SKIP: %s/%s", dir, info.Name())
+	}
+	return !skip
 }
 
 func dist() string {
@@ -43,15 +50,16 @@ func dist() string {
 		must(os.RemoveAll(distDir))
 	}
 	must(os.Mkdir(distDir, 0777))
-	must(pack.CopyToDir(distDir,
+	must(pack.CopyToDir(distDir, pack.OsDepExe, "BCplus"))
+	must(pack.CopyToDir(distDir, nil,
 		"LICENSE",
 		"README.md",
 		"VERSION",
-		"BCplus",
 		"jreplay/jreplay",
+		"macros-example.xsx",
 	))
-	must(pack.CopyTree(distDir, "res", purgeFilter))
-	must(pack.CopyTree(distDir, "mig", purgeFilter))
+	must(pack.CopyTree(distDir, "res", nil, purgeFilter))
+	must(pack.CopyTree(distDir, "mig", nil, purgeFilter))
 	return distDir
 }
 

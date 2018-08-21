@@ -11,7 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var log = l.Std("BC+gxy:")
+var log = l.Std("bc+gxy:")
 var LogConfig = l.Package(log)
 
 var NaN32 = float32(math.NaN())

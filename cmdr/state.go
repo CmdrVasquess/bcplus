@@ -9,7 +9,7 @@ import (
 	l "git.fractalqb.de/fractalqb/qblog"
 )
 
-var log = l.Std("BC+cdr:")
+var log = l.Std("bc+cdr:")
 var LogConfig = l.Package(log)
 
 type Location struct {
@@ -70,9 +70,15 @@ type State struct {
 	Rep struct {
 		Imps, Feds, Allis float32
 	}
-	Loc      Location
-	EddnMode string
-	Edsm     struct {
+	MinorRep    map[string]int `json:",omitempty"`
+	JStatFlags uint32
+	Loc, Home  Location
+	InShip     int
+	Ships      map[int]*Ship
+	Mats       map[Material]*MatState
+	RcpDmnd    map[RcpDef]int
+	EddnMode   string
+	Edsm       struct {
 		Name   string
 		ApiKey string // TODO store somwhere secure!
 	}
@@ -83,6 +89,10 @@ func NewState(init *State) *State {
 	if init == nil {
 		init = new(State)
 	}
+	init.MinorRep = make(map[string]int)
+	init.Ships = make(map[int]*Ship)
+	init.Mats = make(map[Material]*MatState)
+	init.RcpDmnd = make(map[RcpDef]int)
 	return init
 }
 
