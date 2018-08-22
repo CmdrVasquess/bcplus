@@ -45,24 +45,24 @@ func prepareOffline(btpl *gxc.BounT, resDir, lang string) {
 func withTmpl(resDir, tmpl, lang string, do func(filename string) error) error {
 	if len(lang) > 2 {
 		fnm := filepath.Join(resDir, tmplDir, lang, tmpl+tmplExt)
-		log.Logf(l.Trace, "check template file '%s'", fnm)
+		log.Logf(l.Ltrace, "check template file '%s'", fnm)
 		if err := do(fnm); err == nil {
-			log.Logf(l.Debug, "loaded: '%s'", fnm)
+			log.Logf(l.Ldebug, "loaded: '%s'", fnm)
 			return nil
 		}
 	}
 	if len(lang) >= 2 {
 		fnm := filepath.Join(resDir, tmplDir, lang[:2], tmpl+tmplExt)
-		log.Logf(l.Trace, "check template file '%s'", fnm)
+		log.Logf(l.Ltrace, "check template file '%s'", fnm)
 		if err := do(fnm); err == nil {
-			log.Logf(l.Debug, "loaded: '%s'", fnm)
+			log.Logf(l.Ldebug, "loaded: '%s'", fnm)
 			return nil
 		}
 	}
 	fnm := filepath.Join(resDir, tmplDir, tmplDefaultLang, tmpl+tmplExt)
-	log.Logf(l.Trace, "check template file '%s'", fnm)
+	log.Logf(l.Ltrace, "check template file '%s'", fnm)
 	if err := do(fnm); err == nil {
-		log.Logf(l.Debug, "loaded: '%s'", fnm)
+		log.Logf(l.Ldebug, "loaded: '%s'", fnm)
 		return nil
 	} else {
 		return err
@@ -70,7 +70,7 @@ func withTmpl(resDir, tmpl, lang string, do func(filename string) error) error {
 }
 
 func loadTemplate(resDir, tmpl, lang string) map[string]*gxc.Template {
-	log.Logf(l.Debug, "load template '%s' (%s) from '%s'", tmpl, lang, resDir)
+	log.Logf(l.Ldebug, "load template '%s' (%s) from '%s'", tmpl, lang, resDir)
 	res := make(map[string]*gxc.Template)
 	tpars := gxw.NewParser()
 	tpars.PrepLine = strings.TrimSpace

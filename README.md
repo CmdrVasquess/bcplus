@@ -3,7 +3,7 @@ HTML/CSS/JS can do! Web frontend definitley needs better structure.
 Don't know when I will rework the thing for a good (which? … maybe
 [vue.js](https://vuejs.org/)) web framework.
 
-![Logo](res/s/img/ico/logo64.png)
+![Logo](res/s/img/Logo.png)
 # BoardComputer+ for E:D
 
 [Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases) –

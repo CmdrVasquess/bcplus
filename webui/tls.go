@@ -18,7 +18,7 @@ import (
 )
 
 func newTLSCert(dir, commonName string) (err error) {
-	log.Logf(l.Info, "create new TLS certificate in '%s'", dir)
+	log.Logf(l.Linfo, "create new TLS certificate in '%s'", dir)
 	pKey, err := ecdsa.GenerateKey(elliptic.P384(), crand.Reader)
 	if err != nil {
 		return err

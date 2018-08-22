@@ -61,7 +61,7 @@ const (
 func jstatRead(file string) (ggja.GenObj, error) {
 	f, err := os.Open(file)
 	if err != nil {
-		log.Logf(l.Error, "cannot open stat file '%s': %s", file, err)
+		log.Logf(l.Lerror, "cannot open stat file '%s': %s", file, err)
 		return nil, err
 	}
 	defer f.Close()
@@ -69,7 +69,7 @@ func jstatRead(file string) (ggja.GenObj, error) {
 	dec := json.NewDecoder(f)
 	err = dec.Decode(&res)
 	if err != nil {
-		log.Logf(l.Error, "cannot parse stat file '%s': %s", file, err)
+		log.Logf(l.Lerror, "cannot parse stat file '%s': %s", file, err)
 		return nil, err
 	}
 	return res, nil
@@ -96,7 +96,7 @@ func jstatStatus(statFile string) {
 	}
 	// TODO remove logging when enough records collected
 	jStr, _ := json.Marshal(jStat)
-	log.Logf(l.Trace, "Status.json: %s", string(jStr))
+	log.Logf(l.Ltrace, "Status.json: %s", string(jStr))
 	if theCmdr != nil {
 		stateLock.Lock()
 		defer stateLock.Unlock()

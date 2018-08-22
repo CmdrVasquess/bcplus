@@ -63,6 +63,7 @@ type Rank struct {
 
 type State struct {
 	Name        string
+	Scrambled   string
 	Creds, Loan int64
 	Ranks       struct {
 		Combat, Trade, Explore, CQC, Imps, Feds Rank
@@ -70,7 +71,8 @@ type State struct {
 	Rep struct {
 		Imps, Feds, Allis float32
 	}
-	MinorRep    map[string]int `json:",omitempty"`
+	MinorRep   map[string]float32  `json:",omitempty"`
+	Missions   map[uint32]*Mission `json:",omitempty"`
 	JStatFlags uint32
 	Loc, Home  Location
 	InShip     int
@@ -89,7 +91,7 @@ func NewState(init *State) *State {
 	if init == nil {
 		init = new(State)
 	}
-	init.MinorRep = make(map[string]int)
+	init.MinorRep = make(map[string]float32)
 	init.Ships = make(map[int]*Ship)
 	init.Mats = make(map[Material]*MatState)
 	init.RcpDmnd = make(map[RcpDef]int)
@@ -97,7 +99,7 @@ func NewState(init *State) *State {
 }
 
 func (s *State) Save(filename string) error {
-	log.Logf(l.Info, "save commander state to '%s'", filename)
+	log.Logf(l.Linfo, "save commander state to '%s'", filename)
 	tmpnm := filename + "~"
 	f, err := os.Create(tmpnm)
 	if err != nil {
@@ -125,7 +127,7 @@ func (s *State) Save(filename string) error {
 }
 
 func (s *State) Load(filename string) error {
-	log.Logf(l.Info, "load commander state from '%s'", filename)
+	log.Logf(l.Linfo, "load commander state from '%s'", filename)
 	f, err := os.Open(filename)
 	if err != nil {
 		return err

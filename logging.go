@@ -30,8 +30,8 @@ func init() {
 
 func flagLogLevel() {
 	if logVV {
-		log.SetLevel(qblog.Trace)
+		log.SetLevel(qblog.Ltrace)
 	} else if logV {
-		log.SetLevel(qblog.Debug)
+		log.SetLevel(qblog.Ldebug)
 	}
 }

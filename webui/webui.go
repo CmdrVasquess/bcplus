@@ -58,7 +58,7 @@ func offlineFilter(
 }
 
 func Run(init *Init) {
-	log.Log(l.Info, "Initialize Web UI…")
+	log.Log(l.Linfo, "Initialize Web UI…")
 	init.configure()
 	loadTemplates(init.ResourceDir, init.Lang, init.BCpVersion)
 	err := mustTLSCert(init.DataDir, init.CommonName)
@@ -82,11 +82,11 @@ func Run(init *Init) {
 	if err != nil {
 		log.Panic(err)
 	} else {
-		log.Log(l.Info, "Local Web UI address:")
-		log.Logf(l.Info, "\thttps://localhost:%d/", init.Port)
-		log.Log(l.Info, "This host's addresses to connect to Web UI from remote:")
+		log.Log(l.Linfo, "Local Web UI address:")
+		log.Logf(l.Linfo, "\thttps://localhost:%d/", init.Port)
+		log.Log(l.Linfo, "This host's addresses to connect to Web UI from remote:")
 		for _, addr := range addls {
-			log.Logf(l.Info, "\thttps://%s:%d/", addr, init.Port)
+			log.Logf(l.Linfo, "\thttps://%s:%d/", addr, init.Port)
 		}
 	}
 }

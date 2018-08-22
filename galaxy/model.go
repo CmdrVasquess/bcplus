@@ -49,7 +49,7 @@ func NewRepo(dbFile string) (res *Repo, err error) {
 	if len(dbFile) == 0 {
 		log.Fatal("galaxy repo created with empty dbConnect string")
 	}
-	log.Logf(l.Info, "galaxy repo connecting to DB: '%s'", dbFile)
+	log.Logf(l.Linfo, "galaxy repo connecting to DB: '%s'", dbFile)
 	_, notExists := os.Stat(dbFile)
 	if !os.IsNotExist(notExists) {
 		notExists = nil
@@ -92,7 +92,7 @@ func (rpo *Repo) Close() {
 	if rpo.db != nil {
 		err := rpo.db.Close()
 		if err != nil {
-			log.Log(l.Error, err)
+			log.Log(l.Lerror, err)
 		}
 		rpo.db = nil
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
 	"flag"
@@ -20,6 +19,7 @@ import (
 	"github.com/CmdrVasquess/BCplus/webui"
 	eddn "github.com/CmdrVasquess/goEDDNc"
 	"github.com/CmdrVasquess/watched"
+	"github.com/gofrs/uuid"
 )
 
 //go:generate versioner -bno build_no -p BCp -t Date ./VERSION ./version.go
@@ -68,7 +68,7 @@ func stateFileName() string {
 }
 
 func (s *State) Save(filename string) error {
-	log.Logf(l.Info, "save BC+ state to '%s'", filename)
+	log.Logf(l.Linfo, "save BC+ state to '%s'", filename)
 	tmpnm := filename + "~"
 	f, err := os.Create(tmpnm)
 	if err != nil {
@@ -96,11 +96,11 @@ func (s *State) Save(filename string) error {
 }
 
 func (s *State) Load(filename string) error {
-	log.Logf(l.Info, "load BC+ state from '%s'", filename)
+	log.Logf(l.Linfo, "load BC+ state from '%s'", filename)
 	f, err := os.Open(filename)
 	if os.IsNotExist(err) {
 		s.Clear()
-		log.Logf(l.Warn, "BC+ state '%s' not exists", filename)
+		log.Logf(l.Lwarn, "BC+ state '%s' not exists", filename)
 		return nil
 	} else if err != nil {
 		return err
@@ -118,9 +118,9 @@ type bcpEvent struct {
 }
 
 func eventLoop() {
-	log.Log(l.Info, "running bc+ event loop…")
+	log.Log(l.Linfo, "running bc+ event loop…")
 	for evt := range bcpEventQ {
-		log.Logf(l.Trace, "bc+ event from '%c': %v", evt.source, evt.data)
+		log.Logf(l.Ltrace, "bc+ event from '%c': %v", evt.source, evt.data)
 		switch evt.source {
 		case watched.EscrJournal:
 			journalEvent(evt.data.([]byte))
@@ -156,7 +156,7 @@ func openGalaxy() *galaxy.Repo {
 	res, err := galaxy.NewRepo(filepath.Join(flagDDir, "galaxy.db"))
 	if os.IsNotExist(err) {
 		fnm := resFile("galaxy/create-sqlite.sql")
-		log.Logf(l.Info, "init galaxy DB from '%s'", fnm)
+		log.Logf(l.Linfo, "init galaxy DB from '%s'", fnm)
 		err := res.RunSql(fnm)
 		if err != nil {
 			log.Panic(err)
@@ -166,23 +166,23 @@ func openGalaxy() *galaxy.Repo {
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Logf(l.Info, "galaxy DB version: %d", gxyv)
+	log.Logf(l.Linfo, "galaxy DB version: %d", gxyv)
 	return res
 }
 
 func cmdrDir(name string) string {
 	if len(name) == 0 {
-		log.Log(l.Warn, "empty commander name for directory")
+		log.Log(l.Lwarn, "empty commander name for directory")
 		name = "_anonymous_"
 	} else {
 		name = strings.Replace(name, " ", "_", -1)
 	}
 	res := filepath.Join(flagDDir, name)
 	if _, err := os.Stat(res); os.IsNotExist(err) {
-		log.Logf(l.Debug, "create commander dir '%s'", res)
+		log.Logf(l.Ldebug, "create commander dir '%s'", res)
 		err = os.Mkdir(res, 0777)
 		if err != nil {
-			log.Logf(l.Warn, "cannot create commander dir '%s'", res)
+			log.Logf(l.Lwarn, "cannot create commander dir '%s'", res)
 		}
 	}
 	return res
@@ -209,7 +209,7 @@ func switchToCommander(name string) {
 		}
 		err := theCmdr.Save(cmdrFile(theCmdr.Name, cmdrState))
 		if err != nil {
-			log.Log(l.Error, "error while saving commander state:", err)
+			log.Log(l.Lerror, "error while saving commander state:", err)
 		}
 		bcpState.Commanders[theCmdr.Name] = bcpState.LastEDEvent
 	}
@@ -221,9 +221,13 @@ func switchToCommander(name string) {
 			theCmdr.Name = name
 			err = nil
 		} else if err != nil {
-			log.Logf(l.Error, "cannot switch to commander '%s': %s", name, err)
+			log.Logf(l.Lerror, "cannot switch to commander '%s': %s", name, err)
 			theCmdr = nil
 			return
+		}
+		if len(theCmdr.Scrambled) == 0 {
+			anon, _ := uuid.NewV4() // TODO what to do on error?
+			theCmdr.Scrambled = base64.RawURLEncoding.EncodeToString(anon.Bytes())
 		}
 		flagCheckEddn()
 		bcpState.Commanders[theCmdr.Name] = bcpState.LastEDEvent
@@ -232,11 +236,7 @@ func switchToCommander(name string) {
 		case "cmdr":
 			upldr = theCmdr.Name
 		case "scramble", "test":
-			md5sum := md5.Sum([]byte(theCmdr.Name))
-			upldr = base64.StdEncoding.
-				WithPadding(base64.NoPadding).
-				EncodeToString(md5sum[:])
-			upldr = "Src" + upldr
+			upldr = theCmdr.Scrambled
 		case "anon":
 			upldr = "anonymous"
 		default:
@@ -250,15 +250,15 @@ func switchToCommander(name string) {
 		theEddn.Header.SwName = appNameShort
 		theEddn.Header.SwVersion = vstr
 		if err != nil {
-			log.Log(l.Warn, "EDDN connect failed:", err)
+			log.Log(l.Lwarn, "EDDN connect failed:", err)
 			theEddn = nil
 		} else {
-			log.Logf(l.Info, "connected to EDDN as %s / %s / %s", upldr, appNameShort, vstr)
+			log.Logf(l.Linfo, "connected to EDDN as %s / %s / %s", upldr, appNameShort, vstr)
 		}
 	} else {
 		theCmdr = nil
 		theEddn = nil
-		log.Log(l.Info, "disconnected from EDDN")
+		log.Log(l.Linfo, "disconnected from EDDN")
 	}
 }
 
@@ -316,7 +316,13 @@ func main() {
 	fmt.Println(appDesc)
 	flag.StringVar(&flagJDir, "j", defaultJournalDir(), "Game directory with journal files")
 	flag.StringVar(&flagDDir, "d", defaultDataDir(), appNameShort+" data directory")
-	flag.StringVar(&flagEddn, "eddn", "", "Send to EDDN {off, anon, scramble, cmdr, test}")
+	flag.StringVar(&flagEddn, "eddn", "",
+		`Send events to EDDN. Select one of:
+- off     : dont send data to EDDN
+- anon    : send as 'anonymous'
+- scramble: send as a unique, persistent id not derived from commander name
+- cmdr    : send with commander name
+- test    : send to test schema with scrambled uploader`)
 	flag.UintVar(&flagWuiPort, "p", 1337, "port number for the web ui")
 	flag.StringVar(&flagMacros, "macros", "", "use macro file")
 	flag.BoolVar(&logV, "v", false, "Log verbose (aka debug level)")
@@ -326,7 +332,7 @@ func main() {
 	flagLogLevel()
 	flagCheckEddn()
 	var err error
-	log.Logf(l.Debug, "BC+ root: '%s'", bcpRoot)
+	log.Logf(l.Ldebug, "BC+ root: '%s'", bcpRoot)
 	bcpState.Load(stateFileName())
 	bcpState.Version.Major = BCpMajor
 	bcpState.Version.Minor = BCpMinor
@@ -352,18 +358,18 @@ func main() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 	<-signals
-	log.Log(l.Info, "BC+ interrupted with Ctrl-C, shutting down…")
-	log.Log(l.Info, "closing galaxy repo")
+	log.Log(l.Linfo, "BC+ interrupted with Ctrl-C, shutting down…")
+	log.Log(l.Linfo, "closing galaxy repo")
 	theGalaxy.Close()
 	if theCmdr != nil {
 		err = theCmdr.Save(cmdrFile(theCmdr.Name, cmdrState))
 		if err != nil {
-			log.Log(l.Error, "error while saving commander state:", err)
+			log.Log(l.Lerror, "error while saving commander state:", err)
 		}
 	}
 	err = bcpState.Save(stateFileName())
 	if err != nil {
-		log.Log(l.Error, "error while saving BC+ state:", err)
+		log.Log(l.Lerror, "error while saving BC+ state:", err)
 	}
-	log.Log(l.Info, "Fly safe commander! o7")
+	log.Log(l.Linfo, "Fly safe commander! o7")
 }
