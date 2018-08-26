@@ -1,0 +1,37 @@
+[source event flags-mask flags-value macro]
+\(State flags for event filtering:
+  | Hex      | Meaning                     |
+  |----------+-----------------------------|
+  | 00000001 | Docked, (on a landing pad)  |
+  | 00000002 | Landed, (on planet surface) |
+  | 00000004 | Landing Gear Down           |
+  | 00000008 | Shields Up                  |
+  | 00000010 | Supercruise                 |
+  | 00000020 | FlightAssist Off            |
+  | 00000040 | Hardpoints Deployed         |
+  | 00000080 | In Wing                     |
+  | 00000100 | LightsOn                    |
+  | 00000200 | Cargo Scoop Deployed        |
+  | 00000400 | Silent Running,             |
+  | 00000800 | Scooping Fuel               |
+  | 00001000 | Srv Handbrake               |
+  | 00002000 | Srv Turret                  |
+  | 00004000 | Srv UnderShip               |
+  | 00008000 | Srv DriveAssist             |
+  | 00010000 | Fsd MassLocked              |
+  | 00020000 | Fsd Charging                |
+  | 00040000 | Fsd Cooldown                |
+  | 00080000 | Low Fuel ( < 25% )          |
+  | 00100000 | Over Heating ( > 100% )     |
+  | 00200000 | Has Lat Long                |
+  | 00400000 | IsInDanger                  |
+  | 00800000 | Being Interdicted           |
+  | 01000000 | In MainShip                 |
+  | 02000000 | In Fighter                  |
+  | 04000000 | In SRV                      |)
+\(next line will tap INS for docking events, i.e. toggle lights when using
+  standard controls)
+(j DockingGranted 00000500 00000000 [(insert)])
+(j DockingCancelled 00000100 00000100 [(insert)])
+(j DockingTimeout 00000100 00000100 [(insert)])
+(j Docked 00000100 00000100 [(insert)])

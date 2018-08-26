@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+ &lt;version&gt;: –offline–</title>
+    <link rel="icon" href="s/img/logo.ico">
+    <link rel="stylesheet" href="s/css/bcp.css">
+    <script src="s/js/wsock.js"></script>
+<!-- >>> head >>> -->
+    <script src="s/js/vue.js"></script>
+<!-- <<< head <<< -->
+  </head>
+  <body>
+<!-- >>> body >>> -->
+    <header style="display:block;" class="center">
+      CMDR {{hdr.Cmdr}} ∙ {{hdr.Ship.Type}}
+      <span v-if="hdr.Ship.Name">"{{hdr.Ship.Name}}"</span>
+      <span v-if="hdr.Ship.Ident">{{hdr.Ship.Ident}}</span>
+      ∙ {{hdr.System.Name}}
+      <span style="color:var(--colTxtDim)" v-if="hdr.Home">⤚{{distHome}}→
+      <img class="picgrm" src="s/img/Home.png" alt="Home"> {{hdr.Home.Name}}</span>
+    </header>
+    <nav>
+      <ul>
+<!-- >>> topics <<< \-->
+<!-- >>> other-topic >>> -->
+        <li><a href="`path`">`title`</a></li>
+
+<!-- <<< other-topic <<< \-->
+<!-- >>> current-topic >>> -->
+        <li class="current">`title`</li>
+
+<!-- <<< current-topic <<< \-->
+        <li style="float:right"><a href="/settings"><img class="picgrm" src="s/img/Menu.png" alt="Settiings"></a></li>
+      </ul>
+    </nav>
+    <main>
+<!-- >>> main <<< -->
+    </main>
+    <script>
+var store = {
+  state: {
+    hdr: `header-data`,
+    topic: null
+  }
+}
+
+var header = new Vue({
+  el: "header",
+  data: store.state,
+  computed: {
+    distHome: function() {
+      var hcoos = this.hdr.Home.Coos;
+      var scoos = this.hdr.System.Coos;
+      var dx = hcoos[0]-scoos[0], dy = hcoos[1]-scoos[1], dz = hcoos[2]-scoos[2];
+      var d = Math.sqrt(dx*dx+dy*dy+dz*dz).toFixed(1);
+      return d; /*d.toLocaleString("de-DE");*/
+    }
+  }
+})
+    </script>
+
+<!-- <<< body <<< -->
+  </body>
+</html>

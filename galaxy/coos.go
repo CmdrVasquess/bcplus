@@ -14,6 +14,12 @@ const (
 	Zk = 2
 )
 
+var NaV3D Vec3D
+
+func init() {
+	V3dSet1(&NaV3D, math.NaN())
+}
+
 func V3dSet(v *Vec3D, x, y, z float64) {
 	v[Xk] = x
 	v[Yk] = y

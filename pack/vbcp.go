@@ -6,5 +6,5 @@ const (
 	BCpBugfix = 6
 	BCpQuality = "dev"
 	BCpBuildNo = 16
-	BCpDate = "2018-08-26T11:25:12+02:00"
+	BCpDate = "2018-08-26T11:25:13+02:00"
 )

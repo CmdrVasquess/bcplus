@@ -1,4 +1,5 @@
 major=0
-minor=5
-bugfix=2
+minor=7
+bugfix=6
 quality="dev"
+build_no=16

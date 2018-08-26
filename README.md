@@ -3,10 +3,7 @@ HTML/CSS/JS can do! Web frontend definitley needs better structure.
 Don't know when I will rework the thing for a good (which? … maybe
 [vue.js](https://vuejs.org/)) web framework.
 
-…rewriting the thing on branch ng/master – feature set will probably
-change!
-
-![Logo](bcplus.d/s/img/Logo.png)
+![Logo](res/s/img/Logo.png)
 # BoardComputer+ for E:D
 
 [Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases) –
@@ -77,7 +74,7 @@ package. So be prepared to start options with '-' not '/'.
 ## Credits
 
 1. Thanks to the [GO](https://golang.org) community to provide such a nice
-   programming environment (BC+ primarily exists because I needed a project
+   programming environment (BC+ primarily exists because I neede a project
    to learn GO).
 
 2. Frontier Development for the nice game.

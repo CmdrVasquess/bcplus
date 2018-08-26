@@ -1,5 +1,15 @@
 package main
 
+// Macro Syntax is based on XSX:
+//
+// Macro is an XSX seqeunce with elements:
+// - Quote atom: Type as string
+// - Unquoted atom: tab key
+// - ([up|down|tap] <robotgo-key> [<robodgo-mods>...]): play key
+//   https://github.com/go-vgo/robotgo/blob/master/docs/keys.md
+// - {<robotgo-mouse>}: play mouse
+// - [<tagret> <macro>]: play 2 proc
+
 import (
 	"bufio"
 	"os"
@@ -17,7 +27,7 @@ import (
 )
 
 func init() {
-	glog.Logf(l.Info, "set keyboad delay to 50ms")
+	log.Logf(l.Linfo, "set keyboad delay to 50ms")
 	robi.SetKeyDelay(50)
 }
 
@@ -153,27 +163,28 @@ const (
 )
 
 type Macro struct {
-	Active bool
-	Seq    *gem.Sequence
+	fMask, fVal uint32
+	seq         *gem.Sequence
 }
 
 var jMacros = make(map[string]*Macro)
 var macroPause = 50 * time.Millisecond
 
 const (
-	MCR_COLNM_SRC = "source"
-	MCR_COLNM_EVT = "event"
-	MCR_COLNM_ATV = "active"
-	MCR_COLNM_MCR = "macro"
+	MCR_COLNM_SRC  = "source"
+	MCR_COLNM_EVT  = "event"
+	MCR_COLNM_FMSK = "flags-mask"
+	MCR_COLNM_FVAL = "flags-value"
+	MCR_COLNM_MCR  = "macro"
 )
 
 // TODO error handling
 func saveMacros(toFileName string) {
-	glog.Logf(l.Info, "save macros to %s", toFileName)
+	log.Logf(l.Linfo, "save macros to %s", toFileName)
 	tmpfn := toFileName + "~"
 	wr, err := os.Create(tmpfn)
 	if err != nil {
-		glog.Logf(l.Error, "failed to save macros to '%s'", tmpfn)
+		log.Logf(l.Lerror, "failed to save macros to '%s'", tmpfn)
 		return
 	}
 	defer func() {
@@ -184,7 +195,7 @@ func saveMacros(toFileName string) {
 	xwr := xsx.Indenting(wr, "\t")
 	xsx.Print(xwr,
 		xsx.B('['),
-		MCR_COLNM_SRC, MCR_COLNM_EVT, MCR_COLNM_ATV, MCR_COLNM_MCR,
+		MCR_COLNM_SRC, MCR_COLNM_EVT, MCR_COLNM_FMSK, MCR_COLNM_FVAL, MCR_COLNM_MCR,
 		xsx.End)
 	xwr.Newline(1, 0)
 	evtSort := make([]string, 0, len(jMacros))
@@ -197,12 +208,9 @@ func saveMacros(toFileName string) {
 		xwr.Begin('(', false)
 		xwr.Atom("j", false, xsx.Qcond)
 		xwr.Atom(eNm, false, xsx.Qcond)
-		if e.Active {
-			xwr.Atom("true", false, xsx.QSUPPRESS)
-		} else {
-			xwr.Atom("false", false, xsx.QSUPPRESS)
-		}
-		gem.Print(xwr, e.Seq)
+		xwr.Atom(strconv.FormatUint(uint64(e.fMask), 16), false, xsx.QSUPPRESS)
+		xwr.Atom(strconv.FormatUint(uint64(e.fVal), 16), false, xsx.QSUPPRESS)
+		gem.Print(xwr, e.seq)
 		xwr.End()
 		xwr.Newline(1, 0)
 	}
@@ -214,60 +222,75 @@ func saveMacros(toFileName string) {
 func loadMacros(defFileName string) {
 	def, err := os.Open(defFileName)
 	if err != nil {
-		glog.Logf(l.Warn, "cannot read macros: %s", err.Error())
+		log.Logf(l.Lwarn, "cannot read macros: %s", err.Error())
 		return
 	}
 	defer def.Close()
 	xpp := xsx.NewPullParser(bufio.NewReader(def))
 	tDef, err := table.ReadDef(xpp)
 	if err != nil {
-		glog.Logf(l.Error, "macro file: %s", err.Error())
+		log.Logf(l.Lerror, "macro file: %s", err.Error())
 		return
 	}
 	colSrc := tDef.ColIndex(MCR_COLNM_SRC)
 	if colSrc < 0 {
-		glog.Log(l.Error, "macro definition has no column 'source'")
+		log.Log(l.Lerror, "macro definition has no column 'source'")
 		return
 	}
 	colEvt := tDef.ColIndex(MCR_COLNM_EVT)
 	if colEvt < 0 {
-		glog.Log(l.Error, "macro definition has no column 'event'")
+		log.Log(l.Lerror, "macro definition has no column 'event'")
 		return
 	}
-	colAtv := tDef.ColIndex(MCR_COLNM_ATV)
-	if colAtv < 0 {
-		glog.Log(l.Error, "macro definition has no column 'active'")
+	colFMask := tDef.ColIndex(MCR_COLNM_FMSK)
+	if colFMask < 0 {
+		log.Log(l.Lerror, "macro definition has no column 'flags-mask'")
+		return
+	}
+	colFVal := tDef.ColIndex(MCR_COLNM_FVAL)
+	if colFVal < 0 {
+		log.Log(l.Lerror, "macro definition has no column 'flags-value'")
 		return
 	}
 	colMcr := tDef.ColIndex(MCR_COLNM_MCR)
 	if colMcr < 0 {
-		glog.Log(l.Error, "macro definition has no column 'macro'")
+		log.Log(l.Lerror, "macro definition has no column 'macro'")
 		return
 	}
 	actvNo := 0
 	for row, err := tDef.NextRow(xpp, nil); row != nil; row, err = tDef.NextRow(xpp, row) {
 		if err != nil {
-			glog.Logf(l.Error, "macro row: %s", err.Error())
+			log.Logf(l.Lerror, "macro row: %s", err.Error())
 			return
 		}
 		switch row[colSrc].(*gem.Atom).Str {
 		case "j":
 			evtNm := row[colEvt].(*gem.Atom).Str
-			active, _ := strconv.ParseBool(row[colAtv].(*gem.Atom).Str)
-			macro := &Macro{
-				Active: active,
-				Seq:    row[colMcr].(*gem.Sequence),
+			fMask, err := strconv.ParseUint(row[colFMask].(*gem.Atom).Str, 16, 32)
+			if err != nil {
+				log.Logf(l.Lerror, "invalid state flags mask: %s", err.Error())
+				return
 			}
-			if active {
+			fVal, err := strconv.ParseUint(row[colFVal].(*gem.Atom).Str, 16, 32)
+			if err != nil {
+				log.Logf(l.Lerror, "invalid state flags value: %s", err.Error())
+				return
+			}
+			macro := &Macro{
+				fMask: uint32(fMask),
+				fVal:  uint32(fVal),
+				seq:   row[colMcr].(*gem.Sequence),
+			}
+			if (^fMask & fVal) == 0 {
 				actvNo++
 			}
 			jMacros[evtNm] = macro
 		default:
-			glog.Logf(l.Warn, "unsupported source for macro event: '%s'",
+			log.Logf(l.Lwarn, "unsupported source for macro event: '%s'",
 				row[0].(*gem.Atom).Str)
 		}
 	}
-	glog.Logf(l.Info, "%d journal macros loaded, %d active", len(jMacros), actvNo)
+	log.Logf(l.Linfo, "%d journal macros loaded, %d active", len(jMacros), actvNo)
 }
 
 func playMacro(m *gem.Sequence, hint string) {
@@ -275,15 +298,15 @@ func playMacro(m *gem.Sequence, hint string) {
 		switch s := step.(type) {
 		case *gem.Atom:
 			if s.Quoted() {
-				glog.Logf(l.Trace, "macro '%s' type string \"%s\"", hint, s.Str)
+				log.Logf(l.Ltrace, "macro '%s' type string \"%s\"", hint, s.Str)
 				robi.TypeStr(s.Str)
 			} else {
-				glog.Logf(l.Trace, "macro '%s' tab key %s", hint, s.Str)
+				log.Logf(l.Ltrace, "macro '%s' tab key %s", hint, s.Str)
 				robi.KeyTap(s.Str)
 			}
 		case *gem.Sequence:
 			if s.Meta() {
-				glog.Logf(l.Warn, "macro  '%s' has meta sequence", hint)
+				log.Logf(l.Lwarn, "macro  '%s' has meta sequence", hint)
 			} else {
 				switch s.Brace() {
 				case '(':
@@ -295,7 +318,7 @@ func playMacro(m *gem.Sequence, hint string) {
 				}
 			}
 		default:
-			glog.Logf(l.Warn, "macro '%s': unhandled element type: %s",
+			log.Logf(l.Lwarn, "macro '%s': unhandled element type: %s",
 				hint,
 				reflect.TypeOf(step))
 		}
@@ -305,7 +328,7 @@ func playMacro(m *gem.Sequence, hint string) {
 
 func playKey(m *gem.Sequence, hint string) {
 	if len(m.Elems) == 0 {
-		glog.Logf(l.Warn,
+		log.Logf(l.Lwarn,
 			"empty key sequence in macro '%s'",
 			hint)
 		return
@@ -325,14 +348,14 @@ func playKey(m *gem.Sequence, hint string) {
 		case "tap":
 			action = 0
 		default:
-			glog.Logf(l.Error,
+			log.Logf(l.Lerror,
 				"unknown key action '%s' in macro '%s'",
 				e.Str,
 				hint)
 			return
 		}
 		if len(m.Elems) < 2 {
-			glog.Logf(l.Error,
+			log.Logf(l.Lerror,
 				"missing key spec in key sequence of macro '%s'",
 				hint)
 		}
@@ -388,7 +411,7 @@ func playMouse(m *gem.Sequence, hint string) {
 			dir := m.Elems[ip].(*gem.Atom).Str
 			robi.ScrollMouse(int(count), dir)
 		default:
-			glog.Logf(l.Error,
+			log.Logf(l.Lerror,
 				"unknown mouse action: '%s'",
 				m.Elems[ip].(*gem.Atom).Str)
 		}
@@ -423,8 +446,14 @@ func mouseCoos(xStr, yStr string) (x int, y int) {
 			y = int(tmp)
 		}
 	} else {
-		px, _ := strconv.ParseInt(xStr, 10, 32) // TODO error
-		py, _ := strconv.ParseInt(yStr, 10, 32) // TODO error
+		px, err := strconv.ParseInt(xStr, 10, 32)
+		if err != nil {
+			log.Logf(l.Lerror, "parse mouse x-coo '%s'", xStr)
+		}
+		py, err := strconv.ParseInt(yStr, 10, 32)
+		if err != nil {
+			log.Logf(l.Lerror, "parse mouse y-coo '%s'", yStr)
+		}
 		x = int(px)
 		y = int(py)
 	}
@@ -442,7 +471,7 @@ func mouseButton(which string, action string) {
 	case "up":
 		robi.MouseToggle("up", which)
 	default:
-		glog.Logf(l.Error,
+		log.Logf(l.Lerror,
 			"unknown mouse-button action: '%s'",
 			action)
 	}
@@ -452,11 +481,11 @@ func play2Proc(s *gem.Sequence, hint string) {
 	if len(s.Elems) > 0 {
 		// TODO: switching seems to not yet work?
 		procNm := s.Elems[0].(*gem.Atom).Str
-		glog.Logf(l.Debug, "macro switch to process '%s'", procNm)
+		log.Logf(l.Ldebug, "macro switch to process '%s'", procNm)
 		current := robi.GetActive()
 		robi.ActiveName(procNm)
 		defer func() {
-			glog.Logf(l.Debug, "macro switch back from '%s'", procNm)
+			log.Logf(l.Ldebug, "macro switch back from '%s'", procNm)
 			robi.SetActive(current)
 		}()
 		rest := gem.Sequence{}
@@ -465,10 +494,13 @@ func play2Proc(s *gem.Sequence, hint string) {
 	}
 }
 
-func jEventMacro(evtName string) {
+func jEventMacro(evtName string, jFlags uint32) {
 	macro, ok := jMacros[evtName]
-	if ok && macro.Active {
-		glog.Logf(l.Debug, "play journal event macro: %s", evtName)
-		go playMacro(macro.Seq, evtName)
+	if ok {
+		jFlags &= macro.fMask
+		if jFlags == macro.fVal {
+			log.Logf(l.Ldebug, "play journal event macro: %s", evtName)
+			go playMacro(macro.seq, evtName)
+		}
 	}
 }

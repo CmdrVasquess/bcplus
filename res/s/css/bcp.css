@@ -1,0 +1,63 @@
+:root {
+  --colBkg: black;
+  --colFgr: #FF7000;
+  --colFgrDim: #D25C00;
+  --colTxt: #FF7000;
+  --colTxtDim: #D25C00;
+  --colGud: #00A6EA;
+  --calBad: ##FD0406;
+/*
+  --colBkg: white;
+  --colFgr: black;
+  --colFgrDim: grey;
+  --colTxt: black;
+  --colTxtDim: grey;
+  --colGud: #00A6EA;
+  --calBad: ##FD0406;
+*/
+}
+.left {	text-align: left; }
+.center {	text-align: center; }
+.right { text-align: right; }
+img.picgrm {
+  height: 1em;
+  vertical-align: text-top;
+}
+body {
+  background-color: var(--colBkg);
+	font-family: sans-serif;
+  color: var(--colTxt);
+}
+h1 { font-size: 150%; }
+h2 { font-size: 116%; }
+h3 { font-size: 108%; }
+header {
+  font-size: 140%;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-bottom: 2px solid var(--colFgrDim);
+}
+nav li {
+  float: left;
+  display: block;
+  text-align: center;
+  padding: .4em 1em;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+nav li.current {
+  background-color: var(--colFgrDim);
+  color: var(--colBkg);
+}
+nav li a {
+  color: var(--colFgrDim);
+  text-decoration: none;
+}
+nav li:hover:not(.current) { background-color: var(--colFgrDim); }
+nav li:hover a { color: var(--colBkg); }

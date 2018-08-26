@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+ &lt;version&gt;: System Population</title>
+    <link rel="icon" href="s/img/logo.ico">
+    <link rel="stylesheet" href="s/css/bcp.css">
+    <script src="s/js/wsock.js"></script>
+    <script src="s/js/vue.js"></script>
+  </head>
+  <body>
+    <template>
+<!-- >>> title >>> -->
+System Population
+<!-- <<< title <<< -->
+<!-- >>> nav-name >>> -->
+Population
+<!-- <<< nav-name <<< -->
+    </template>
+    <header style="display:block;" class="center">
+      CMDR {{cmdr}} ∙ {{ship.type}} "{{ship.name}}" {{ship.id}} ∙ {{system.name}}
+      <span style="color:var(--colTxtDim)" v-if="home">⤚{{distHome}}→
+      <img class="picgrm" src="s/img/Home.png" alt="Home"> {{home.name}}</span>
+ 	  </header>
+    <nav>
+      <ul>
+        <li><a href="#">System</a></li>
+        <li class="current">Population</li>
+        <li><a href="#">Travel</a></li>
+        <li style="float:right"><a href="#"><img class="picgrm" src="s/img/Menu.png" alt="Settiings"></a></li>
+      </ul>
+    </nav>
+ 	  <main>
+<!-- >>> main >>> -->
+      <h1 class="center"><img class="picgrm" src="s/img/notHome.png" alt="Home"> Galam
+        ∙ Patronage
+        ∙ <img class="picgrm" src="s/img/fctn/imps.png" alt="Empire"> Empire
+        ∙ Medium Security</h1>
+      Population: 161249<br>
+      Economy: Refinery, Extraction<br>
+      Powerplay: –
+      <h2>Minor Factions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Faction</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <img class="picgrm" src="s/img/crown.png" alt="Controlling">
+              <img class="picgrm" src="s/img/fctn/imps.png" alt="Empire"></td>
+            <td>Vivates Empire Party</td>
+          </tr>
+        </tbody>
+      </table>
+<!-- <<< main <<< -->
+    </main>
+    <script>
+var store = {
+  state: {
+    cmdr: "Jameson",
+    ship: { type: "Cobra MkIII", id: "JS-AS4", name: "Hope & Glory" },
+    system: { name: "Galam", coos: [2.71, -123.96, -65.46] },
+    home: { name: "Lave", coos: [75.75, 48.75, 70.75] }
+  }
+}
+var header = new Vue({
+  el: "header",
+  data: store.state,
+  computed: {
+    distHome: function() {
+      var hcoos = this.home.coos;
+      var scoos = this.system.coos;
+      var dx = hcoos[0]-scoos[0], dy = hcoos[1]-scoos[1], dz = hcoos[2]-scoos[2];
+      var d = Math.sqrt(dx*dx+dy*dy+dz*dz).toFixed(1);
+      return d; /*d.toLocaleString("de-DE");*/
+    }
+  }
+})
+    </script>
+  </body>
+</html>
