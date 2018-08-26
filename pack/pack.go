@@ -53,12 +53,14 @@ func dist() string {
 		must(os.RemoveAll(distDir))
 	}
 	must(os.Mkdir(distDir, 0777))
-	must(pack.CopyToDir(distDir, pack.OsDepExe, "BCplus"))
+	must(pack.CopyToDir(distDir, pack.OsDepExe,
+		"BCplus",
+		"jreplay/jreplay",
+	))
 	must(pack.CopyToDir(distDir, nil,
 		"LICENSE",
 		"README.md",
 		"VERSION",
-		"jreplay/jreplay",
 		"macros-example.xsx",
 	))
 	must(pack.CopyTree(distDir, "res", nil, purgeFilter))

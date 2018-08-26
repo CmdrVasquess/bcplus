@@ -17,9 +17,10 @@
       CMDR {{hdr.Cmdr}} ∙ {{hdr.Ship.Type}}
       <span v-if="hdr.Ship.Name">"{{hdr.Ship.Name}}"</span>
       <span v-if="hdr.Ship.Ident">{{hdr.Ship.Ident}}</span>
-      ∙ {{hdr.System.Name}}
+      ∙ <span class="kbd">{{hdr.System.Name}}</span>
       <span style="color:var(--colTxtDim)" v-if="hdr.Home">⤚{{distHome}}→
-      <img class="picgrm" src="s/img/Home.png" alt="Home"> {{hdr.Home.Name}}</span>
+      <img class="picgrm" src="s/img/Home.png" alt="Home">
+      <span class="kbd">{{hdr.Home.Name}}</span></span>
     </header>
     <nav>
       <ul>

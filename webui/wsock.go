@@ -138,9 +138,9 @@ func (wsc *WsClient) readFrom() {
 		jevt := make(map[string]interface{})
 		err = json.Unmarshal(msg, &jevt)
 		if err != nil {
-			log.Log(l.Lerror, "cannot parse user event", err)
+			log.Error("cannot parse user event", err)
 		} else {
-			panic("Sending user events to main event Q NYI!")
+			log.Errorf("Sending user event (%s) to main event Q NYI!", msg)
 			//eventq <- bcEvent{esrcUsr, jevt}
 		}
 	}

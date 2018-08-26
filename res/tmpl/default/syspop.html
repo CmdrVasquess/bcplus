@@ -19,9 +19,9 @@ Population
 <!-- <<< nav-name <<< -->
     </template>
     <header style="display:block;" class="center">
-      CMDR {{cmdr}} ∙ {{ship.type}} "{{ship.name}}" {{ship.id}} ∙ {{system.name}}
-      <span style="color:var(--colTxtDim)" v-if="home">⤚{{distHome}}→
-      <img class="picgrm" src="s/img/Home.png" alt="Home"> {{home.name}}</span>
+      CMDR Jameson ∙ Cobra MkIII "Home & Glory" JJ-CM3 ∙ <span class="kbd">Galam</span>
+      <span style="color:var(--colTxtDim)" v-if="home">⤚231.8→
+      <img class="picgrm" src="s/img/Home.png" alt="Home"> Lave</span>
  	  </header>
     <nav>
       <ul>
@@ -59,28 +59,5 @@ Population
       </table>
 <!-- <<< main <<< -->
     </main>
-    <script>
-var store = {
-  state: {
-    cmdr: "Jameson",
-    ship: { type: "Cobra MkIII", id: "JS-AS4", name: "Hope & Glory" },
-    system: { name: "Galam", coos: [2.71, -123.96, -65.46] },
-    home: { name: "Lave", coos: [75.75, 48.75, 70.75] }
-  }
-}
-var header = new Vue({
-  el: "header",
-  data: store.state,
-  computed: {
-    distHome: function() {
-      var hcoos = this.home.coos;
-      var scoos = this.system.coos;
-      var dx = hcoos[0]-scoos[0], dy = hcoos[1]-scoos[1], dz = hcoos[2]-scoos[2];
-      var d = Math.sqrt(dx*dx+dy*dy+dz*dz).toFixed(1);
-      return d; /*d.toLocaleString("de-DE");*/
-    }
-  }
-})
-    </script>
   </body>
 </html>
