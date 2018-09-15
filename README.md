@@ -1,3 +1,8 @@
+**Note:** Please do not use the EDDN feature from the current source
+version. This would introduce system names with wrong case into
+EDDN, see [Issue #9](https://github.com/CmdrVasquess/BCplus/issues/9).
+To avoid sending data to EDDN please run BCplus with flag `-eddn off`.
+
 Goal reached: Know Go language and have an overview of what pure 
 HTML/CSS/JS can do! Web frontend definitley needs better structure.
 Don't know when I will rework the thing for a good (which? … maybe
