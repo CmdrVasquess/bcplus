@@ -1,0 +1,3 @@
+res/s/js/vue*.js linguist-vendored
+res/tmpl/en/s/* linguist-vendored
+docs/* linguist-documentation
