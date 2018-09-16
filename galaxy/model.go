@@ -16,13 +16,14 @@ var LogConfig = l.Package(log)
 
 var NaN32 = float32(math.NaN())
 
-func LocalName(systemUp, planet string) string {
-	if len(planet) <= len(systemUp) {
+func LocalName(system, planet string) string {
+	if len(planet) <= len(system) {
 		return planet
 	}
-	pup := strings.ToUpper(planet)
-	if strings.HasPrefix(pup, systemUp) {
-		planet = strings.TrimSpace(pup[len(systemUp):])
+	system = strings.ToLower(system)
+	plo := strings.ToLower(planet)
+	if strings.HasPrefix(plo, system) {
+		planet = strings.TrimSpace(planet[len(system):])
 	}
 	return planet
 }
@@ -158,7 +159,6 @@ func (s *System) LocalName(name string) string {
 }
 
 func (rpo *Repo) PutSystem(sys *System) (*System, error) {
-	sys.Name = strings.ToUpper(sys.Name)
 	var err error
 	xa := rpo.XaBegin()
 	defer xa.Rollback()
@@ -206,7 +206,6 @@ func (rpo *Repo) GetSystem(id int64) (*System, error) {
 }
 
 func (rpo *Repo) FindSystem(name string, reuse *System) (*System, error) {
-	name = strings.ToUpper(name)
 	if res, ok := rpo.chSysNm[name]; ok {
 		return res, nil
 	}
@@ -236,7 +235,7 @@ func (rpo *Repo) MustSystemCoos(name string, x, y, z float64, reuse *System) (*S
 	}
 	if reuse == nil {
 		reuse = &System{
-			Name: strings.ToUpper(name),
+			Name: name,
 			Coos: Vec3D{x, y, z},
 		}
 		_, err = rpo.PutSystem(reuse)
@@ -260,7 +259,7 @@ func (rpo *Repo) MustSystem(name string, reuse *System) (*System, error) {
 	}
 	if reuse == nil {
 		reuse = &System{
-			Name: strings.ToUpper(name),
+			Name: name,
 			Coos: NaV3D,
 		}
 		_, err = rpo.PutSystem(reuse)

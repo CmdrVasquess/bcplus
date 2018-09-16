@@ -43,13 +43,13 @@ func eddnSendErr(err error, msg map[string]interface{}) {
 	}
 }
 
-func eddnSendJournal(upld *eddn.Upload, ts time.Time, e ggja.GenObj, ssys *galaxy.System) {
+func eddnSendJournal(upld *eddn.Upload, ts time.Time, e ggja.Obj, ssys *galaxy.System) {
 	if eddnMode == flagEddnOff || jevtSpooling {
 		return
 	}
 	go func() {
 		jump := eddn.NewMessage(eddn.Ts(ts))
-		err := eddn.SetJournal(jump, e, ssys.Name,
+		err := eddn.SetJournal(jump, e.Bare, ssys.Name,
 			ssys.Coos[galaxy.Xk], ssys.Coos[galaxy.Yk], ssys.Coos[galaxy.Zk],
 			true)
 		if err != nil {

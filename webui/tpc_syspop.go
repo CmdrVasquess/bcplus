@@ -4,18 +4,13 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-
-	gxc "git.fractalqb.de/fractalqb/goxic"
 )
 
 const (
 	tkeySysPop = "syspop"
 )
 
-var gxtSysPop struct {
-	*gxc.Template
-	HeaderData []int
-}
+var gxtSysPop gxtTopic
 
 func tpcSysPop(w http.ResponseWriter, r *http.Request) {
 	var hdr Header
@@ -29,5 +24,6 @@ func tpcSysPop(w http.ResponseWriter, r *http.Request) {
 		}
 		return 1
 	})
+	bt.BindP(gxtSysPop.TopicData, "null")
 	bt.Emit(w)
 }

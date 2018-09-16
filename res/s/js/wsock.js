@@ -1,6 +1,8 @@
 var wsurl = "wss://"+location.hostname+":"+location.port+"/ws";
 var wsock = new WebSocket(wsurl);
 
+function wsUpdate(cmd) {}
+
 function startWs() {
 	// https://www.tutorialspoint.com/html5/html5_websocket.htm
 	// .onerror(err); .onopen; .onmessage(msg); .onclose
@@ -25,7 +27,8 @@ function startWs() {
 			}
 	   	break;
 		case "update":
-			store.state.hdr = cmd.Hdr;
+			wsUpdate(cmd);
+			//store.state.hdr = cmd.Hdr;
 			break;
 	  default:
 	  	console.log('Event: ['+evt.data+']');

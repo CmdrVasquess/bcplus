@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+ &lt;version&gt;: –offline–</title>
+    <link rel="icon" href="s/img/logo.ico">
+    <link rel="stylesheet" href="s/css/bcp.css">
+    <script src="s/js/wsock.js"></script>
+<!-- >>> head >>> -->
+    <script src="s/js/vue.js"></script>
+<!-- >>> head <<< -->
+<!-- <<< head <<< -->
+  </head>
+  <body>
+<!-- >>> body >>> -->
+    <header style="display:block;" class="center">
+      CMDR {{hdr.Cmdr}} ∙ {{hdr.Ship.Type}}
+      <span v-if="hdr.Ship.Name">"{{hdr.Ship.Name}}"</span>
+      <span v-if="hdr.Ship.Ident">{{hdr.Ship.Ident}}</span>
+      ∙ <img v-if="this.atHome" class="picgrm" src="s/img/Home.png" alt="Home"
+             v-on:dblclick="switchHome(false)" style="cursor:pointer">
+        <img v-else class="picgrm" src="s/img/notHome.png" alt="Not Home"
+             v-on:dblclick="switchHome(true)" style="cursor:pointer">
+      <kbd-send v-bind:text="hdr.System.Name"></kbd-send>
+      <span style="color:var(--colTxtDim)" v-if="hdr.Home && !atHome">⤚{{distHome}}→
+      <img class="picgrm" src="s/img/Home.png" alt="Home">
+      <kbd-send v-bind:text="hdr.Home.Name"></kbd-send></span>
+    </header>
+    <nav>
+      <ul>
+<!-- >>> topics <<< \-->
+<!-- >>> other-topic >>> -->
+        <li><a href="`path`">`title`</a></li>
+
+<!-- <<< other-topic <<< \-->
+<!-- >>> current-topic >>> -->
+        <li class="current">`title`</li>
+
+<!-- <<< current-topic <<< \-->
+        <li style="float:right"><a href="/settings"><img class="picgrm" src="s/img/Menu.png" alt="Settiings"></a></li>
+      </ul>
+    </nav>
+    <main>
+<!-- >>> main <<< -->
+    </main>
+    <script>
+var store = {
+  state: {
+    hdr: `header-data`,
+    topic: `topic-data`
+  }
+};
+
+function wsUpdate(cmd) { store.state.hdr = cmd.Hdr; }
+
+Vue.component('kbd-send', {
+  data: function() { return {glows: false}; },
+  props: ['text'],
+  template: '<span class="kbd"\
+              v-bind:class="{glow: glows}"\
+              v-on:click="sendKbd">{{text}}<img src="s/img/Kbd.png"\
+                                            title="Send keyboard input to E:D"\
+                                            alt="kbd"\
+                                            v-on:mouseover="glows=true"\
+                                            v-on:mouseout="glows=false"></span>',
+  methods: {
+    sendKbd: function() {
+      var rq = {cmd: "kbd", txt: this.text};
+      wsock.send(JSON.stringify(rq));
+    }
+  }
+});
+
+var header = new Vue({
+  el: "header",
+  data: store.state,
+  computed: {
+    distHome: function() {
+      var hcoos = this.hdr.Home.Coos;
+      var scoos = this.hdr.System.Coos;
+      var dx = hcoos[0]-scoos[0], dy = hcoos[1]-scoos[1], dz = hcoos[2]-scoos[2];
+      var d = Math.sqrt(dx*dx+dy*dy+dz*dz).toFixed(1);
+      return d; /*d.toLocaleString("de-DE");*/
+    },
+    atHome: function() {
+      return this.hdr.Home && this.hdr.Home.Name == this.hdr.System.Name;
+    }
+  },
+  methods: {
+    switchHome: function(flag) {
+      console.log("Switch Home: ", flag);
+      var rq = {cmd: "switch-home"};
+      if (flag) {
+        this.hdr.Home = this.hdr.System;
+        rq.home = this.hdr.Home;
+      } else {
+        this.hdr.Home = null;
+      }
+      wsock.send(JSON.stringify(rq));
+    }
+  }
+});
+    </script>
+<!-- >>> script <<< -->
+<!-- <<< body <<< -->
+  </body>
+</html>

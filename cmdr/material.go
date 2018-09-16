@@ -15,10 +15,10 @@ const (
 	MatEnc
 )
 
-// Material must be usable as key in a map
+// Material must be usable as key in a map – also for JSON
 type Material string
 
-func MatDefine(kind MatKind, key string) Material {
+func DefMaterial(kind MatKind, key string) Material {
 	return Material(fmt.Sprintf("%d:%s", kind, key))
 }
 
@@ -40,10 +40,10 @@ const (
 	RcpEngie
 )
 
-// RcpDef must be usable as key in a map
+// RcpDef must be usable as key in a map – also for JSON
 type RcpDef string
 
-func RcpDefine(kind RcpKind, key string) RcpDef {
+func DefRecipe(kind RcpKind, key string) RcpDef {
 	return RcpDef(fmt.Sprintf("%d:%s", kind, key))
 }
 

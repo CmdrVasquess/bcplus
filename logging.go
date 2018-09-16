@@ -6,6 +6,7 @@ import (
 
 	"git.fractalqb.de/fractalqb/qblog"
 	"github.com/CmdrVasquess/BCplus/cmdr"
+	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 	"github.com/CmdrVasquess/BCplus/webui"
 	"github.com/CmdrVasquess/watched"
@@ -19,6 +20,7 @@ var (
 )
 
 func init() {
+	common.LogConfig.SetParent(log)
 	watched.LogConfig.SetParent(log)
 	galaxy.LogConfig.SetParent(log)
 	cmdr.LogConfig.SetParent(log)

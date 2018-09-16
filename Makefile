@@ -1,8 +1,13 @@
 include VERSION
 
+.PHONY: data
+
 #PACK:=BCplus-$(major).$(minor).$(bugfix)$(quality).zip
 
-all: godepgraph.svg
+all: data godepgraph.svg
+
+data:
+	$(MAKE) -C data all
 
 %.svg: %.dot
 	dot -Tsvg $< > $@

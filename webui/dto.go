@@ -1,17 +1,20 @@
 package webui
 
-import (
-	"github.com/CmdrVasquess/BCplus/cmdr"
-)
-
 type HdrSysLoc struct {
 	Name string
 	Coos [3]float64
 }
 
+type Ship struct {
+	Type     string
+	Ident    string
+	Name     string
+	BerthLoc int64
+}
+
 type Header struct {
 	Cmdr   string
-	Ship   *cmdr.Ship
+	Ship   Ship
 	System HdrSysLoc
 	Home   *HdrSysLoc
 }
@@ -43,21 +46,29 @@ func newHeader(reuse *Header) *Header {
 	} else {
 		reuse.Cmdr = cmdr.Name
 		if cmdr.InShip >= 0 {
-			reuse.Ship = cmdr.Ships[cmdr.InShip]
+			inShip := cmdr.Ships[cmdr.InShip]
+			reuse.Ship.Type, _ = nmap.ShipType.Map(inShip.Type)
+			reuse.Ship.Ident = inShip.Ident
+			reuse.Ship.Name = inShip.Name
+			reuse.Ship.BerthLoc = inShip.BerthLoc
 		}
 		ssys, _ := theGalaxy.GetSystem(cmdr.Loc.SysId)
 		if ssys != nil {
 			reuse.System.Name = ssys.Name
 			reuse.System.Coos = ssys.Coos
 		}
-		if cmdr.Home.SysId > 0 {
+		if cmdr.Home.SysId > 0 && cmdr.Home.SysId != cmdr.Loc.SysId {
 			ssys, _ = theGalaxy.GetSystem(cmdr.Home.SysId)
 			if ssys != nil {
 				reuse.Home = &HdrSysLoc{
 					Name: ssys.Name,
 					Coos: ssys.Coos,
 				}
+			} else {
+				reuse.Home = nil
 			}
+		} else {
+			reuse.Home = nil
 		}
 	}
 	return reuse

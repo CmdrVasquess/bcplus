@@ -3,8 +3,8 @@ package main
 const (
 	BCpMajor = 0
 	BCpMinor = 7
-	BCpBugfix = 6
+	BCpBugfix = 9
 	BCpQuality = "dev"
-	BCpBuildNo = 16
-	BCpDate = "2018-08-26T11:25:12+02:00"
+	BCpBuildNo = 25
+	BCpDate = "2018-09-15T20:55:32+02:00"
 )

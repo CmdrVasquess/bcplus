@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"database/sql"
+	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
-func runSqlFile(db *sql.DB, fnm string) error {
+func runSqlFile(db *sql.DB, updFrom int, fnm string) error {
 	sf, err := os.Open(fnm)
 	if err != nil {
 		return err
@@ -25,20 +27,30 @@ func runSqlFile(db *sql.DB, fnm string) error {
 			tx.Rollback()
 		}
 	}()
+	since := 0
+	const sincePrefix = "-- since "
 	for scan.Scan() {
 		line := strings.Trim(scan.Text(), " \t")
-		if len(line) == 0 && qbuf.Len() > 0 {
-			_, err := db.Exec(qbuf.String())
-			if err != nil {
-				return err
+		switch {
+		case len(line) == 0 && qbuf.Len() > 0:
+			if since > updFrom {
+				_, err := db.Exec(qbuf.String())
+				if err != nil {
+					return err
+				}
 			}
 			qbuf.Reset()
-		} else if !strings.HasPrefix(line, "--") {
+		case strings.HasPrefix(line, sincePrefix):
+			since, err = strconv.Atoi(strings.TrimSpace(line[len(sincePrefix):]))
+			if err != nil {
+				return fmt.Errorf("cannot pase version in since-line: '%s'", line)
+			}
+		case !strings.HasPrefix(line, "--"):
 			qbuf.WriteRune(' ')
 			qbuf.WriteString(line)
 		}
 	}
-	if qbuf.Len() > 0 {
+	if qbuf.Len() > 0 && since > updFrom {
 		_, err := db.Exec(qbuf.String())
 		if err != nil {
 			return err
@@ -49,6 +61,6 @@ func runSqlFile(db *sql.DB, fnm string) error {
 	return nil
 }
 
-func (rpo *Repo) RunSql(sqlFile string) error {
-	return runSqlFile(rpo.db, sqlFile)
+func (rpo *Repo) RunSql(updFrom int, sqlFile string) error {
+	return runSqlFile(rpo.db, updFrom, sqlFile)
 }

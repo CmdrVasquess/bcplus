@@ -1,0 +1,36 @@
+* Body
+- BodyName
+- DistanceFromArrivalLS
+- Radius
+- AxialTilt
+- Eccentricity
+- Periapsis
+- OrbitalInclination
+- OrbitalPeriod
+- RotationPeriod
+- SemiMajorAxis
+- SurfaceTemperature
+** Star
+- AbsoluteMagnitude
+- Age_MY
+- Luminosity
+- StarType
+- StellarMass
+- Rings?
+  - Name
+  - RingClass
+  - MassMT
+  - InnerRad
+  - OuterRad
+** Planet
+- Atmosphere
+- AtmosphereType
+- Landable
+- MassEM
+- Materials
+- PlanetClass
+- SurfaceGravity
+- SurfacePressure
+- TerraformState
+- TidalLock
+- Volcanism

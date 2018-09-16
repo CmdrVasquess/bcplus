@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+ &lt;version&gt;: System Population</title>
+    <link rel="icon" href="s/img/logo.ico">
+    <link rel="stylesheet" href="s/css/bcp.css">
+    <script src="s/js/wsock.js"></script>
+    <script src="s/js/vue.js"></script>
+<!-- >>> head >>> -->
+    <style>
+div#recipes { margin-top: .5em; }
+details { margin-bottom: .5em; }
+details > summary {
+  font-weight: bold;
+  background-color: var(--colBkgDim);
+  padding: .2em;
+}
+details table {
+  margin-top: .3em;
+  border-collapse: collapse;
+ }
+details th {
+  color: var(--colTxtDim);
+  vertical-align: top;
+}
+details td:first-child { text-align: right; }
+details th:nth-child(3), td:nth-child(3) {
+  border-right: 2px solid var(--colBkgDim);
+}
+    </style>
+
+<!-- <<< head <<< -->
+  </head>
+  <body>
+    <template>
+<!-- >>> title >>> -->
+Synthesis Planning
+<!-- <<< title <<< -->
+<!-- >>> nav-name >>> -->
+Synthesis
+<!-- <<< nav-name <<< -->
+    </template>
+    <header style="display:block;" class="center">
+      CMDR Jameson ∙ Cobra MkIII "Home & Glory" JJ-CM3 ∙ <span class="kbd">Galam</span>
+      <span style="color:var(--colTxtDim)" v-if="home">⤚231.8→
+      <img class="picgrm" src="s/img/Home.png" alt="Home"> Lave</span>
+ 	  </header>
+    <nav>
+      <ul>
+        <li><a href="#">System</a></li>
+        <li class="current">Population</li>
+        <li><a href="#">Travel</a></li>
+        <li style="float:right"><a href="#"><img class="picgrm" src="s/img/Menu.png" alt="Settiings"></a></li>
+      </ul>
+    </nav>
+ 	  <main>
+<!-- >>> main >>> -->
+      <div id="recipes">
+        <recipe v-for="recipe in synth" :key="recipe.id" v-bind:data="recipe">
+      </div>
+<!-- <<< main <<< -->
+<!-- >>> script >>> -->
+      <script src="s/js/en/synth.js"></script>
+      <script>
+store.state.grades = ["Basic", "Standard", "Premium"];
+
+function completeDemand() {
+  var syns = store.state.synth;
+  var dmns = store.state.topic.Demand;
+  var i;
+  for (i = 0; i < syns.length; i++) {
+    var syn = syns[i];
+    var dmnd = dmns[syn.id];
+    if (!dmnd) {
+      dmnd = []
+      Vue.set(dmns, syn.id, dmnd);
+    }
+    while (dmnd.length < syn.grades.length) {
+      Vue.set(dmnd, dmnd.length, 0);
+    }
+  }
+}
+completeDemand();
+
+Vue.component('rcpgrd', {
+  props: ['recipe', 'title', 'lvl', 'dmnds', 'dmndi'],
+  computed: {
+    rcpdmd: function() { return this.dmnds[this.dmndi]; }
+  },
+  methods: {
+    sendDmnd: function() {
+      var rq = {cmd:"synth-demand", recipe: this.recipe, demand: this.dmnds};
+      wsock.send(JSON.stringify(rq));
+    }
+  },
+  template:
+  '<tr><td>{{title}}:</td>\
+       <td class="center">{{lvl.bonus}}</td>\
+       <td class="center">\
+        <input type="number" min="0" style="width:3em"\
+               v-model.number="dmnds[dmndi]"\
+               v-on:change="sendDmnd">\
+       </td>\
+       <td v-for="(dmnd, i) in lvl.mats" :key="i" class="center">\
+         <span v-if="dmnd==0"/>\
+         <span v-else><span v-if="rcpdmd&gt;0">{{rcpdmd*dmnd}} : </span>{{dmnd}}<sub>/unit</sub></span>\
+       </td>\
+  </tr>'
+});
+
+Vue.component('recipe', {
+  props: ['data'],
+  computed: {
+    grades: function() { return this.$root.$data.grades; },
+    matnms: function() { return this.$root.$data.topic.MatNms; },
+    stock: function() { return this.$root.$data.topic.Stock; },
+    dmnds: function() {
+      var id = this.data.id;
+      var res = this.$root.$data.topic.Demand[id];
+      return res;
+    }
+  },
+  methods: {
+    dmndsum: function(matidx) {
+      var grades = this.data.grades;
+      var g, sum = 0;
+      for (g = 0; g < grades.length; g++) {
+        sum += this.dmnds[g] * grades[g].mats[matidx];
+      }
+      return sum;
+    }
+  },
+  template:
+  '<details>\
+    </summary>\
+    <summary>{{data.name}} – Demand: \
+      <span v-for="(grade, i) in data.grades">\
+      <span v-if="i==0">{{dmnds[i]}} {{grades[i]}}</span>\
+      <span v-else> ∙ {{dmnds[i]}} {{grades[i]}}</span></span>\
+    </summary>\
+    <table style="width:100%">\
+      <tr><th class="right">Effect:</th><th>{{data.effect}}<th>Demand</th></th>\
+        <th v-for="(mat, i) in data.mats">{{matnms[mat]}}<br>\
+        <span v-if="dmndsum(i)&gt;0">{{dmndsum(i)}} / </span>\
+        <span v-if="stock[mat]&gt;0">{{stock[mat]}}</span>\
+        <span v-else>–</span></th>\
+      </tr>\
+      <rcpgrd v-for="(grade, i) in data.grades" :key="i"\
+              v-bind:recipe="data.id"\
+              v-bind:title="grades[i]"\
+              v-bind:lvl="grade"\
+              v-bind:dmnds="dmnds"\
+              v-bind:dmndi="i"/>\
+    </table>\
+   </details>'
+});
+
+var synthApp = new Vue({
+  el: '#recipes',
+  data: store.state
+});
+      </script>
+<!-- <<< script <<< -->
+    </main>
+  </body>
+</html>

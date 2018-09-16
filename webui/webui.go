@@ -10,6 +10,7 @@ import (
 	gxc "git.fractalqb.de/fractalqb/goxic"
 	l "git.fractalqb.de/fractalqb/qblog"
 	"github.com/CmdrVasquess/BCplus/cmdr"
+	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 )
 
@@ -24,18 +25,18 @@ var (
 	pgOffline []byte
 )
 
-var gxtTopic struct {
+type gxtTopic struct {
 	*gxc.Template
-	Title      []int
-	Topics     []int
-	Main       []int
 	HeaderData []int
+	TopicData  []int
 }
 
 var (
 	theGalaxy    *galaxy.Repo
 	theCmdr      func() *cmdr.State
 	theStateLock *sync.RWMutex
+	theBCpQ      chan<- common.BCpEvent
+	nmap         *common.NameMaps
 )
 
 type Init struct {
@@ -48,12 +49,16 @@ type Init struct {
 	Galaxy      *galaxy.Repo
 	CmdrGetter  func() *cmdr.State
 	StateLock   *sync.RWMutex
+	BCpQ        chan<- common.BCpEvent
+	Names       *common.NameMaps
 }
 
 func (i *Init) configure() {
 	theGalaxy = i.Galaxy
 	theCmdr = i.CmdrGetter
 	theStateLock = i.StateLock
+	theBCpQ = i.BCpQ
+	nmap = i.Names
 }
 
 func offlineFilter(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
@@ -77,6 +82,8 @@ type topic struct {
 
 var topics = []*topic{
 	&topic{key: tkeySysPop, path: "/syspop", hdlr: tpcSysPop},
+	&topic{key: tkeySysNat, path: "/sysnat", hdlr: tpcSysNat},
+	&topic{key: tkeySynth, path: "/synth", hdlr: tpcSynth},
 }
 
 func getTopic(key string) *topic {

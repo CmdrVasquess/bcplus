@@ -13,8 +13,11 @@ import (
 	"sync"
 	"time"
 
+	"git.fractalqb.de/fractalqb/ggja"
+
 	l "git.fractalqb.de/fractalqb/qblog"
 	"github.com/CmdrVasquess/BCplus/cmdr"
+	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 	"github.com/CmdrVasquess/BCplus/webui"
 	eddn "github.com/CmdrVasquess/goEDDNc"
@@ -41,11 +44,12 @@ func init() {
 	)
 	bcpRoot, _ = filepath.Abs(os.Args[0])
 	bcpRoot = filepath.Dir(bcpRoot)
+	resDir = filepath.Join(bcpRoot, "res")
 	bcpState.Commanders = make(map[string]time.Time)
 }
 
 func resFile(resName string) string {
-	return filepath.Join(bcpRoot, "res", resName)
+	return filepath.Join(resDir, resName)
 }
 
 type State struct {
@@ -56,6 +60,7 @@ type State struct {
 	}
 	LastEDEvent time.Time
 	Commanders  map[string]time.Time
+	MatCats     map[string]string
 }
 
 func (s *State) Clear() {
@@ -100,6 +105,9 @@ func (s *State) Load(filename string) error {
 	f, err := os.Open(filename)
 	if os.IsNotExist(err) {
 		s.Clear()
+		if s.MatCats == nil {
+			s.MatCats = make(map[string]string)
+		}
 		log.Logf(l.Lwarn, "BC+ state '%s' not exists", filename)
 		return nil
 	} else if err != nil {
@@ -107,43 +115,43 @@ func (s *State) Load(filename string) error {
 	}
 	defer f.Close()
 	err = json.NewDecoder(f).Decode(s)
+	if s.MatCats == nil {
+		s.MatCats = make(map[string]string)
+	}
 	return err
-}
-
-type evtSource rune
-
-type bcpEvent struct {
-	source evtSource
-	data   interface{}
 }
 
 func eventLoop() {
 	log.Log(l.Linfo, "running bc+ event loop…")
 	for evt := range bcpEventQ {
-		log.Logf(l.Ltrace, "bc+ event from '%c'", evt.source)
-		switch evt.source {
+		log.Logf(l.Ltrace, "bc+ event from '%c'", evt.Source)
+		switch evt.Source {
 		case watched.EscrJournal:
-			journalEvent(evt.data.([]byte))
+			journalEvent(evt.Data.([]byte))
 		case watched.EscrStatus:
-			jstatStatus(evt.data.(string))
+			jstatStatus(evt.Data.(string))
 		case watched.EscrMarket:
-			jstatMarket(evt.data.(string))
+			jstatMarket(evt.Data.(string))
 		case watched.EscrShipyard:
-			jstatShipyard(evt.data.(string))
+			jstatShipyard(evt.Data.(string))
+		case common.BCpEvtSrcWUI:
+			userEvent(evt.Data.(ggja.GenObj))
+		default:
+			log.Errorf("unknown source tag '%c' in main event: %v", evt.Source, evt)
 		}
 	}
 }
 
-func goWatchingJournals(jDir string, bcpEvents chan<- bcpEvent) *watched.JournalDir {
+func goWatchingJournals(jDir string, bcpEvent chan<- common.BCpEvent) *watched.JournalDir {
 	res := &watched.JournalDir{
 		Dir: jDir,
 		PerJLine: func(line []byte) {
 			cpy := make([]byte, len(line))
 			copy(cpy, line)
-			bcpEvents <- bcpEvent{watched.EscrJournal, cpy}
+			bcpEvent <- common.BCpEvent{Source: watched.EscrJournal, Data: cpy}
 		},
 		OnStatChg: func(tag rune, statFile string) {
-			bcpEvents <- bcpEvent{evtSource(tag), statFile}
+			bcpEvent <- common.BCpEvent{Source: common.Source(tag), Data: statFile}
 		},
 		Quit: make(chan bool),
 	}
@@ -153,18 +161,37 @@ func goWatchingJournals(jDir string, bcpEvents chan<- bcpEvent) *watched.Journal
 }
 
 func openGalaxy() *galaxy.Repo {
+	const sqlCreate = "db/create-galaxy.sqlite.sql"
 	res, err := galaxy.NewRepo(filepath.Join(flagDDir, "galaxy.db"))
+	newDB := false
 	if os.IsNotExist(err) {
-		fnm := resFile("galaxy/create-sqlite.sql")
+		fnm := resFile(sqlCreate)
 		log.Logf(l.Linfo, "init galaxy DB from '%s'", fnm)
-		err := res.RunSql(fnm)
+		err := res.RunSql(0, fnm)
 		if err != nil {
 			log.Panic(err)
 		}
+		newDB = true
 	}
 	gxyv, err := res.Version()
 	if err != nil {
 		log.Panic(err)
+	}
+	if !newDB {
+		fnm := resFile(sqlCreate)
+		log.Logf(l.Linfo, "check galaxy DB from '%s'", fnm)
+		err := res.RunSql(gxyv, fnm)
+		if err != nil {
+			log.Panic(err)
+		}
+		v, err := res.Version()
+		if err != nil {
+			log.Panic(err)
+		}
+		if v > gxyv {
+			log.Infof("updated galaxy DB from version: %d", gxyv)
+		}
+		gxyv = v
 	}
 	log.Logf(l.Linfo, "galaxy DB version: %d", gxyv)
 	return res
@@ -214,6 +241,7 @@ func switchToCommander(name string) {
 		bcpState.Commanders[theCmdr.Name] = bcpState.LastEDEvent
 	}
 	theGalaxy.ClearCache()
+	//webui.L10nReset()
 	if len(name) > 0 {
 		theCmdr = cmdr.NewState(theCmdr)
 		err := theCmdr.Load(cmdrFile(name, cmdrState))
@@ -274,13 +302,15 @@ var (
 	flagWuiPort uint
 	flagMacros  string
 	bcpRoot     string
-	bcpEventQ   = make(chan bcpEvent, 128)
+	resDir      string
+	bcpEventQ   = make(chan common.BCpEvent, 128)
 	bcpState    State
 	theGalaxy   *galaxy.Repo
 	theCmdr     *cmdr.State
 	theEddn     *eddn.Upload
 	stateLock   sync.RWMutex
 	toWsClient  chan<- interface{}
+	nameMaps    common.NameMaps
 )
 
 func usage() {
@@ -330,6 +360,7 @@ func main() {
 	flagCheckEddn()
 	var err error
 	log.Logf(l.Ldebug, "BC+ root: '%s'", bcpRoot)
+	nameMaps.Load(resDir, flagDDir, "English\\\\UK")
 	bcpState.Load(stateFileName())
 	bcpState.Version.Major = BCpMajor
 	bcpState.Version.Minor = BCpMinor
@@ -341,7 +372,6 @@ func main() {
 		loadMacros(flagMacros)
 	}
 	goWatchingJournals(flagJDir, bcpEventQ)
-	go eventLoop()
 	toWsClient = webui.Run(&webui.Init{
 		DataDir:     flagDDir,
 		ResourceDir: filepath.Join(bcpRoot, "res"),
@@ -351,7 +381,10 @@ func main() {
 		StateLock:   &stateLock,
 		Galaxy:      theGalaxy,
 		CmdrGetter:  func() *cmdr.State { return theCmdr },
+		BCpQ:        bcpEventQ,
+		Names:       &nameMaps,
 	})
+	go eventLoop()
 	// up & running – wait for Ctrl-C…
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
@@ -369,5 +402,6 @@ func main() {
 	if err != nil {
 		log.Log(l.Lerror, "error while saving BC+ state:", err)
 	}
+	nameMaps.Save()
 	log.Log(l.Linfo, "Fly safe commander! o7")
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	l "git.fractalqb.de/fractalqb/qblog"
+	"github.com/CmdrVasquess/BCplus/common"
 	wsock "github.com/gorilla/websocket"
 )
 
@@ -140,8 +141,8 @@ func (wsc *WsClient) readFrom() {
 		if err != nil {
 			log.Error("cannot parse user event", err)
 		} else {
-			log.Errorf("Sending user event (%s) to main event Q NYI!", msg)
-			//eventq <- bcEvent{esrcUsr, jevt}
+			log.Tracef("dispatch user event to main event q: %v", jevt)
+			theBCpQ <- common.BCpEvent{common.BCpEvtSrcWUI, jevt}
 		}
 	}
 }

@@ -1,0 +1,25 @@
+body {
+	background-color: black;
+	color: #ff7000;
+	font-family: sans-serif;
+}
+hr {
+	border: 1px solid #ff7000;
+}
+a {
+	color: #ff7000;
+	text-decoration: underline;
+}
+a:hover {
+	color: #00a6ea;
+}
+h1, h2, h3, h4 {
+	color: #00a6ea;
+}
+#postamble {
+	color: #CC5A00;
+	background-color: #522400;
+}
+#postamble a {
+	color: #CC5A00;
+}

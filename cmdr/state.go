@@ -78,7 +78,7 @@ type State struct {
 	InShip     int
 	Ships      map[int]*Ship
 	Mats       map[Material]*MatState
-	RcpDmnd    map[RcpDef]int
+	RcpDmnd    map[RcpDef][]int
 	EddnMode   string
 	Edsm       struct {
 		Name   string
@@ -94,7 +94,7 @@ func NewState(init *State) *State {
 	init.MinorRep = make(map[string]float32)
 	init.Ships = make(map[int]*Ship)
 	init.Mats = make(map[Material]*MatState)
-	init.RcpDmnd = make(map[RcpDef]int)
+	init.RcpDmnd = make(map[RcpDef][]int)
 	return init
 }
 

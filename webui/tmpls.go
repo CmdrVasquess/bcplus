@@ -13,7 +13,7 @@ import (
 
 const (
 	tmplDir         = "tmpl"
-	tmplDefaultLang = "default"
+	tmplDefaultLang = "en"
 	tmplExt         = ".html"
 )
 
@@ -29,12 +29,18 @@ func loadTemplates(resDir, lang, version string) {
 	btpl.BindPName("version", version)
 	page = btpl.Fixate()
 	prepareOffline(page.NewBounT(btpl), resDir, lang)
-	tCTop, tOTop := prepareTopics(page.NewBounT(btpl), resDir, lang)
-	tmplSyspop := prepareTopic(tkeySysPop, resDir, lang)
+	btTopic, btCTop, btOTop := prepareTopics(page.NewBounT(btpl), resDir, lang)
+	tmplSyspop := prepareTopic(btTopic, tkeySysPop, resDir, lang)
+	tmplSysnat := prepareTopic(btTopic, tkeySysNat, resDir, lang)
+	tmplSynth := prepareTopic(btTopic, tkeySynth, resDir, lang)
 	// ^ more prepare<Topic>(key, resDir, lang) go here
 	// All topics loaded => nav titles are known…
-	tmplSyspop = finalizeNav(tkeySysPop, tmplSyspop, tCTop, tOTop)
+	tmplSyspop = finalizeNav(tkeySysPop, tmplSyspop, btCTop, btOTop)
 	gxc.MustIndexMap(&gxtSysPop, tmplSyspop, idxMapNames.Convert)
+	tmplSysnat = finalizeNav(tkeySysNat, tmplSysnat, btCTop, btOTop)
+	gxc.MustIndexMap(&gxtSysNat, tmplSysnat, idxMapNames.Convert)
+	tmplSynth = finalizeNav(tkeySynth, tmplSynth, btCTop, btOTop)
+	gxc.MustIndexMap(&gxtSynth, tmplSynth, idxMapNames.Convert)
 }
 
 func prepareOffline(btPage *gxc.BounT, resDir, lang string) {
@@ -54,43 +60,56 @@ func prepareOffline(btPage *gxc.BounT, resDir, lang string) {
 	}
 }
 
-func prepareTopics(btPage *gxc.BounT, resDir, lang string) (cur, oth *gxc.BounT) {
+func prepareTopics(btPage *gxc.BounT, resDir, lang string) (tpc, cur, oth *gxc.BounT) {
 	tSet := loadTemplate(resDir, "topic", lang)
-	tmp, ok := lookupTmpl(tSet, "head").Static()
-	if ok {
-		btPage.BindName("head", gxc.Data(tmp))
+	tmpl := lookupTmpl(tSet, "head")
+	if tmpl == nil {
+		log.Panic("cannot find head template for topics")
 	} else {
-		log.Panic("cannot generate static topic head content")
+		btPage.BindName("head", tmpl.NewBounT(nil))
 	}
 	btPage.BindName("body", lookupTmpl(tSet, "body").NewBounT(nil))
-	tmpl := btPage.Fixate()
+	tmpl = btPage.Fixate()
 	err := tmpl.XformPhs(false, gxc.StripPath)
 	if err != nil {
 		panic(err)
 	}
-	gxc.MustIndexMap(&gxtTopic, tmpl, idxMapNames.Convert)
+	tpc = tmpl.NewBounT(nil)
 	cur = lookupTmpl(tSet, "body/current-topic").NewBounT(nil)
 	oth = lookupTmpl(tSet, "body/other-topic").NewBounT(nil)
-	return cur, oth
+	return tpc, cur, oth
 }
 
-func prepareTopic(key, resDir, lang string) *gxc.Template {
+func prepareTopic(btTopic *gxc.BounT, key, resDir, lang string) *gxc.Template {
 	log.Debug("prepare topic " + key)
 	tSet := loadTemplate(resDir, key, lang)
-	tgen := gxtTopic.NewBounT(nil)
 	title, ok := lookupTmpl(tSet, "title").Static()
 	if ok {
-		tgen.Bind(gxtTopic.Title, gxc.Data(title))
+		btTopic.BindName("title", gxc.Data(title))
 	} else {
 		log.Panicf("no title for topic '%s'", key)
+	}
+	if tmp := tSet["head"]; tmp == nil {
+		btTopic.BindName("head", gxc.Empty)
+	} else if stat, ok := tmp.Static(); ok {
+		btTopic.BindName("head", gxc.Data(stat))
+	} else {
+		log.Panicf("not static content: %s", tmp.Name)
 	}
 	if tmp, ok := lookupTmpl(tSet, "nav-name").Static(); ok {
 		getTopic(key).nav = string(tmp)
 	} else {
 		getTopic(key).nav = string(title)
 	}
-	tgen.Bind(gxtTopic.Main, lookupTmpl(tSet, "main").NewBounT(nil))
-	res := tgen.Fixate()
+	btTopic.BindName("main", lookupTmpl(tSet, "main").NewBounT(nil))
+	if tmpl := tSet["script"]; tmpl == nil {
+		btTopic.BindName("script", gxc.Empty)
+	} else if raw, ok := tmpl.Static(); ok {
+		btTopic.BindName("script", gxc.Data(raw))
+	} else {
+		btTopic.BindName("script", gxc.Empty)
+	}
+	res := btTopic.Fixate()
 	res.XformPhs(false, gxc.StripPath)
 	res.Name = key
 	return res
@@ -165,7 +184,7 @@ func loadTemplate(resDir, tmpl, lang string) map[string]*gxc.Template {
 func lookupTmpl(tSet map[string]*gxc.Template, path string) *gxc.Template {
 	res, ok := tSet[path]
 	if !ok {
-		log.Panic("no template '%s' ", path)
+		log.Panicf("no template '%s' ", path)
 	}
 	return res
 }

@@ -1,25 +1,34 @@
 :root {
   --colBkg: black;
+  --colBkgDim: #5D2900;
   --colFgr: #FF7000;
-  --colFgrDim: #D25C00;
+  --colFgrDim: #be5400;
   --colTxt: #FF7000;
   --colTxtDim: #D25C00;
   --colGud: #00A6EA;
-  --calBad: ##FD0406;
+  --colBad: #FD0406;
 /*
   --colBkg: white;
+  --colBkgDim: #DDD;
   --colFgr: black;
   --colFgrDim: grey;
   --colTxt: black;
   --colTxtDim: grey;
-  --colGud: #00A6EA;
-  --calBad: ##FD0406;
+  --colGud: green;
+  --colBad: red;
 */
 }
 .left {	text-align: left; }
 .center {	text-align: center; }
 .right { text-align: right; }
-.kbdtxt { color: var(--colGud); }
+.kbd img {
+  height: .5em;
+  vertical-align: top;
+  cursor: pointer;
+}
+.kbd.glow { color: var(--colGud); }
+.good { color: var(--colGud); }
+.bad { color: var(--colBad); }
 img.picgrm {
   height: 1em;
   vertical-align: text-top;
@@ -32,6 +41,17 @@ body {
 h1 { font-size: 150%; }
 h2 { font-size: 116%; }
 h3 { font-size: 108%; }
+input {
+  background-color: var(--colBkg);
+  color: var(--colTxt);
+  border: 1px solid var(--colFgrDim);
+  padding-left: .3em;
+}
+select {
+  background-color: var(--colBkg);
+  color: var(--colTxt);
+  border: 1px solid var(--colFgrDim);
+}
 header {
   font-size: 140%;
   font-weight: bold;
@@ -60,5 +80,5 @@ nav li a {
   color: var(--colFgrDim);
   text-decoration: none;
 }
-nav li:hover:not(.current) { background-color: var(--colFgrDim); }
+nav li:hover:not(.current) { background-color: var(--colFgr); }
 nav li:hover a { color: var(--colBkg); }
