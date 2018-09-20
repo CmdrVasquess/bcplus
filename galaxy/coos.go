@@ -20,7 +20,7 @@ func init() {
 	V3dSet1(&NaV3D, math.NaN())
 }
 
-func V3dSet(v *Vec3D, x, y, z float64) {
+func V3dSet3(v *Vec3D, x, y, z float64) {
 	v[Xk] = x
 	v[Yk] = y
 	v[Zk] = z
@@ -32,6 +32,6 @@ func V3dSet1(v *Vec3D, f float64) {
 	v[Zk] = f
 }
 
-func V3dValid(v *Vec3D) bool {
+func V3dValid(v Vec3D) bool {
 	return !math.IsNaN(v[Xk]) && !math.IsNaN(v[Yk]) && !math.IsNaN(v[Zk])
 }

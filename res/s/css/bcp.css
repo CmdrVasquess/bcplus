@@ -1,13 +1,14 @@
 :root {
+/*
   --colBkg: black;
-  --colBkgDim: #5D2900;
+  --colBkgDim: #411D00;
   --colFgr: #FF7000;
   --colFgrDim: #be5400;
   --colTxt: #FF7000;
   --colTxtDim: #D25C00;
   --colGud: #00A6EA;
   --colBad: #FD0406;
-/*
+*/
   --colBkg: white;
   --colBkgDim: #DDD;
   --colFgr: black;
@@ -16,7 +17,6 @@
   --colTxtDim: grey;
   --colGud: green;
   --colBad: red;
-*/
 }
 .left {	text-align: left; }
 .center {	text-align: center; }
@@ -27,7 +27,7 @@
   cursor: pointer;
 }
 .kbd.glow { color: var(--colGud); }
-.good { color: var(--colGud); }
+.gud { color: var(--colGud); }
 .bad { color: var(--colBad); }
 img.picgrm {
   height: 1em;
@@ -56,6 +56,12 @@ header {
   font-size: 140%;
   font-weight: bold;
   margin-bottom: 1em;
+  display: flex;
+  flex-flow: row wrap;
+}
+header img {
+  height: 3em;
+  margin-right: .5em;
 }
 nav ul {
   list-style-type: none;
@@ -76,9 +82,9 @@ nav li.current {
   background-color: var(--colFgrDim);
   color: var(--colBkg);
 }
+nav li:hover:not(.current) { background-color: var(--colFgr); }
 nav li a {
   color: var(--colFgrDim);
   text-decoration: none;
 }
-nav li:hover:not(.current) { background-color: var(--colFgr); }
 nav li:hover a { color: var(--colBkg); }

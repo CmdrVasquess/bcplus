@@ -19,6 +19,13 @@ type Location struct {
 	Lat, Lon float32
 }
 
+func (loc *Location) Clear() {
+	loc.SysId = 0
+	loc.LocId = 0
+	loc.Docked = false
+	loc.ClearGeo()
+}
+
 func (loc *Location) ClearGeo() {
 	loc.Lat = float32(math.NaN())
 	loc.Lon = float32(math.NaN())
@@ -92,6 +99,7 @@ func NewState(init *State) *State {
 		init = new(State)
 	}
 	init.MinorRep = make(map[string]float32)
+	init.Missions = make(map[uint32]*Mission)
 	init.Ships = make(map[int]*Ship)
 	init.Mats = make(map[Material]*MatState)
 	init.RcpDmnd = make(map[RcpDef][]int)

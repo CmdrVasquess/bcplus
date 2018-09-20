@@ -6,7 +6,7 @@
     <title>BC+ &lt;version&gt;: –offline–</title>
     <link rel="icon" href="s/img/logo.ico">
     <link rel="stylesheet" href="s/css/bcp.css">
-    <script src="s/js/wsock.js"></script>
+    <script src="s/js/bcp.js"></script>
 <!-- >>> head >>> -->
     <script src="s/js/vue.js"></script>
 <!-- >>> head <<< -->
@@ -14,18 +14,20 @@
   </head>
   <body>
 <!-- >>> body >>> -->
-    <header style="display:block;" class="center">
-      CMDR {{hdr.Cmdr}} ∙ {{hdr.Ship.Type}}
-      <span v-if="hdr.Ship.Name">"{{hdr.Ship.Name}}"</span>
-      <span v-if="hdr.Ship.Ident">{{hdr.Ship.Ident}}</span>
-      ∙ <img v-if="this.atHome" class="picgrm" src="s/img/Home.png" alt="Home"
-             v-on:dblclick="switchHome(false)" style="cursor:pointer">
-        <img v-else class="picgrm" src="s/img/notHome.png" alt="Not Home"
-             v-on:dblclick="switchHome(true)" style="cursor:pointer">
-      <kbd-send v-bind:text="hdr.System.Name"></kbd-send>
-      <span style="color:var(--colTxtDim)" v-if="hdr.Home && !atHome">⤚{{distHome}}→
-      <img class="picgrm" src="s/img/Home.png" alt="Home">
-      <kbd-send v-bind:text="hdr.Home.Name"></kbd-send></span>
+    <header>
+      <img src="s/img/Logo.png" alt="BC+ Logo"/>
+      <div>CMDR {{hdr.Cmdr}} ∙ {{hdr.Ship.Type}}
+        <span v-if="hdr.Ship.Name">"{{hdr.Ship.Name}}"</span>
+        <span v-if="hdr.Ship.Ident">{{hdr.Ship.Ident}}</span>
+        ∙ <img v-if="this.atHome" class="picgrm" src="s/img/Home.png" alt="Home"
+               v-on:dblclick="switchHome(false)" style="cursor:pointer">
+          <img v-else class="picgrm" src="s/img/notHome.png" alt="Not Home"
+               v-on:dblclick="switchHome(true)" style="cursor:pointer">
+        <kbd-send v-bind:text="hdr.System.Name"></kbd-send>
+        <span style="color:var(--colTxtDim)" v-if="hdr.Home && !atHome">⤚{{distHome}}→
+        <img class="picgrm" src="s/img/Home.png" alt="Home">
+        <kbd-send v-bind:text="hdr.Home.Name"></kbd-send></span>
+      </div>
     </header>
     <nav>
       <ul>
@@ -93,7 +95,7 @@ var header = new Vue({
       var rq = {cmd: "switch-home"};
       if (flag) {
         this.hdr.Home = this.hdr.System;
-        rq.home = this.hdr.Home;
+        rq.home = this.hdr.Home.Name;
       } else {
         this.hdr.Home = null;
       }

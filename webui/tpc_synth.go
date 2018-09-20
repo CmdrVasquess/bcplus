@@ -46,20 +46,10 @@ func newSynth(reuse *tpcSynthData) *tpcSynthData {
 }
 
 func tpcSynth(w http.ResponseWriter, r *http.Request) {
-	var hdr Header
-	newHeader(&hdr)
 	var data tpcSynthData
 	newSynth(&data)
 	bt := gxtSynth.NewBounT(nil)
-	bt.BindGen(gxtSynth.HeaderData, func(wr io.Writer) int {
-		enc := json.NewEncoder(wr)
-		enc.SetIndent("", "\t")
-		err := enc.Encode(hdr)
-		if err != nil {
-			panic(err)
-		}
-		return 1 // TODO howto determine the correct length
-	})
+	bindTpcHeader(bt, &gxtSynth)
 	bt.BindGen(gxtSynth.TopicData, func(wr io.Writer) int {
 		enc := json.NewEncoder(wr)
 		enc.SetIndent("", "\t")

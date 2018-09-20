@@ -29,10 +29,10 @@ div.body td {
   <body>
     <template>
 <!-- >>> title >>> -->
-System Bodies
+Missions
 <!-- <<< title <<< -->
 <!-- >>> nav-name >>> -->
-Bodies
+Missions
 <!-- <<< nav-name <<< -->
     </template>
     <header style="display:block;" class="center">
@@ -50,33 +50,24 @@ Bodies
     </nav>
  	  <main>
 <!-- >>> main >>> -->
-      <div class="body">
-        <h1>✴ Galam A</h1>
-      </div>
-      <div class="body">
-        <h1>◌ Galam A Belt</h1>
-        4.78 Ls
-      </div>
-      <div class="body">
-        <h1>✴ Galam B</h1>
-        35,765 Ls
-      </div>
-      <div class="body">
-        <h1 class="bad">❍ Galam B2</h1>
-        35,261 Ls
-        <table>
-          <tr><td title="Arsenic">As</td><td>44.44%</td></tr>
-          <tr class="bad"><td title="Polonium">Po</td><td>2.31%</td><td>-3</td></tr>
-        </table>
-      </div>
-      <div class="body">
-        <h1 class="gud">⦾ Galam B2 Ring</h1>
-        1.2–2.5 Mm
-        <table>
-          <tr class="gud"><td title="Yttrium">Yt</td><td>1.27%</td><td>+32</td></tr>
-        </table>
-      </div>
+      <table id="missions">
+        <tr><th>Title</th><th>Destination</th><th>Faction</th><th>Rep</th></tr>
+        <tr v-for="(dst, key) in topic">
+          <td>{{dst.Title}}</td>
+          <td><kbd-send v-bind:text="dst.DstSys"></kbd-send></td>
+          <td>{{dst.Faction}}</td>
+          <td>{{dst.Rep}}</td>
+        </tr>
+      </table>
 <!-- <<< main <<< -->
+<!-- >>> script >>> -->
+      <script>
+var missonsApp = new Vue({
+  el: '#missions',
+  data: store.state
+});
+      </script>
+<!-- <<< script <<< -->
     </main>
   </body>
 </html>

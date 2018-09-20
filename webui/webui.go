@@ -1,7 +1,9 @@
 package webui
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -73,6 +75,19 @@ func offlineFilter(h func(http.ResponseWriter, *http.Request)) func(http.Respons
 	}
 }
 
+func bindTpcHeader(bt *gxc.BounT, gxt *gxtTopic) {
+	var hdr Header
+	newHeader(&hdr)
+	bt.BindGen(gxt.HeaderData, func(wr io.Writer) int {
+		enc := json.NewEncoder(wr)
+		err := enc.Encode(hdr)
+		if err != nil {
+			panic(err)
+		}
+		return 1
+	})
+}
+
 type topic struct {
 	key  string
 	path string
@@ -83,6 +98,7 @@ type topic struct {
 var topics = []*topic{
 	&topic{key: tkeySysPop, path: "/syspop", hdlr: tpcSysPop},
 	&topic{key: tkeySysNat, path: "/sysnat", hdlr: tpcSysNat},
+	&topic{key: tkeyMissions, path: "/missions", hdlr: tpcMissions},
 	&topic{key: tkeySynth, path: "/synth", hdlr: tpcSynth},
 }
 

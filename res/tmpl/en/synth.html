@@ -6,7 +6,7 @@
     <title>BC+ &lt;version&gt;: System Population</title>
     <link rel="icon" href="s/img/logo.ico">
     <link rel="stylesheet" href="s/css/bcp.css">
-    <script src="s/js/wsock.js"></script>
+    <script src="s/js/bcp.js"></script>
     <script src="s/js/vue.js"></script>
 <!-- >>> head >>> -->
     <style>
@@ -27,7 +27,7 @@ details th {
 }
 details td:first-child { text-align: right; }
 details th:nth-child(3), td:nth-child(3) {
-  border-right: 2px solid var(--colBkgDim);
+  border-right: 2px solid var(--colFgrDim);
 }
     </style>
 
@@ -87,16 +87,33 @@ completeDemand();
 Vue.component('rcpgrd', {
   props: ['recipe', 'title', 'lvl', 'dmnds', 'dmndi'],
   computed: {
-    rcpdmd: function() { return this.dmnds[this.dmndi]; }
+    rcpdmd: function() { return this.dmnds[this.dmndi]; },
+    stock: function() { return this.$root.$data.topic.Stock; },
+    grdGudBad: function() {
+      if (this.rcpdmd == 0) return null;
+      var need = this.rcpdmd * this.lvl.mats[0];
+      var res = this.matGudBad(need, 0)
+      var i;
+      for (i = 1; i < this.lvl.mats.length; i++) {
+        need = this.rcpdmd * this.lvl.mats[i];
+        gob = this.matGudBad(need, i)
+        if (gob == "bad") { res = gob; }
+      }
+      return res;
+    }
   },
   methods: {
     sendDmnd: function() {
-      var rq = {cmd:"synth-demand", recipe: this.recipe, demand: this.dmnds};
+      var rq = {cmd:"synth-demand", recipe: this.recipe.id, demand: this.dmnds};
       wsock.send(JSON.stringify(rq));
-    }
+    },
+    matGudBad: function(need, idx) {
+      var have = this.stock[this.recipe.mats[idx]];
+      return classGudBad(have,need,1); // TODO
+    },
   },
   template:
-  '<tr><td>{{title}}:</td>\
+  '<tr><td v-bind:class="grdGudBad">{{title}}:</td>\
        <td class="center">{{lvl.bonus}}</td>\
        <td class="center">\
         <input type="number" min="0" style="width:3em"\
@@ -105,7 +122,9 @@ Vue.component('rcpgrd', {
        </td>\
        <td v-for="(dmnd, i) in lvl.mats" :key="i" class="center">\
          <span v-if="dmnd==0"/>\
-         <span v-else><span v-if="rcpdmd&gt;0">{{rcpdmd*dmnd}} : </span>{{dmnd}}<sub>/unit</sub></span>\
+         <span v-else-if="rcpdmd&gt;0" \
+               v-bind:class="matGudBad(rcpdmd*dmnd, i)">{{rcpdmd*dmnd}} : {{dmnd}}<sub>/unit</sub></span>\
+         <span v-else>{{dmnd}}<sub>/unit</sub></span>\
        </td>\
   </tr>'
 });
@@ -130,6 +149,9 @@ Vue.component('recipe', {
         sum += this.dmnds[g] * grades[g].mats[matidx];
       }
       return sum;
+    },
+    txtGudBad: function(mat, idx) {
+      return classGudBad(this.stock[mat],this.dmndsum(idx),1);
     }
   },
   template:
@@ -143,12 +165,16 @@ Vue.component('recipe', {
     <table style="width:100%">\
       <tr><th class="right">Effect:</th><th>{{data.effect}}<th>Demand</th></th>\
         <th v-for="(mat, i) in data.mats">{{matnms[mat]}}<br>\
-        <span v-if="dmndsum(i)&gt;0">{{dmndsum(i)}} / </span>\
-        <span v-if="stock[mat]&gt;0">{{stock[mat]}}</span>\
-        <span v-else>–</span></th>\
+          <span v-if="dmndsum(i)&gt;0"\
+                v-bind:class="txtGudBad(mat,i)">{{dmndsum(i)}} \
+                / <span v-if="stock[mat]&gt;0">{{stock[mat]}}</span><span v-else>–</span>\
+          </span>\
+          <span v-else-if="stock[mat]&gt;0">{{stock[mat]}}</span>\
+          <span v-else>–</span>\
+        </th>\
       </tr>\
       <rcpgrd v-for="(grade, i) in data.grades" :key="i"\
-              v-bind:recipe="data.id"\
+              v-bind:recipe="data"\
               v-bind:title="grades[i]"\
               v-bind:lvl="grade"\
               v-bind:dmnds="dmnds"\

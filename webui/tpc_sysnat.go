@@ -1,8 +1,6 @@
 package webui
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 )
 
@@ -32,19 +30,10 @@ func newSysNat(reuse *tpcSysNatData) *tpcSysNatData {
 }
 
 func tpcSysNat(w http.ResponseWriter, r *http.Request) {
-	var hdr Header
-	newHeader(&hdr)
 	var data tpcSysNatData
 	newSysNat(&data)
 	bt := gxtSysNat.NewBounT(nil)
-	bt.BindGen(gxtSysNat.HeaderData, func(wr io.Writer) int {
-		enc := json.NewEncoder(wr)
-		err := enc.Encode(hdr)
-		if err != nil {
-			panic(err)
-		}
-		return 1 // TODO howto determine the correct length
-	})
+	bindTpcHeader(bt, &gxtSysNat)
 	bt.BindP(gxtSysNat.TopicData, "null")
 	bt.Emit(w)
 }

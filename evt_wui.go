@@ -15,6 +15,8 @@ func userEvent(jEvt ggja.GenObj) {
 		robi.TypeStr(txt)
 	case "synth-demand":
 		userSynthDemand(evt)
+	case "switch-home":
+		userSwitchHome(evt)
 	default:
 		log.Errorf("unknown user input command '%s'", cmd)
 	}
@@ -29,4 +31,15 @@ func userSynthDemand(evt ggja.Obj) {
 		dmnd = append(dmnd, int(jn.(float64)))
 	}
 	theCmdr.RcpDmnd[recipe] = dmnd
+}
+
+func userSwitchHome(evt ggja.Obj) {
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	home := evt.Str("home", "")
+	if len(home) == 0 {
+		theCmdr.Home.Clear()
+	} else {
+		theCmdr.Home = theCmdr.Loc
+	}
 }

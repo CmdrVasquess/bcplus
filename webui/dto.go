@@ -57,7 +57,7 @@ func newHeader(reuse *Header) *Header {
 			reuse.System.Name = ssys.Name
 			reuse.System.Coos = ssys.Coos
 		}
-		if cmdr.Home.SysId > 0 && cmdr.Home.SysId != cmdr.Loc.SysId {
+		if cmdr.Home.SysId > 0 {
 			ssys, _ = theGalaxy.GetSystem(cmdr.Home.SysId)
 			if ssys != nil {
 				reuse.Home = &HdrSysLoc{

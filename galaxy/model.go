@@ -215,7 +215,8 @@ func (rpo *Repo) FindSystem(name string, reuse *System) (*System, error) {
 		reuse.Name = name
 		reuse.parts = nil
 	}
-	row := rpo.db.QueryRow("select id, x, y, z from system where name=$1", reuse.Name)
+	row := rpo.db.QueryRow(`select id, x, y, z from system
+	                        where name=$1 collate nocase`, reuse.Name)
 	err := row.Scan(&reuse.Id, &reuse.Coos[Xk], &reuse.Coos[Yk], &reuse.Coos[Zk])
 	if err != nil {
 		if err == sql.ErrNoRows {

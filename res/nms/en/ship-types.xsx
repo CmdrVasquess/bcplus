@@ -1,6 +1,5 @@
 [\ED local]
-(DiamondBackXL "Diamondback Explorer")
-(anaconda "Anaconda")
+(anaconda Anaconda)
 (asp "Asp Explorer")
 (asp_scout "Asp Scout")
 (belugaliner "Beluga Liner")
@@ -13,7 +12,10 @@
 (empire_eagle "Imperial Eagle")
 (empire_fighter Gu-97)
 (empire_trader "Imperial Clipper")
+(federation_dropship "Federal Dropship")
+(federation_dropship_mkii "Federal Assault Ship")
 (federation_gunship "Federal Gunship")
+(ferdelance Fer-de-Lance)
 (independant_trader Keelback)
 (independent_fighter Taipan)
 (krait_mkii "Krait MkII")

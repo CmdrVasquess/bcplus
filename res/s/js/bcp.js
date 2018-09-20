@@ -1,3 +1,17 @@
+function classGudBad(a, b, eq) {
+	if (!a) { a = 0; }
+	if (!b) { b = 0; }
+	if (a < b) {
+		return "bad";
+	} else if (a > b) {
+		return "gud";
+	} else if (eq == 0) {
+		return null;
+	} else {
+		return eq < 0 ? "bad" : "gud";
+	}
+}
+
 var wsurl = "wss://"+location.hostname+":"+location.port+"/ws";
 var wsock = new WebSocket(wsurl);
 

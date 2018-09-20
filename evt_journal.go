@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/CmdrVasquess/BCplus/webui"
@@ -128,6 +129,7 @@ var jEventHdl = map[string]jeActn{
 	"ShipyardSwap":      jeActn{jevtShipyardSwap, true},
 	"ShipTargeted":      jeActn{jevtShipTargeted, false},
 	"ShipyardTransfer":  jeActn{jevtShipyardTransfer, true},
+	"Shutdown":          jeActn{jevtShutdown, false},
 	"StartJump":         jeActn{jevtStartJump, true},
 	"SupercruiseExit":   jeActn{jevtSupercruiseExit, true},
 	"Undocked":          jeActn{jevtUndocked, true},
@@ -391,6 +393,16 @@ func jevtMissionAbandoned(ts time.Time, evt ggja.Obj) jePost {
 	return jePostSysPop
 }
 
+func splitMultiDestination(multiDest string) (dests []string) {
+	tmp := strings.Split(multiDest, "$MISSIONUTIL_MULTIPLE_FINAL_SEPARATOR;")
+	if len(tmp) < 2 {
+		return tmp
+	}
+	dests = strings.Split(tmp[0], "$MISSIONUTIL_MULTIPLE_INNER_SEPARATOR;")
+	dests = append(dests, tmp[1])
+	return dests
+}
+
 func jevtMissionAccepted(ts time.Time, evt ggja.Obj) jePost {
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -407,9 +419,28 @@ func jevtMissionAccepted(ts time.Time, evt ggja.Obj) jePost {
 	case "High":
 		rep = 3
 	}
-	theCmdr.Missions[mid] = &cmdr.Mission{
+	mssn := &cmdr.Mission{
 		Faction:    evt.MStr("Faction"),
+		Title:      evt.MStr("LocalisedName"),
 		Reputation: rep,
+	}
+	theCmdr.Missions[mid] = mssn
+	if evt.MStr("Name") == "Mission_Sightseeing" {
+		dests := splitMultiDestination(evt.MStr("DestinationSystem"))
+		var (
+			sys *galaxy.System
+			err error
+		)
+		for _, d := range dests {
+			sys, err = theGalaxy.MustSystem(d, sys)
+			if err != nil {
+				log.Panic(err)
+			}
+			mssn.Dests = append(mssn.Dests, sys.Id)
+			if !galaxy.V3dValid(sys.Coos) {
+				log.Warnf("system %d '%s' without coos", sys.Id, sys.Name)
+			}
+		}
 	}
 	return jePostSysPop
 }
@@ -707,6 +738,13 @@ func jevtShipyardTransfer(ts time.Time, evt ggja.Obj) jePost {
 	ship := theCmdr.MustHaveShip(sid, evt.MStr("ShipType"))
 	ship.BerthLoc = theCmdr.Loc.LocId
 	return 0
+}
+
+func jevtShutdown(ts time.Time, evt ggja.Obj) jePost {
+	stateLock.RLock()
+	defer stateLock.RUnlock()
+	switchToCommander("")
+	return jePostReload
 }
 
 func jevtStartJump(ts time.Time, evt ggja.Obj) jePost {

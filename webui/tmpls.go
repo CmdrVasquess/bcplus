@@ -32,6 +32,7 @@ func loadTemplates(resDir, lang, version string) {
 	btTopic, btCTop, btOTop := prepareTopics(page.NewBounT(btpl), resDir, lang)
 	tmplSyspop := prepareTopic(btTopic, tkeySysPop, resDir, lang)
 	tmplSysnat := prepareTopic(btTopic, tkeySysNat, resDir, lang)
+	tmplMissions := prepareTopic(btTopic, tkeyMissions, resDir, lang)
 	tmplSynth := prepareTopic(btTopic, tkeySynth, resDir, lang)
 	// ^ more prepare<Topic>(key, resDir, lang) go here
 	// All topics loaded => nav titles are known…
@@ -39,6 +40,8 @@ func loadTemplates(resDir, lang, version string) {
 	gxc.MustIndexMap(&gxtSysPop, tmplSyspop, idxMapNames.Convert)
 	tmplSysnat = finalizeNav(tkeySysNat, tmplSysnat, btCTop, btOTop)
 	gxc.MustIndexMap(&gxtSysNat, tmplSysnat, idxMapNames.Convert)
+	tmplMissions = finalizeNav(tkeyMissions, tmplMissions, btCTop, btOTop)
+	gxc.MustIndexMap(&gxtMissions, tmplMissions, idxMapNames.Convert)
 	tmplSynth = finalizeNav(tkeySynth, tmplSynth, btCTop, btOTop)
 	gxc.MustIndexMap(&gxtSynth, tmplSynth, idxMapNames.Convert)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"git.fractalqb.de/fractalqb/ggja"
 	"git.fractalqb.de/fractalqb/namemap"
@@ -29,6 +30,7 @@ type NMap struct {
 }
 
 func (nm *NMap) SetL10n(ed, loc string) {
+	ed = strings.ToLower(ed)
 	mapNm, mapDom := nm.Map(ed)
 	if mapDom < 0 || mapNm != loc {
 		nm.Base().Set(nm.FromIdx(), ed, nm.FromTo.ToIdxs()[0], loc)
