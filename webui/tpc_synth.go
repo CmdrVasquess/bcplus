@@ -1,8 +1,6 @@
 package webui
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 )
 
@@ -50,14 +48,6 @@ func tpcSynth(w http.ResponseWriter, r *http.Request) {
 	newSynth(&data)
 	bt := gxtSynth.NewBounT(nil)
 	bindTpcHeader(bt, &gxtSynth)
-	bt.BindGen(gxtSynth.TopicData, func(wr io.Writer) int {
-		enc := json.NewEncoder(wr)
-		enc.SetIndent("", "\t")
-		err := enc.Encode(data)
-		if err != nil {
-			panic(err)
-		}
-		return 1 // TODO howto determine the correct length
-	})
+	bt.BindGen(gxtSynth.TopicData, jsonContent(data))
 	bt.Emit(w)
 }

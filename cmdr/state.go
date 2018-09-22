@@ -80,6 +80,8 @@ type State struct {
 	}
 	MinorRep   map[string]float32  `json:",omitempty"`
 	Missions   map[uint32]*Mission `json:",omitempty"`
+	MissPath   []int               `json:"-"`
+	MissDist   float64             `json:"-"`
 	JStatFlags uint32
 	Loc, Home  Location
 	InShip     int

@@ -52,11 +52,15 @@ Missions
 <!-- >>> main >>> -->
       <table id="missions">
         <tr><th>Title</th><th>Destination</th><th>Faction</th><th>Rep</th></tr>
-        <tr v-for="(dst, key) in topic">
+        <tr v-for="(dst, key) in topic.Dests">
           <td>{{dst.Title}}</td>
           <td><kbd-send v-bind:text="dst.DstSys"></kbd-send></td>
           <td>{{dst.Faction}}</td>
-          <td>{{dst.Rep}}</td>
+          <td class="center">{{dst.Rep}}</td>
+        </tr>
+        <tr style="font-weight:bold">
+          <td class="right">Travel Distance:</td>
+          <td>{{topic.Dist | toDist}} Ly</td>
         </tr>
       </table>
 <!-- <<< main <<< -->

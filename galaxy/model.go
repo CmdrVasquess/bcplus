@@ -194,7 +194,13 @@ func (rpo *Repo) GetSystem(id int64) (*System, error) {
 	}
 	res := &System{Entity: Entity{r: rpo, Id: id}}
 	row := rpo.db.QueryRow("select name, x, y, z from system where id=$1", id)
-	err := row.Scan(&res.Name, &res.Coos[Xk], &res.Coos[Yk], &res.Coos[Zk])
+	var tx, ty, tz sql.NullFloat64
+	err := row.Scan(&res.Name, &tx, &ty, &tz)
+	if tx.Valid && ty.Valid && tz.Valid {
+		res.Coos[Xk], res.Coos[Yk], res.Coos[Zk] = tx.Float64, ty.Float64, tz.Float64
+	} else {
+		res.Coos = NaV3D
+	}
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

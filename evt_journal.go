@@ -92,6 +92,9 @@ const (
 	jePostReload jePost = (1 << iota)
 	jePostHdr
 	jePostSysPop
+	jePostSysNat
+	jePostSynth
+	jePostMissions
 )
 
 type jeActn struct {
@@ -390,7 +393,8 @@ func jevtMissionAbandoned(ts time.Time, evt ggja.Obj) jePost {
 	}
 	level := theCmdr.MinorRep[mission.Faction]
 	theCmdr.MinorRep[mission.Faction] = level - impact
-	return jePostSysPop
+	theCmdr.MissPath = nil
+	return jePostMissions
 }
 
 func splitMultiDestination(multiDest string) (dests []string) {
@@ -442,7 +446,8 @@ func jevtMissionAccepted(ts time.Time, evt ggja.Obj) jePost {
 			}
 		}
 	}
-	return jePostSysPop
+	theCmdr.MissPath = nil
+	return jePostMissions
 }
 
 func jevtMissionCompleted(ts time.Time, evt ggja.Obj) jePost {
@@ -480,7 +485,8 @@ func jevtMissionCompleted(ts time.Time, evt ggja.Obj) jePost {
 			}
 		}
 	}
-	return jePostSysPop
+	theCmdr.MissPath = nil
+	return jePostMissions
 }
 
 func jevtMissions(ts time.Time, evt ggja.Obj) jePost {
@@ -503,6 +509,7 @@ NEXT_CHECK_RM:
 	for _, rm := range rmIds {
 		delete(theCmdr.Missions, rm)
 	}
+	theCmdr.MissPath = nil
 	return 0
 }
 
@@ -611,19 +618,32 @@ func jevtFsdJump(ts time.Time, evt ggja.Obj) jePost {
 	return jePostHdr
 }
 
+func jevtBodyType(evt ggja.Obj) galaxy.PartType {
+	if tmp := evt.Str("StarType", ""); tmp != "" {
+		return galaxy.Star
+	}
+	if tmp := evt.MStr("BodyName"); strings.Contains(tmp, "Belt") {
+		return galaxy.Belt
+	}
+	return galaxy.Planet
+}
+
 func jevtScan(ts time.Time, evt ggja.Obj) jePost {
 	const jeScanAction = 0
-	// TODO update cmdr location
-	if theCmdr.Loc.SysId > 0 {
-		ssys, err := theGalaxy.GetSystem(theCmdr.Loc.SysId)
-		if err != nil {
-			panic(err)
-		}
-		if ssys == nil {
-			return jeScanAction
-		}
-		eddnSendJournal(theEddn, ts, evt, ssys)
+	if theCmdr.Loc.SysId <= 0 {
+		return 0
 	}
+	ssys, err := theGalaxy.GetSystem(theCmdr.Loc.SysId)
+	if err != nil {
+		panic(err)
+	}
+	if ssys == nil {
+		return jeScanAction
+	}
+	eddnSendJournal(theEddn, ts, evt, ssys)
+	// currently gnore "ScanType"
+	locNm := galaxy.LocalName(ssys.Name, evt.MStr("BodyName"))
+	ssys.MustPart(jevtBodyType(evt), locNm)
 	return jeScanAction
 }
 

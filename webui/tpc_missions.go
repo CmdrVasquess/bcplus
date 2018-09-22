@@ -1,9 +1,8 @@
 package webui
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
+	"time"
 
 	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/galaxy"
@@ -18,12 +17,17 @@ var (
 	gxtMissions gxtTopic
 )
 
-type tpcMissionData struct {
+type tpcMsnDest struct {
 	Title   string
 	DstId   int64
 	DstSys  string
 	Faction string
 	Rep     float32
+}
+
+type tpcMissionData struct {
+	Dist  float64
+	Dests []*tpcMsnDest
 }
 
 type tpcMsnSolver struct {
@@ -54,7 +58,11 @@ func (slv *tpcMsnSolver) best(
 	chSys, err := theGalaxy.GetSystem(chMsn.Dests[slv.stat[chose]])
 	if err != nil {
 		sysId := slv.msns[chose].Dests[slv.stat[chose]]
-		log.Errorf("cannot find mission destination system %d", sysId)
+		log.Panicf("cannot find mission destination system %d: %s", sysId, err)
+	}
+	if !galaxy.V3dValid(chSys.Coos) {
+		log.Tracef("system w/o coos: %d '%s'", chSys.Id, chSys.Name)
+		return 0.0, nil, nil
 	}
 	d := vec3.Distance(start, &chSys.Coos)
 	slv.stat[chose]++
@@ -69,6 +77,9 @@ func (slv *tpcMsnSolver) best(
 			continue
 		}
 		subDist, subEnd, subPath := slv.best(&chSys.Coos, i)
+		if subEnd == nil {
+			return 0.0, nil, nil
+		}
 		if subDist < optDist || optChs < 0 {
 			optChs = i
 			optDist = subDist
@@ -84,14 +95,20 @@ func (slv *tpcMsnSolver) best(
 	}
 }
 
-func (slv *tpcMsnSolver) solve(start *galaxy.Vec3D) (path []int, len float64) {
+func (slv *tpcMsnSolver) solve(start *galaxy.Vec3D) (path []int, dist float64) {
 	if len(slv.msns) == 0 {
 		return
 	}
 	optDist, optEnd, optPath := slv.best(start, 0)
+	if optEnd == nil {
+		return nil, 0.0
+	}
 	optDist += vec3.Distance(&optEnd.Coos, start)
 	for i := 1; i < len(slv.msns); i++ {
 		sd, se, sp := slv.best(start, i)
+		if se == nil {
+			return nil, 0.0
+		}
 		sd += vec3.Distance(&se.Coos, start)
 		if sd < optDist {
 			optDist = sd
@@ -99,7 +116,7 @@ func (slv *tpcMsnSolver) solve(start *galaxy.Vec3D) (path []int, len float64) {
 			optPath = sp
 		}
 	}
-	return optPath
+	return optPath, optDist
 }
 
 func (slv *tpcMsnSolver) visit(path []int, do func(m *cmdr.Mission, dest int)) {
@@ -113,18 +130,35 @@ func (slv *tpcMsnSolver) visit(path []int, do func(m *cmdr.Mission, dest int)) {
 	}
 }
 
-func newMissions() (res []*tpcMissionData) {
+func newMissions() (res *tpcMissionData) {
 	c := theCmdr()
 	mslv := newMsnSolver(c)
-	sys, _ := theGalaxy.GetSystem(c.Loc.SysId) // TODO error
-	path := mslv.solve(&sys.Coos)
-	log.Info(path)
-	mslv.visit(path, func(m *cmdr.Mission, dst int) {
+	sys, err := theGalaxy.GetSystem(c.Loc.SysId)
+	if err != nil {
+		log.Panicf("cannot resolve current system %d: %s", c.Loc.SysId, err)
+	}
+	if !galaxy.V3dValid(sys.Coos) {
+		log.Tracef("system w/o coos: %d '%s'", sys.Id, sys.Name)
+		return nil
+	}
+	if c.MissPath == nil {
+		log.Debug("compute optimal mission path…")
+		start := time.Now()
+		c.MissPath, c.MissDist = mslv.solve(&sys.Coos)
+		durtn := time.Since(start)
+		if c.MissPath == nil {
+			log.Debugf("no mission path after %s", durtn)
+		} else {
+			log.Debugf("mission path took %s", durtn)
+		}
+	}
+	res = &tpcMissionData{Dist: c.MissDist}
+	mslv.visit(c.MissPath, func(m *cmdr.Mission, dst int) {
 		dsys, err := theGalaxy.GetSystem(m.Dests[dst])
 		if err != nil {
-			log.Errorf("cannot find mission destination system %d", m.Dests[dst])
+			log.Panicf("cannot find mission destination system %d", m.Dests[dst])
 		}
-		res = append(res, &tpcMissionData{
+		res.Dests = append(res.Dests, &tpcMsnDest{
 			Title:   m.Title,
 			DstId:   dsys.Id,
 			DstSys:  dsys.Name,
@@ -139,14 +173,9 @@ func tpcMissions(w http.ResponseWriter, r *http.Request) {
 	bt := gxtMissions.NewBounT(nil)
 	bindTpcHeader(bt, &gxtMissions)
 	data := newMissions()
-	bt.BindGen(gxtMissions.TopicData, func(wr io.Writer) int {
-		enc := json.NewEncoder(wr)
-		enc.SetIndent("", "\t")
-		err := enc.Encode(data)
-		if err != nil {
-			panic(err)
-		}
-		return 1 // TODO howto determine the correct length
-	})
+	if data == nil {
+		data = &tpcMissionData{}
+	}
+	bt.BindGen(gxtMissions.TopicData, jsonContent(data))
 	bt.Emit(w)
 }

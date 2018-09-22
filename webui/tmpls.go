@@ -1,6 +1,7 @@
 package webui
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -16,6 +17,18 @@ const (
 	tmplDefaultLang = "en"
 	tmplExt         = ".html"
 )
+
+func jsonContent(j interface{}) func(io.Writer) int {
+	return func(wr io.Writer) int {
+		enc := json.NewEncoder(wr)
+		enc.SetIndent("", "\t")
+		err := enc.Encode(j)
+		if err != nil {
+			panic(err)
+		}
+		return 1
+	}
+}
 
 var idxMapNames = nmconv.Conversion{
 	Norm:   nmconv.Uncamel,

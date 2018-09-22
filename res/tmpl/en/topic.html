@@ -24,7 +24,7 @@
           <img v-else class="picgrm" src="s/img/notHome.png" alt="Not Home"
                v-on:dblclick="switchHome(true)" style="cursor:pointer">
         <kbd-send v-bind:text="hdr.System.Name"></kbd-send>
-        <span style="color:var(--colTxtDim)" v-if="hdr.Home && !atHome">⤚{{distHome}}→
+        <span style="color:var(--colTxtDim)" v-if="hdr.Home && !atHome">⤚{{distHome | toDist}}→
         <img class="picgrm" src="s/img/Home.png" alt="Home">
         <kbd-send v-bind:text="hdr.Home.Name"></kbd-send></span>
       </div>
@@ -55,6 +55,11 @@ var store = {
 };
 
 function wsUpdate(cmd) { store.state.hdr = cmd.Hdr; }
+
+Vue.filter('toDist', function(val) {
+  val = val.toFixed(2);
+  return val.toLocaleString();
+});
 
 Vue.component('kbd-send', {
   data: function() { return {glows: false}; },

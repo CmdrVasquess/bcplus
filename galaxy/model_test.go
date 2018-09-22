@@ -20,7 +20,7 @@ func testRepo(t *testing.T) (res *Repo, filename string) {
 	if err != nil && !os.IsNotExist(err) {
 		t.Fatal(err)
 	}
-	err = runSqlFile(res.db, "create-sqlite.sql")
+	err = runSqlFile(res.db, 0, "create-galaxy.sqlite.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestSystemCRUnD(t *testing.T) {
 		t.Errorf("invalid id: %d", sys.Id)
 	}
 	id := sys.Id
-	sys, err = rpo.GetSystem(id, nil)
+	sys, err = rpo.GetSystem(id)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestSystemCRUnD(t *testing.T) {
 	if sys.Id != id {
 		t.Errorf("system with id %d returned with id %d", id, sys.Id)
 	}
-	if sys.Name != "ACHENAR" {
+	if sys.Name != "Achenar" {
 		t.Errorf("unexpected system name '%s'", sys.Name)
 	}
 	if reflect.DeepEqual(sys.Coos, &Vec3D{1, 2, 3}) {
@@ -68,9 +68,9 @@ func TestSystemCRUnD(t *testing.T) {
 		t.Fatal(err)
 	}
 	if sys == nil {
-		t.Errorf("cannot find system by id %d", id)
+		t.Fatalf("cannot find system 'Sol'")
 	}
-	if sys.Name != "SOL" {
+	if sys.Name != "Sol" {
 		t.Errorf("unexpected system name '%s'", sys.Name)
 	}
 	if sys.Coos[Xk] != -123 {
