@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"encoding/json"
@@ -36,7 +36,7 @@ func eddnTraceMsg(msg map[string]interface{}) {
 func eddnSendErr(err error, msg map[string]interface{}) {
 	if err != nil {
 		logEddn.Log(l.Lwarn, err)
-		if logV {
+		if LogV {
 			ej, _ := json.Marshal(msg)
 			logEddn.Log(l.Ldebug, string(ej))
 		}
@@ -106,4 +106,25 @@ func eddnSendShipyard(upld *eddn.Upload, jShy map[string]interface{}) {
 	err = upld.Send(eddn.Sshipyard, shpy)
 	logEddn.Log(l.Ltrace, "done with shipyard to EDDN")
 	eddnSendErr(err, shpy)
+}
+
+func eddnSendOutfitting(upld *eddn.Upload, jOtf map[string]interface{}) {
+	otf := ggja.Obj{Bare: jOtf, OnError: ggjaFailLogErr}
+	tstr := otf.MStr("timestamp")
+	if len(tstr) == 0 {
+		return
+	}
+	logEddn.Logf(l.Ldebug, "send outfitting to EDDN (dry: %t, test: %t)",
+		upld.DryRun,
+		upld.TestUrl)
+	otft := eddn.NewMessage(tstr)
+	err := eddn.SetOutfittingJ(otft, jOtf)
+	if err != nil {
+		log.Logf(l.Lerror, "eddn outfitting: %s", err)
+		return
+	}
+	eddnTraceMsg(otft)
+	err = upld.Send(eddn.Scommodity, otft)
+	logEddn.Log(l.Ltrace, "done with outfitting to EDDN")
+	eddnSendErr(err, otft)
 }

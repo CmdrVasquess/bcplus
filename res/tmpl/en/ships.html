@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+ &lt;version&gt;: System Population</title>
+    <link rel="icon" href="s/img/logo.ico">
+    <link rel="stylesheet" href="s/css/bcp.css">
+    <script src="s/js/bcp.js"></script>
+    <script src="s/js/vue.js"></script>
+<!-- >>> head >>> -->
+    <style>
+div#ships { margin-top: .5em; }
+/*summary > div { border: 1px solid red; }*/
+    </style>
+<!-- <<< head <<< -->
+  </head>
+  <body>
+    <template>
+<!-- >>> title >>> -->
+Ships
+<!-- <<< title <<< -->
+<!-- >>> nav-name >>> -->
+Ships
+<!-- <<< nav-name <<< -->
+    </template>
+    <header style="display:block;" class="center">
+      CMDR Jameson ∙ Cobra MkIII "Home & Glory" JJ-CM3 ∙ <span class="kbd">Galam</span>
+      <span style="color:var(--colTxtDim)" v-if="home">⤚231.8→
+      <img class="picgrm" src="s/img/Home.png" alt="Home"> Lave</span>
+ 	  </header>
+    <nav>
+      <ul>
+        <li><a href="#">System</a></li>
+        <li class="current">Population</li>
+        <li><a href="#">Travel</a></li>
+        <li style="float:right"><a href="#"><img class="picgrm" src="s/img/Menu.png" alt="Settiings"></a></li>
+      </ul>
+    </nav>
+ 	  <main>
+<!-- >>> main >>> -->
+    <div id="ships">
+      <ship v-for="ship in topic" :key="ship.id" v-bind:hdr="hdr" v-bind:data="ship">
+    <div>
+<!-- <<< main <<< -->
+<!-- >>> script >>> -->
+    <script>
+Vue.component('ship', {
+  props: ['hdr', 'data'],
+  computed: {
+    inUse: function() { return this.hdr.Ship.Id == this.data.Id; },
+    hasName: function() { return this.data.Name && this.data.Name.length > 0; },
+    hasIdent: function() { return this.data.Ident && this.data.Ident.length > 0; },
+    hasLoc: function() { return this.data.BSys &&  this.data.BSys.length > 0; }
+  },
+  template:
+  '<details>\
+    <summary v-bind:class="{gud: inUse}">\
+      {{data.Type}} \
+      <span v-if="hasName">“{{data.Name}}”</span><span v-else>–</span> \
+      <span v-if="hasIdent">{{data.Ident}}</span><span v-else>–</span> \
+      ∙ <span v-if="hasLoc">{{data.BLoc}} \
+        <img v-if="hdr.Home.Name==data.BSys" class="picgrm" src="s/img/Home.png" alt="Home"> \
+        <img v-else class="picgrm" src="s/img/notHome.png" alt="Home"> \
+        <kbd-send v-bind:text="data.BSys"></kbd-send>\
+      </span>\
+      <span v-else>–</span>\
+      <!--div title="Hull Value / Modules Value / Rebuy Costs">H/M/R:</div>\
+      <div>&nbsp;123.456.789</div><div>&nbsp;123.456.789</div><div>&nbsp;12.345</div-->\
+    </summary>\
+    <div><h1>Hard Points</h1>\
+    </div>\
+    <div><h1>Utilities</h1>\
+    </div>\
+    <div><h1>Core Modules</h1>\
+    </div>\
+    <div><h1>Optional Modules</h1>\
+    </div>\
+   </details>'
+});
+/*
+<!--div><span v-if="hasLoc"> ∙ {{data.BLoc}} – \
+<img v-if="hdr.Home.Name==data.BSys" class="picgrm" src="s/img/Home.png" alt="Home"> \
+<img v-else class="picgrm" src="s/img/notHome.png" alt="Home"> \
+<kbd-send v-bind:text="data.BSys"></kbd-send></span></div>\
+<div title="Hull Value / Module Value / Rebuy Costs"> ∙ H/M/R Cr</div-->\
+*/
+
+var shipsApp = new Vue({
+  el: '#ships',
+  data: store.state
+});
+    </script>
+<!-- <<< script <<< -->
+    </main>
+  </body>
+</html>

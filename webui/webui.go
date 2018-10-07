@@ -12,9 +12,27 @@ import (
 	gxc "git.fractalqb.de/fractalqb/goxic"
 	l "git.fractalqb.de/fractalqb/qblog"
 	"github.com/CmdrVasquess/BCplus/cmdr"
+
 	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 )
+
+type UIUpdate = uint32
+
+func Update(uiu UIUpdate, ui UIUpdate) bool { return uiu&ui == ui }
+
+const (
+	UIReload UIUpdate = (1 << iota)
+	UIHdr
+	UISysPop
+	UISysNat
+	UIShips
+	UISynth
+	UISurface
+	UIMissions
+)
+
+var CurrentTopic uint32
 
 const (
 	certFile = "webui.cert"
@@ -39,6 +57,8 @@ var (
 	theStateLock *sync.RWMutex
 	theBCpQ      chan<- common.BCpEvent
 	nmap         *common.NameMaps
+	sysResolve   chan<- common.SysResolve
+	theTheme     string
 )
 
 type Init struct {
@@ -53,6 +73,8 @@ type Init struct {
 	StateLock   *sync.RWMutex
 	BCpQ        chan<- common.BCpEvent
 	Names       *common.NameMaps
+	SysResolve  chan<- common.SysResolve
+	Theme       string
 }
 
 func (i *Init) configure() {
@@ -61,6 +83,8 @@ func (i *Init) configure() {
 	theStateLock = i.StateLock
 	theBCpQ = i.BCpQ
 	nmap = i.Names
+	sysResolve = i.SysResolve
+	theTheme = i.Theme
 }
 
 func offlineFilter(h func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
@@ -91,15 +115,18 @@ func bindTpcHeader(bt *gxc.BounT, gxt *gxtTopic) {
 type topic struct {
 	key  string
 	path string
+	gxt  *gxtTopic
 	hdlr func(http.ResponseWriter, *http.Request)
 	nav  string
 }
 
 var topics = []*topic{
-	&topic{key: tkeySysPop, path: "/syspop", hdlr: tpcSysPop},
-	&topic{key: tkeySysNat, path: "/sysnat", hdlr: tpcSysNat},
-	&topic{key: tkeyMissions, path: "/missions", hdlr: tpcMissions},
-	&topic{key: tkeySynth, path: "/synth", hdlr: tpcSynth},
+	&topic{key: tkeyShips, path: "/ships", gxt: &gxtShips, hdlr: tpcShips},
+	//&topic{key: tkeySysPop, path: "/syspop", gxt: &gxtSysPop, hdlr: tpcSysPop},
+	&topic{key: tkeyMissions, path: "/missions", gxt: &gxtMissions, hdlr: tpcMissions},
+	&topic{key: tkeySurface, path: "/surface", gxt: &gxtSurface, hdlr: tpcSurface},
+	&topic{key: tkeySysNat, path: "/sysnat", gxt: &gxtSysNat, hdlr: tpcSysNat},
+	&topic{key: tkeySynth, path: "/synth", gxt: &gxtSynth, hdlr: tpcSynth},
 }
 
 func getTopic(key string) *topic {
@@ -126,7 +153,7 @@ func Run(init *Init) chan<- interface{} {
 	//		wr.Header().Set("Content-Type", "text/html; charset=utf-8")
 	//		wr.Write(pgOffline) // TODO error
 	//	})
-	http.HandleFunc("/", offlineFilter(tpcSysPop))
+	http.HandleFunc("/", offlineFilter(topics[0].hdlr))
 	for _, tdef := range topics {
 		http.HandleFunc(tdef.path, offlineFilter(tdef.hdlr))
 	}
@@ -135,6 +162,7 @@ func Run(init *Init) chan<- interface{} {
 		filepath.Join(init.DataDir, certFile),
 		filepath.Join(init.DataDir, keyFile),
 		nil)
+	//go http.ListenAndServe(fmt.Sprintf(":%d", init.Port), nil)
 	addls, err := ownAddrs()
 	if err != nil {
 		log.Panic(err)

@@ -1,4 +1,4 @@
-package main
+package core
 
 // Macro Syntax is based on XSX:
 //
@@ -499,7 +499,7 @@ func jEventMacro(evtName string, jFlags uint32) {
 	if ok {
 		jFlags &= macro.fMask
 		if jFlags == macro.fVal {
-			log.Logf(l.Ldebug, "play journal event macro: %s", evtName)
+			log.Debugf("play journal event macro: %s", evtName)
 			go playMacro(macro.seq, evtName)
 		}
 	}

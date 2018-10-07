@@ -63,7 +63,7 @@ func TestSystemCRUnD(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sys, err = rpo.FindSystem("Sol", nil)
+	sys, err = rpo.FindSystem("Sol")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestSysPartCRUnD(t *testing.T) {
 		t.Fatal(err)
 	}
 	earthId := sys.Id
-	sys, _ = rpo.FindSystem("Sol", nil)
+	sys, _ = rpo.FindSystem("Sol")
 	parts, err := sys.Parts()
 	if err != nil {
 		t.Fatal(err)
@@ -115,7 +115,7 @@ func TestSysPartCRUnD(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	earth, err = rpo.GetSysPart(earthId, nil)
+	earth, err = rpo.GetSysPart(earthId)
 	if err != nil {
 		t.Fatal(err)
 	}

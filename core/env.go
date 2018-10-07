@@ -1,17 +1,17 @@
 // +build !windows
 
-package main
+package core
 
 import (
 	"os/user"
 	"path/filepath"
 )
 
-func defaultJournalDir() string {
+func DefaultJournalDir() string {
 	return "."
 }
 
-func defaultDataDir() string {
+func DefaultDataDir() string {
 	if usr, _ := user.Current(); usr == nil {
 		return "."
 	} else {

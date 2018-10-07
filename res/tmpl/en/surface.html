@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BC+ &lt;version&gt;: System Population</title>
+    <link rel="icon" href="s/img/logo.ico">
+    <link rel="stylesheet" href="s/css/bcp.css">
+    <script src="s/js/bcp.js"></script>
+    <script src="s/js/vue.js"></script>
+    <!-- >>> head >>> -->
+        <style>
+#compass {
+  background-color: var(--colBkgDim);
+  text-align: center;
+  font-size: 120%;
+  font-weight: bold;
+  padding: .3em 0;
+  margin: .5em 0;
+}
+.dark { color: var(--colBkg); }
+.glow {
+  color: var(--colFgr);
+  text-shadow: 0 0 8px var(--colBad);
+}
+input { width: 6em; text-align: center; }
+table { margin: auto; }
+td { text-align: center; }
+        </style>
+
+    <!-- <<< head <<< -->
+  </head>
+  <body>
+    <template>
+<!-- >>> title >>> -->
+Surface Exploration
+<!-- <<< title <<< -->
+<!-- >>> nav-name >>> -->
+Surface
+<!-- <<< nav-name <<< -->
+    </template>
+    <header style="display:block;" class="center">
+      CMDR Jameson ∙ Cobra MkIII "Home & Glory" JJ-CM3 ∙ <span class="kbd">Galam</span>
+      <span style="color:var(--colTxtDim)" v-if="home">⤚231.8→
+      <img class="picgrm" src="s/img/Home.png" alt="Home"> Lave</span>
+ 	  </header>
+    <nav>
+      <ul>
+        <li><a href="#">System</a></li>
+        <li class="current">Population</li>
+        <li><a href="#">Travel</a></li>
+        <li style="float:right"><a href="#"><img class="picgrm" src="s/img/Menu.png" alt="Settiings"></a></li>
+      </ul>
+    </nav>
+ 	  <main>
+<!-- >>> main >>> -->
+      <div id="compass">
+        <span v-bind:class="{dark: !goLeft, glow: goLeft}">◄</span>
+        <span style="color:var(--colFgrDim)">{{bearing}}</span>
+        <span v-bind:class="{dark: !goRight, glow: goRight}">►</span>
+        <br>
+        <span style="color:var(--colFgrDim)">{{topic.Head}}</span>
+      </div>
+      <table>
+        <tr><th>Altitude</th><th>Latitude</th><th>Longitude</th><th>Box</th></tr>
+        <tr>
+          <td>{{topic.Alt|toDist}}m</td>
+          <td>{{topic.Lat|cooNum}}°</td>
+          <td>{{topic.Lon|cooNum}}°</td>
+          <td v-bind:class="{gud: dbox <= topic.Surf.Box}">{{dbox|cooNum}}</tr>
+        <tr>
+          <td style="font-weight:bold" class="right">Destination:</td>
+          <td><input id="tlat" type="number" min="-90" max="90" step="0.0001"
+                     v-model.number="topic.Surf.Dest[0]"
+                     v-on:change="sendDest"></td>
+          <td><input id="tlon" type="number" min="0" max="360" step="0.0001"
+                     v-model.number="topic.Surf.Dest[1]"
+                     v-on:change="sendDest"></td>
+          <td><input id="tbox" type="number" min="0" step="0.0001"
+                     v-model.number="topic.Surf.Box"
+                     v-on:change="sendDest"></td>
+        </tr>
+      </table>
+<!-- <<< main <<< -->
+<!-- >>> script >>> -->
+      <script>
+function toRad(x) { return x * Math.PI / 180.0; }
+function toDeg(x) { return x * 180.0 / Math.PI; }
+function cmpBrng(p2, l2, p1, l1) {
+	p1 = toRad(p1);
+	l1 = toRad(l1);
+	p2 = toRad(p2);
+	l2 = toRad(l2);
+	var y = Math.sin(l2-l1) * Math.cos(p2);
+	var x = Math.cos(p1) * Math.sin(p2) -
+   	      Math.sin(p1) * Math.cos(p2) * Math.cos(l2-l1);
+	var b = toDeg(Math.atan2(y, x)) + 180;
+	return b >= 360 ? b - 360 : b;
+}
+function turnTo(h, b) {
+	d = b - h;
+	if (d < -180) {
+		return d + 360;
+	} else if (d > 180) {
+		return d - 360;
+	}
+	return d;
+}
+var surfaceApp = new Vue({
+  el: 'main',
+  data: store.state,
+  filters: {
+    cooNum: function(val) {
+      if (!val) { return "NaN"; }
+      return val.toLocaleString('en', {maximumFractionDigits:4, minimumFractionDigits:4});
+    }
+  },
+  computed: {
+    bearing: function() {
+      var pLat = this.topic.Lat, pLon = this.topic.Lon;
+      if (!pLat || !pLon) {
+        return "offline";
+      }
+      var dLat = this.topic.Surf.Dest[0], dLon = this.topic.Surf.Dest[1];
+      if (!dLat || !dLon) {
+        return "–";
+      }
+      var b = cmpBrng(pLat, pLon, dLat, dLon);
+      return b.toLocaleString('en', {maximumFractionDigits:2, minimumFractionDigits:2})
+    },
+    goLeft: function () {
+			var b = this.bearing;
+			return turnTo(this.topic.Head, b) < -1;
+		},
+		goRight: function () {
+			var b = this.bearing;
+			return turnTo(this.topic.Head, b) > 1;
+		},
+    dbox: function() {
+      var pLat = this.topic.Lat, pLon = this.topic.Lon;
+      if (!pLat || !pLon) {
+        return "–";
+      }
+      var dLat = this.topic.Surf.Dest[0], dLon = this.topic.Surf.Dest[1];
+      if (!dLat || !dLon) {
+        return "–";
+      }
+      dLat = Math.abs(dLat - pLat);
+      dLon = Math.abs(dLon - pLon);
+      return (dLon > dLat) ? dLon : dLat;
+    }
+  },
+  methods: {
+    sendDest: function() {
+      var surf = this.topic.Surf;
+      var rq = { cmd:"surf-dest",
+                 lat: surf.Dest[0], lon: surf.Dest[1],
+                 box: surf.Box };
+      wsock.send(JSON.stringify(rq));
+    }
+  }
+});
+      </script>
+<!-- <<< script <<< -->
+    </main>
+  </body>
+</html>

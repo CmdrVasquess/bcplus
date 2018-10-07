@@ -36,4 +36,5 @@ func tpcSysNat(w http.ResponseWriter, r *http.Request) {
 	bindTpcHeader(bt, &gxtSysNat)
 	bt.BindP(gxtSysNat.TopicData, "null")
 	bt.Emit(w)
+	CurrentTopic = UISysNat
 }

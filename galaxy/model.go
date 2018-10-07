@@ -149,9 +149,10 @@ type Entity struct {
 
 type System struct {
 	Entity
-	Name  string
-	Coos  Vec3D
-	parts []*SysPart
+	Name   string
+	Coos   Vec3D
+	BodyNo int
+	parts  []*SysPart
 }
 
 func (s *System) LocalName(name string) string {
@@ -163,11 +164,16 @@ func (rpo *Repo) PutSystem(sys *System) (*System, error) {
 	xa := rpo.XaBegin()
 	defer xa.Rollback()
 	if sys.r == nil {
+		var x, y, z sql.NullFloat64
+		if V3dValid(sys.Coos) {
+			x.Valid, x.Float64 = true, sys.Coos[Xk]
+			y.Valid, y.Float64 = true, sys.Coos[Yk]
+			z.Valid, z.Float64 = true, sys.Coos[Zk]
+		}
 		var res sql.Result
-		res, err = rpo.tx.Exec(`insert into system (name, x, y, z)
-				                values ($1, $2, $3, $4)`,
-			sys.Name,
-			sys.Coos[Xk], sys.Coos[Yk], sys.Coos[Zk])
+		res, err = rpo.tx.Exec(`insert into system (name, x, y, z, bno)
+				                values ($1, $2, $3, $4, $5)`,
+			sys.Name, x, y, z, sys.BodyNo)
 		if err == nil {
 			if sys.Id, err = res.LastInsertId(); err == nil {
 				sys.r = rpo
@@ -176,13 +182,16 @@ func (rpo *Repo) PutSystem(sys *System) (*System, error) {
 			}
 		}
 	} else {
-		_, err := rpo.tx.Exec(`update system set name=$1, x=$2, y=$3, z=$4
-		                       where id=$5`,
+		_, err = rpo.tx.Exec(`update system
+		                       set name=$1, x=$2, y=$3, z=$4, bno=$5
+		                       where id=$6`,
 			sys.Name,
 			sys.Coos[Xk], sys.Coos[Yk], sys.Coos[Zk],
+			sys.BodyNo,
 			sys.Id)
 		if err == nil {
 			xa.Commit()
+			rpo.chSys(sys)
 		}
 	}
 	return sys, err
@@ -193,13 +202,19 @@ func (rpo *Repo) GetSystem(id int64) (*System, error) {
 		return res, nil
 	}
 	res := &System{Entity: Entity{r: rpo, Id: id}}
-	row := rpo.db.QueryRow("select name, x, y, z from system where id=$1", id)
+	row := rpo.db.QueryRow("select name, x, y, z, bno from system where id=$1", id)
 	var tx, ty, tz sql.NullFloat64
-	err := row.Scan(&res.Name, &tx, &ty, &tz)
+	var bno sql.NullInt64
+	err := row.Scan(&res.Name, &tx, &ty, &tz, &bno)
 	if tx.Valid && ty.Valid && tz.Valid {
 		res.Coos[Xk], res.Coos[Yk], res.Coos[Zk] = tx.Float64, ty.Float64, tz.Float64
 	} else {
 		res.Coos = NaV3D
+	}
+	if bno.Valid {
+		res.BodyNo = int(bno.Int64)
+	} else {
+		res.BodyNo = 0
 	}
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -211,56 +226,63 @@ func (rpo *Repo) GetSystem(id int64) (*System, error) {
 	return res, nil
 }
 
-func (rpo *Repo) FindSystem(name string, reuse *System) (*System, error) {
+func (rpo *Repo) FindSystem(name string) (*System, error) {
 	if res, ok := rpo.chSysNm[name]; ok {
 		return res, nil
 	}
-	if reuse == nil {
-		reuse = &System{Name: name}
-	} else {
-		reuse.Name = name
-		reuse.parts = nil
-	}
-	row := rpo.db.QueryRow(`select id, x, y, z from system
-	                        where name=$1 collate nocase`, reuse.Name)
-	err := row.Scan(&reuse.Id, &reuse.Coos[Xk], &reuse.Coos[Yk], &reuse.Coos[Zk])
+	res := &System{Name: name}
+	row := rpo.db.QueryRow(`select id, x, y, z, bno from system
+	                        where name=$1 collate nocase`, res.Name)
+	var tx, ty, tz sql.NullFloat64
+	var bno sql.NullInt64
+	err := row.Scan(&res.Id, &tx, &ty, &tz, &bno)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
 	}
-	reuse.r = rpo
-	rpo.chSys(reuse)
-	return reuse, nil
+	if tx.Valid && ty.Valid && tz.Valid {
+		res.Coos[Xk], res.Coos[Yk], res.Coos[Zk] = tx.Float64, ty.Float64, tz.Float64
+	} else {
+		res.Coos = NaV3D
+	}
+	if bno.Valid {
+		res.BodyNo = int(bno.Int64)
+	} else {
+		res.BodyNo = 0
+	}
+	res.r = rpo
+	rpo.chSys(res)
+	return res, nil
 }
 
-func (rpo *Repo) MustSystemCoos(name string, x, y, z float64, reuse *System) (*System, error) {
-	reuse, err := rpo.FindSystem(name, reuse)
+func (rpo *Repo) MustSystemCoos(name string, x, y, z float64) (*System, error) {
+	res, err := rpo.FindSystem(name)
 	if err != nil {
-		return reuse, err
+		return res, err
 	}
-	if reuse == nil {
-		reuse = &System{
+	if res == nil {
+		res = &System{
 			Name: name,
 			Coos: Vec3D{x, y, z},
 		}
-		_, err = rpo.PutSystem(reuse)
+		_, err = rpo.PutSystem(res)
 		if err != nil {
-			return reuse, err
+			return res, err
 		}
 	} else {
-		reuse.Coos[Xk], reuse.Coos[Yk], reuse.Coos[Zk] = x, y, z
-		_, err = rpo.PutSystem(reuse)
+		res.Coos[Xk], res.Coos[Yk], res.Coos[Zk] = x, y, z
+		_, err = rpo.PutSystem(res)
 		if err != nil {
-			return reuse, err
+			return res, err
 		}
 	}
-	return reuse, nil
+	return res, nil
 }
 
-func (rpo *Repo) MustSystem(name string, reuse *System) (*System, error) {
-	reuse, err := rpo.FindSystem(name, reuse)
+func (rpo *Repo) MustSystem(name string) (*System, error) {
+	reuse, err := rpo.FindSystem(name)
 	if err != nil {
 		return reuse, err
 	}
@@ -306,14 +328,14 @@ func (sys *System) Parts() ([]*SysPart, error) {
 		if err != nil {
 			return nil, err
 		}
-		var dfc, tto sql.NullInt64
-		var hgt, lat, lon sql.NullFloat64
+		var tto sql.NullInt64
+		var dfc, hgt, lat, lon sql.NullFloat64
 		for rows.Next() {
 			p := &SysPart{Entity: Entity{r: sys.r}, sys: sys, SysId: sys.Id}
 			err = rows.Scan(&p.Id, &p.Type, &p.Name,
 				&dfc, &tto,
 				&hgt, &lat, &lon)
-			p.FromCenter = nvlInt(dfc, -1)
+			p.FromCenter = nvlFloat32(dfc, -1)
 			p.TiedTo = nvlInt64(tto, 0)
 			p.Height = nvlFloat32(hgt, float32(math.NaN()))
 			p.Lat = nvlFloat32(lat, float32(math.NaN()))
@@ -372,7 +394,7 @@ type SysPart struct {
 	SysId      int64
 	Type       PartType
 	Name       string
-	FromCenter int
+	FromCenter float32
 	TiedTo     int64
 	Height     float32
 	Lat, Lon   float32
@@ -417,43 +439,37 @@ func (rpo *Repo) PutSysPart(part *SysPart) (*SysPart, error) {
 			part.Id)
 		if err == nil {
 			xa.Commit()
+			rpo.chPart(part)
 		}
 	}
 	return part, err
 }
 
-func (rpo *Repo) GetSysPart(id int64, reuse *SysPart) (*SysPart, error) {
+func (rpo *Repo) GetSysPart(id int64) (*SysPart, error) {
 	if res, ok := rpo.chPartId[id]; ok {
 		return res, nil
 	}
-	if reuse == nil {
-		reuse = &SysPart{Entity: Entity{r: rpo, Id: id}}
-	} else {
-		reuse.r = rpo
-		reuse.Id = id
-		reuse.sys = nil
-		reuse.rscs = nil
-	}
-	var dfc, tto sql.NullInt64
-	var hgt, lat, lon sql.NullFloat64
+	res := &SysPart{Entity: Entity{r: rpo, Id: id}}
+	var tto sql.NullInt64
+	var dfc, hgt, lat, lon sql.NullFloat64
 	row := rpo.db.QueryRow(`select sys, typ, name, dfc, tto, hgt, lat, lon
 		                    from syspart where id=$1`, id)
-	err := row.Scan(&reuse.SysId, &reuse.Type, &reuse.Name,
+	err := row.Scan(&res.SysId, &res.Type, &res.Name,
 		&dfc, &tto,
 		&hgt, &lat, &lon)
-	reuse.FromCenter = nvlInt(dfc, -1)
-	reuse.TiedTo = nvlInt64(tto, 0)
-	reuse.Height = nvlFloat32(hgt, NaN32)
-	reuse.Lat = nvlFloat32(lat, NaN32)
-	reuse.Lon = nvlFloat32(lon, NaN32)
+	res.FromCenter = nvlFloat32(dfc, -1)
+	res.TiedTo = nvlInt64(tto, 0)
+	res.Height = nvlFloat32(hgt, NaN32)
+	res.Lat = nvlFloat32(lat, NaN32)
+	res.Lon = nvlFloat32(lon, NaN32)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
 	}
-	rpo.chPart(reuse)
-	return reuse, nil
+	rpo.chPart(res)
+	return res, nil
 }
 
 type Resource struct {
@@ -489,6 +505,7 @@ func (rpo *Repo) PutResource(rsc *Resource) (*Resource, error) {
 			rsc.Id)
 		if err == nil {
 			xa.Commit()
+			rpo.chRes(rsc)
 		}
 	}
 	return rsc, err

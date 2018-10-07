@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"os/user"
@@ -12,7 +12,7 @@ var relJournalPath = []string{
 	"Elite Dangerous",
 }
 
-func defaultJournalDir() string {
+func DefaultJournalDir() string {
 	if usr, err := user.Current(); err != nil {
 		return "."
 	} else {
@@ -22,7 +22,7 @@ func defaultJournalDir() string {
 	}
 }
 
-func defaultDataDir() string {
+func DefaultDataDir() string {
 	if usr, _ := user.Current(); usr == nil {
 		return "."
 	} else {

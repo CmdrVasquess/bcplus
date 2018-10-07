@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"io"
@@ -16,7 +16,7 @@ var (
 	log         = qblog.Std("bcplus:")
 	logEddn     = log.NewSub("bc+edn:")
 	logEdsm     = log.NewSub("bc+eds:")
-	logV, logVV bool
+	LogV, LogVV bool
 )
 
 func init() {
@@ -30,10 +30,10 @@ func init() {
 	log.SetOutput(logWr)
 }
 
-func flagLogLevel() {
-	if logVV {
+func FlagLogLevel() {
+	if LogVV {
 		log.SetLevel(qblog.Ltrace)
-	} else if logV {
+	} else if LogV {
 		log.SetLevel(qblog.Ldebug)
 	}
 }

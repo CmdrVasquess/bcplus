@@ -1,8 +1,9 @@
-package main
+package core
 
 import (
 	"git.fractalqb.de/fractalqb/ggja"
 	"github.com/CmdrVasquess/BCplus/cmdr"
+	"github.com/CmdrVasquess/BCplus/galaxy"
 	robi "github.com/go-vgo/robotgo"
 )
 
@@ -15,6 +16,8 @@ func userEvent(jEvt ggja.GenObj) {
 		robi.TypeStr(txt)
 	case "synth-demand":
 		userSynthDemand(evt)
+	case "surf-dest":
+		userSurfaceDest(evt)
 	case "switch-home":
 		userSwitchHome(evt)
 	default:
@@ -31,6 +34,16 @@ func userSynthDemand(evt ggja.Obj) {
 		dmnd = append(dmnd, int(jn.(float64)))
 	}
 	theCmdr.RcpDmnd[recipe] = dmnd
+}
+
+func userSurfaceDest(evt ggja.Obj) {
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	theCmdr.Surface.Dest = [2]cmdr.CooNaN{
+		cmdr.CooNaN(evt.F32("lat", galaxy.NaN32)),
+		cmdr.CooNaN(evt.F32("lon", galaxy.NaN32)),
+	}
+	theCmdr.Surface.Box = evt.F32("box", 0)
 }
 
 func userSwitchHome(evt ggja.Obj) {

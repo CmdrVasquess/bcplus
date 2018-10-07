@@ -1,11 +1,34 @@
 package webui
 
+import (
+	"bytes"
+	"encoding/json"
+
+	"github.com/CmdrVasquess/BCplus/galaxy"
+)
+
 type HdrSysLoc struct {
 	Name string
 	Coos [3]float64
 }
 
+func (hloc *HdrSysLoc) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer(nil)
+	enc := json.NewEncoder(buf)
+	buf.WriteString(`{"Name":`)
+	enc.Encode(hloc.Name)
+	buf.WriteString(`,"Coos":`)
+	if galaxy.V3dValid(hloc.Coos) {
+		enc.Encode(hloc.Coos)
+		buf.WriteString("}")
+	} else {
+		buf.WriteString("null}")
+	}
+	return buf.Bytes(), nil
+}
+
 type Ship struct {
+	Id       int
 	Type     string
 	Ident    string
 	Name     string
@@ -23,16 +46,18 @@ const WsUpdCmd = "update"
 
 type WsCmdUpdate struct {
 	WsCommand
-	Hdr Header
+	Hdr *Header     `json:",omitempty"`
 	Tpc interface{} `json:",omitempty"`
 }
 
-func NewWsCmdUpdate(reuse *WsCmdUpdate) *WsCmdUpdate {
+func NewWsCmdUpdate(header bool, reuse *WsCmdUpdate) *WsCmdUpdate {
 	if reuse == nil {
 		reuse = new(WsCmdUpdate)
 	}
 	reuse.Cmd = WsUpdCmd
-	newHeader(&reuse.Hdr)
+	if header {
+		reuse.Hdr = newHeader(nil)
+	}
 	return reuse
 }
 
@@ -45,6 +70,7 @@ func newHeader(reuse *Header) *Header {
 		// TODO
 	} else {
 		reuse.Cmdr = cmdr.Name
+		reuse.Ship.Id = cmdr.InShip
 		if cmdr.InShip >= 0 {
 			inShip := cmdr.Ships[cmdr.InShip]
 			reuse.Ship.Type, _ = nmap.ShipType.Map(inShip.Type)

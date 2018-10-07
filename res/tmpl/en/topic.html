@@ -15,18 +15,20 @@
   <body>
 <!-- >>> body >>> -->
     <header>
-      <img src="s/img/Logo.png" alt="BC+ Logo"/>
+      <img src="s/img/Logo.png" alt="BC+ Logo" style="height:3em;margin-right:.5em"/>
       <div>CMDR {{hdr.Cmdr}} ∙ {{hdr.Ship.Type}}
-        <span v-if="hdr.Ship.Name">"{{hdr.Ship.Name}}"</span>
+        <span v-if="hdr.Ship.Name">“{{hdr.Ship.Name}}”</span>
         <span v-if="hdr.Ship.Ident">{{hdr.Ship.Ident}}</span>
-        ∙ <img v-if="this.atHome" class="picgrm" src="s/img/Home.png" alt="Home"
-               v-on:dblclick="switchHome(false)" style="cursor:pointer">
-          <img v-else class="picgrm" src="s/img/notHome.png" alt="Not Home"
-               v-on:dblclick="switchHome(true)" style="cursor:pointer">
-        <kbd-send v-bind:text="hdr.System.Name"></kbd-send>
-        <span style="color:var(--colTxtDim)" v-if="hdr.Home && !atHome">⤚{{distHome | toDist}}→
+        <span v-if="hdr.Home && !atHome">∙
+          {{distHome | toDist}}Ly →
         <img class="picgrm" src="s/img/Home.png" alt="Home">
         <kbd-send v-bind:text="hdr.Home.Name"></kbd-send></span>
+        <br>
+        <img v-if="this.atHome" class="picgrm" src="s/img/Home.png" alt="Home"
+               v-on:dblclick="switchHome(false)" style="cursor:pointer">
+        <img v-else class="picgrm" src="s/img/notHome.png" alt="Not Home"
+               v-on:dblclick="switchHome(true)" style="cursor:pointer">
+        <kbd-send v-bind:text="hdr.System.Name"></kbd-send>
       </div>
     </header>
     <nav>
@@ -54,11 +56,18 @@ var store = {
   }
 };
 
-function wsUpdate(cmd) { store.state.hdr = cmd.Hdr; }
+function wsUpdate(cmd) {
+  if (cmd.Hdr) { store.state.hdr = cmd.Hdr; }
+  if (cmd.Tpc) { store.state.topic = cmd.Tpc; }
+}
 
 Vue.filter('toDist', function(val) {
-  val = val.toFixed(2);
-  return val.toLocaleString();
+  if (val) {
+    val = Number.parseFloat(val);
+    return val.toLocaleString('en', {maximumFractionDigits:1, minimumFractionDigits:1});
+  } else {
+    return "";
+  }
 });
 
 Vue.component('kbd-send', {
@@ -86,6 +95,9 @@ var header = new Vue({
     distHome: function() {
       var hcoos = this.hdr.Home.Coos;
       var scoos = this.hdr.System.Coos;
+      if (!hcoos || !scoos) {
+        return NaN;
+      }
       var dx = hcoos[0]-scoos[0], dy = hcoos[1]-scoos[1], dz = hcoos[2]-scoos[2];
       var d = Math.sqrt(dx*dx+dy*dy+dz*dz).toFixed(1);
       return d; /*d.toLocaleString("de-DE");*/

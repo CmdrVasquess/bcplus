@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/CmdrVasquess/BCplus/cmdr"
+	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 	"github.com/ungerik/go3d/float64/vec3"
 )
@@ -31,8 +32,9 @@ type tpcMissionData struct {
 }
 
 type tpcMsnSolver struct {
-	msns []*cmdr.Mission
-	stat []int
+	msns    []*cmdr.Mission
+	stat    []int
+	resolve map[string]int
 }
 
 func newMsnSolver(c *cmdr.State) *tpcMsnSolver {
@@ -43,6 +45,7 @@ func newMsnSolver(c *cmdr.State) *tpcMsnSolver {
 		}
 	}
 	res.stat = make([]int, len(res.msns))
+	res.resolve = make(map[string]int)
 	return res
 }
 
@@ -58,10 +61,17 @@ func (slv *tpcMsnSolver) best(
 	chSys, err := theGalaxy.GetSystem(chMsn.Dests[slv.stat[chose]])
 	if err != nil {
 		sysId := slv.msns[chose].Dests[slv.stat[chose]]
-		log.Panicf("cannot find mission destination system %d: %s", sysId, err)
+		log.Errorf("failed to load mission destination system %d: %s", sysId, err)
+		return 0.0, nil, nil
+	}
+	if chSys == nil {
+		sysId := slv.msns[chose].Dests[slv.stat[chose]]
+		log.Errorf("cannot find mission destination system %d", sysId)
+		return 0.0, nil, nil
 	}
 	if !galaxy.V3dValid(chSys.Coos) {
 		log.Tracef("system w/o coos: %d '%s'", chSys.Id, chSys.Name)
+		slv.resolve[chSys.Name] = 1
 		return 0.0, nil, nil
 	}
 	d := vec3.Distance(start, &chSys.Coos)
@@ -139,6 +149,9 @@ func newMissions() (res *tpcMissionData) {
 	}
 	if !galaxy.V3dValid(sys.Coos) {
 		log.Tracef("system w/o coos: %d '%s'", sys.Id, sys.Name)
+		sysResolve <- common.SysResolve{
+			Names: []string{sys.Name},
+		}
 		return nil
 	}
 	if c.MissPath == nil {
@@ -150,6 +163,13 @@ func newMissions() (res *tpcMissionData) {
 			log.Debugf("no mission path after %s", durtn)
 		} else {
 			log.Debugf("mission path took %s", durtn)
+		}
+		if len(mslv.resolve) > 0 {
+			var rq common.SysResolve
+			for nm, _ := range mslv.resolve {
+				rq.Names = append(rq.Names, nm)
+			}
+			sysResolve <- rq
 		}
 	}
 	res = &tpcMissionData{Dist: c.MissDist}
@@ -178,4 +198,5 @@ func tpcMissions(w http.ResponseWriter, r *http.Request) {
 	}
 	bt.BindGen(gxtMissions.TopicData, jsonContent(data))
 	bt.Emit(w)
+	CurrentTopic = UIMissions
 }

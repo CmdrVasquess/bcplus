@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"bufio"
@@ -86,19 +86,8 @@ func readJournal(jfnm string) {
 	}
 }
 
-type jePost = uint32
-
-const (
-	jePostReload jePost = (1 << iota)
-	jePostHdr
-	jePostSysPop
-	jePostSysNat
-	jePostSynth
-	jePostMissions
-)
-
 type jeActn struct {
-	hdlr    func(ts time.Time, evt ggja.Obj) jePost
+	hdlr    func(ts time.Time, evt ggja.Obj) webui.UIUpdate
 	backlog bool
 }
 
@@ -110,6 +99,7 @@ var jEvtMatCat = map[string]cmdr.MatKind{
 
 var jEventHdl = map[string]jeActn{
 	"Commander":         jeActn{jevtCommander, false},
+	"DiscoveryScan":     jeActn{jevtDiscoveryScan, true},
 	"Docked":            jeActn{jevtDocked, true},
 	"Fileheader":        jeActn{jevtFileheader, false},
 	"FSDJump":           jeActn{jevtFsdJump, true},
@@ -141,12 +131,12 @@ var jEventHdl = map[string]jeActn{
 var jevtSpooling = false
 var jevtBacklog []ggja.GenObj
 
-func journalEvent(jLine []byte) {
+func journalEvent(jLine []byte) (wuiupd webui.UIUpdate) {
 	eJson := make(ggja.GenObj)
 	err := json.Unmarshal(jLine, &eJson)
 	if err != nil {
 		log.Logf(l.Lerror, "cannot parse journal event: %s: %s", err, string(jLine))
-		return
+		return 0
 	}
 	defer func() {
 		if p := recover(); p != nil {
@@ -158,7 +148,7 @@ func journalEvent(jLine []byte) {
 	enm := evt.Str("event", "")
 	if len(enm) == 0 {
 		log.Logf(l.Lerror, "no event name in journal event: %s", string(jLine))
-		return
+		return 0
 	}
 	if ets.Before(bcpState.LastEDEvent) {
 		log.Tracef("ignore historic event '%s' @%s <= %s",
@@ -175,7 +165,7 @@ func journalEvent(jLine []byte) {
 		case "Fileheader":
 			switchToCommander("")
 		}
-		return
+		return 0
 	}
 	if theCmdr != nil {
 		jEventMacro(enm, theCmdr.JStatFlags)
@@ -191,7 +181,6 @@ func journalEvent(jLine []byte) {
 			} else {
 				log.Debugf("dispatch to '%s' handler", enm)
 			}
-			var post jePost
 			if len(jevtBacklog) > 0 {
 				var nbl []ggja.GenObj
 				for _, jEvt := range jevtBacklog {
@@ -200,40 +189,26 @@ func journalEvent(jLine []byte) {
 					enm := evt.MStr("event")
 					blActn, _ := jEventHdl[enm]
 					log.Logf(l.Ldebug, "dispatch from backlog to '%s' handler", enm)
-					post |= blActn.hdlr(ets, ggja.Obj{Bare: jEvt})
+					wuiupd |= blActn.hdlr(ets, ggja.Obj{Bare: jEvt})
 				}
 				jevtBacklog = nbl
 			}
-			post |= acnt.hdlr(ets, evt)
+			wuiupd |= acnt.hdlr(ets, evt)
 			bcpState.LastEDEvent = ets
-			if !jevtSpooling {
-				var cmd interface{}
-				switch {
-				case post&jePostReload == jePostReload:
-					cmd = &webui.WsCmdLoad{
-						WsCommand: webui.WsCommand{Cmd: webui.WsLoadCmd},
-					}
-				case post&jePostHdr == jePostHdr:
-					cmd = webui.NewWsCmdUpdate(nil)
-				}
-				if cmd != nil {
-					toWsClient <- cmd
-				}
-			}
 		}
 	} else {
 		log.Debugf("no handler for event '%s'", enm)
 	}
+	return wuiupd
 }
 
 func sysByName(name string, coos *ggja.Arr) (res *galaxy.System) {
 	var err error
 	if coos == nil {
-		res, err = theGalaxy.MustSystem(name, nil)
+		res, err = theGalaxy.MustSystem(name)
 	} else {
 		res, err = theGalaxy.MustSystemCoos(name,
-			coos.MF64(0), coos.MF64(1), coos.MF64(2),
-			nil)
+			coos.MF64(0), coos.MF64(1), coos.MF64(2))
 	}
 	if err != nil {
 		log.Panic(err)
@@ -249,30 +224,48 @@ func partFromSys(sys *galaxy.System, typ galaxy.PartType, partName string) *gala
 	return res
 }
 
-func jevtFileheader(ts time.Time, evt ggja.Obj) jePost {
+func jevtFileheader(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	lang := evt.MStr("language")
 	locale, dom := nameMaps.Lang.Map(nameMaps.LangEd, lang, nameMaps.LangLoc)
 	nameMaps.Save()
 	if dom >= 0 {
-		nameMaps.Load(resDir, flagDDir, locale)
+		nameMaps.Load(resDir, FlagDDir, locale)
 	} else {
-		nameMaps.Load(resDir, flagDDir, common.DefaultLang)
+		nameMaps.Load(resDir, FlagDDir, common.DefaultLang)
 	}
 	switchToCommander("")
-	return jePostReload
+	return webui.UIReload
 }
 
-func jevtCommander(ts time.Time, evt ggja.Obj) jePost {
+func jevtCommander(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	name := evt.MStr("Name")
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	switchToCommander(name)
-	return jePostReload
+	return webui.UIReload
 }
 
-func jevtDocked(ts time.Time, evt ggja.Obj) jePost {
+func jevtDiscoveryScan(ts time.Time, evt ggja.Obj) webui.UIUpdate {
+	stateLock.Lock()
+	defer stateLock.Unlock()
+	ssys, err := theGalaxy.GetSystem(theCmdr.Loc.SysId)
+	if err != nil {
+		panic(err)
+	}
+	scnBno := evt.MInt("Bodies")
+	if ssys.BodyNo != scnBno {
+		ssys.BodyNo = scnBno
+		_, err := theGalaxy.PutSystem(ssys)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return 0
+}
+
+func jevtDocked(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	ssys := sysByName(evt.MStr("StarSystem"), nil)
@@ -284,10 +277,10 @@ func jevtDocked(ts time.Time, evt ggja.Obj) jePost {
 		log.Panic(err)
 	}
 	eddnSendJournal(theEddn, ts, evt, ssys)
-	return jePostHdr
+	return webui.UIHdr
 }
 
-func jevtUndocked(ts time.Time, evt ggja.Obj) jePost {
+func jevtUndocked(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	// TODO compare station/port; problem unreliable system id
@@ -295,7 +288,7 @@ func jevtUndocked(ts time.Time, evt ggja.Obj) jePost {
 	return 0
 }
 
-func jevtLoadGame(ts time.Time, evt ggja.Obj) jePost {
+func jevtLoadGame(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	name := evt.MStr("Commander")
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -308,12 +301,15 @@ func jevtLoadGame(ts time.Time, evt ggja.Obj) jePost {
 	ship.Ident = evt.Str("ShipIdent", ship.Ident)
 	ship.Name = evt.Str("ShipName", ship.Name)
 	nameMaps.ShipType.PickL10n(evt, "Ship", "Ship_Localised")
-	return jePostReload
+	return webui.UIReload
 }
 
-func jevtLoadout(ts time.Time, evt ggja.Obj) jePost {
+func jevtLoadout(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
+	if theCmdr.JStatFlags&statInMainShip != statInMainShip {
+		return 0
+	}
 	ship := theCmdr.MustHaveShip(evt.MInt("ShipID"), evt.MStr("Ship"))
 	theCmdr.InShip = ship.Id
 	ship.BerthLoc = 0
@@ -323,7 +319,7 @@ func jevtLoadout(ts time.Time, evt ggja.Obj) jePost {
 	ship.Rebuy = evt.Int("Rebuy", ship.Rebuy)
 	ship.HullValue = evt.Int("HullValue", ship.HullValue)
 	ship.ModuleValue = evt.Int("ModulesValue", ship.ModuleValue)
-	return jePostHdr
+	return webui.UIHdr
 }
 
 func akkuMats(cat string, mat string, d int) {
@@ -341,7 +337,7 @@ func akkuMats(cat string, mat string, d int) {
 	}
 }
 
-func jevtMaterialCollected(ts time.Time, evt ggja.Obj) jePost {
+func jevtMaterialCollected(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	cat := evt.MStr("Category")
@@ -356,7 +352,7 @@ func jevtMaterialCollected(ts time.Time, evt ggja.Obj) jePost {
 	return 0
 }
 
-func jevtMaterials(ts time.Time, evt ggja.Obj) jePost {
+func jevtMaterials(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	setMats := func(cat string, kind cmdr.MatKind, matls ggja.GenArr) {
@@ -379,7 +375,7 @@ func jevtMaterials(ts time.Time, evt ggja.Obj) jePost {
 	return 0
 }
 
-func jevtMissionAbandoned(ts time.Time, evt ggja.Obj) jePost {
+func jevtMissionAbandoned(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	mid := evt.MUint32("MissionID")
@@ -394,7 +390,7 @@ func jevtMissionAbandoned(ts time.Time, evt ggja.Obj) jePost {
 	level := theCmdr.MinorRep[mission.Faction]
 	theCmdr.MinorRep[mission.Faction] = level - impact
 	theCmdr.MissPath = nil
-	return jePostMissions
+	return webui.UIMissions
 }
 
 func splitMultiDestination(multiDest string) (dests []string) {
@@ -407,7 +403,7 @@ func splitMultiDestination(multiDest string) (dests []string) {
 	return dests
 }
 
-func jevtMissionAccepted(ts time.Time, evt ggja.Obj) jePost {
+func jevtMissionAccepted(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	mid := evt.MUint32("MissionID")
@@ -429,14 +425,14 @@ func jevtMissionAccepted(ts time.Time, evt ggja.Obj) jePost {
 		Reputation: rep,
 	}
 	theCmdr.Missions[mid] = mssn
-	if evt.MStr("Name") == "Mission_Sightseeing" {
-		dests := splitMultiDestination(evt.MStr("DestinationSystem"))
+	if dst := evt.Str("DestinationSystem", ""); dst != "" {
+		dests := splitMultiDestination(dst)
 		var (
 			sys *galaxy.System
 			err error
 		)
 		for _, d := range dests {
-			sys, err = theGalaxy.MustSystem(d, sys)
+			sys, err = theGalaxy.MustSystem(d)
 			if err != nil {
 				log.Panic(err)
 			}
@@ -447,10 +443,10 @@ func jevtMissionAccepted(ts time.Time, evt ggja.Obj) jePost {
 		}
 	}
 	theCmdr.MissPath = nil
-	return jePostMissions
+	return webui.UIMissions
 }
 
-func jevtMissionCompleted(ts time.Time, evt ggja.Obj) jePost {
+func jevtMissionCompleted(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	mid := evt.MUint32("MissionID")
@@ -486,10 +482,10 @@ func jevtMissionCompleted(ts time.Time, evt ggja.Obj) jePost {
 		}
 	}
 	theCmdr.MissPath = nil
-	return jePostMissions
+	return webui.UIMissions
 }
 
-func jevtMissions(ts time.Time, evt ggja.Obj) jePost {
+func jevtMissions(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	var actvIds, rmIds []uint32
@@ -513,7 +509,7 @@ NEXT_CHECK_RM:
 	return 0
 }
 
-func jevtRank(ts time.Time, evt ggja.Obj) jePost {
+func jevtRank(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	theCmdr.Ranks.Imps.Level = evt.Int("Empire", theCmdr.Ranks.Imps.Level)
@@ -525,7 +521,7 @@ func jevtRank(ts time.Time, evt ggja.Obj) jePost {
 	return 0
 }
 
-func jevtReputation(ts time.Time, evt ggja.Obj) jePost {
+func jevtReputation(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	theCmdr.Rep.Imps = evt.F32("Empire", theCmdr.Rep.Imps)
@@ -534,7 +530,7 @@ func jevtReputation(ts time.Time, evt ggja.Obj) jePost {
 	return 0
 }
 
-func jevtProgress(ts time.Time, evt ggja.Obj) jePost {
+func jevtProgress(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	theCmdr.Ranks.Imps.Progress = evt.Int("Empire", theCmdr.Ranks.Imps.Progress)
@@ -546,7 +542,7 @@ func jevtProgress(ts time.Time, evt ggja.Obj) jePost {
 	return 0
 }
 
-func jevtLocation(ts time.Time, evt ggja.Obj) jePost {
+func jevtLocation(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	sysNm := evt.MStr("StarSystem")
 	coos := evt.MArr("StarPos")
 	station := evt.Str("StationName", "")
@@ -601,10 +597,10 @@ func jevtLocation(ts time.Time, evt ggja.Obj) jePost {
 	}
 	xa.Commit()
 	eddnSendJournal(theEddn, ts, evt, ssys)
-	return jePostHdr
+	return webui.UIHdr
 }
 
-func jevtFsdJump(ts time.Time, evt ggja.Obj) jePost {
+func jevtFsdJump(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	sysNm := evt.MStr("StarSystem")
@@ -615,7 +611,7 @@ func jevtFsdJump(ts time.Time, evt ggja.Obj) jePost {
 	theCmdr.Loc.Docked = false
 	theCmdr.Jumps.Add(ssys.Id, ts)
 	eddnSendJournal(theEddn, ts, evt, ssys)
-	return jePostHdr
+	return webui.UIHdr
 }
 
 func jevtBodyType(evt ggja.Obj) galaxy.PartType {
@@ -628,7 +624,7 @@ func jevtBodyType(evt ggja.Obj) galaxy.PartType {
 	return galaxy.Planet
 }
 
-func jevtScan(ts time.Time, evt ggja.Obj) jePost {
+func jevtScan(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	const jeScanAction = 0
 	if theCmdr.Loc.SysId <= 0 {
 		return 0
@@ -643,11 +639,22 @@ func jevtScan(ts time.Time, evt ggja.Obj) jePost {
 	eddnSendJournal(theEddn, ts, evt, ssys)
 	// currently gnore "ScanType"
 	locNm := galaxy.LocalName(ssys.Name, evt.MStr("BodyName"))
-	ssys.MustPart(jevtBodyType(evt), locNm)
+	part, err := ssys.MustPart(jevtBodyType(evt), locNm)
+	if err != nil {
+		panic(err)
+	}
+	part.FromCenter = evt.F32("DistanceFromArrivalLS", -1.0)
+	part, err = theGalaxy.PutSysPart(part)
+	if err != nil {
+		panic(err)
+	}
+	if mats := evt.Arr("Materials"); mats != nil {
+		// TODO
+	}
 	return jeScanAction
 }
 
-func jevtShipyardBuy(ts time.Time, evt ggja.Obj) jePost {
+func jevtShipyardBuy(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	storeId := evt.MInt("StoreShipID")
 	if storeId != theCmdr.InShip {
 		log.Logf(l.Lwarn, "inconsistent ids for current ship bc+:%d / event:%d",
@@ -659,10 +666,10 @@ func jevtShipyardBuy(ts time.Time, evt ggja.Obj) jePost {
 	ship.BerthLoc = theCmdr.Loc.LocId
 	theCmdr.InShip = cmdr.NoShip
 	nameMaps.ShipType.PickL10n(evt, "ShipType", "ShipType_Localised")
-	return jePostHdr
+	return webui.UIHdr | webui.UIShips
 }
 
-func jevtShipyardNew(ts time.Time, evt ggja.Obj) jePost {
+func jevtShipyardNew(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	ship := &cmdr.Ship{
 		Id:     evt.MInt("NewShipID"),
 		Type:   evt.MStr("ShipType"),
@@ -680,7 +687,7 @@ func jevtShipyardNew(ts time.Time, evt ggja.Obj) jePost {
 	theCmdr.Ships[ship.Id] = ship
 	theCmdr.InShip = ship.Id
 	nameMaps.ShipType.PickL10n(evt, "ShipType", "ShipType_Localised")
-	return jePostHdr
+	return webui.UIHdr | webui.UIShips
 }
 
 func saveSoldShip(cmdr string, ship *cmdr.Ship) {
@@ -708,7 +715,7 @@ func saveSoldShip(cmdr string, ship *cmdr.Ship) {
 	err = enc.Encode(ship)
 }
 
-func jevtShipyardSell(ts time.Time, evt ggja.Obj) jePost {
+func jevtShipyardSell(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	sid := evt.MInt("SellShipID")
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -721,10 +728,10 @@ func jevtShipyardSell(ts time.Time, evt ggja.Obj) jePost {
 	}
 	delete(theCmdr.Ships, sid)
 	nameMaps.ShipType.PickL10n(evt, "ShipType", "ShipType_Localised")
-	return jePostHdr
+	return webui.UIHdr | webui.UIShips
 }
 
-func jevtShipyardSwap(ts time.Time, evt ggja.Obj) jePost {
+func jevtShipyardSwap(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	ship := theCmdr.MustHaveShip(
@@ -739,15 +746,15 @@ func jevtShipyardSwap(ts time.Time, evt ggja.Obj) jePost {
 	ship.BerthLoc = 0
 	theCmdr.InShip = ship.Id
 	nameMaps.ShipType.PickL10n(evt, "ShipType", "ShipType_Localised")
-	return jePostHdr
+	return webui.UIHdr | webui.UIShips
 }
 
-func jevtShipTargeted(ts time.Time, evt ggja.Obj) jePost {
+func jevtShipTargeted(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	nameMaps.ShipType.PickL10n(evt, "Ship", "Ship_Localised")
 	return 0
 }
 
-func jevtShipyardTransfer(ts time.Time, evt ggja.Obj) jePost {
+func jevtShipyardTransfer(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	sid := evt.MInt("ShipID")
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -760,14 +767,14 @@ func jevtShipyardTransfer(ts time.Time, evt ggja.Obj) jePost {
 	return 0
 }
 
-func jevtShutdown(ts time.Time, evt ggja.Obj) jePost {
+func jevtShutdown(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.RLock()
 	defer stateLock.RUnlock()
 	switchToCommander("")
-	return jePostReload
+	return webui.UIReload
 }
 
-func jevtStartJump(ts time.Time, evt ggja.Obj) jePost {
+func jevtStartJump(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	jty := evt.MStr("JumpType")
 	if jty == "Supercruise" {
 		stateLock.Lock()
@@ -775,10 +782,10 @@ func jevtStartJump(ts time.Time, evt ggja.Obj) jePost {
 		theCmdr.Loc.LocId = 0
 		theCmdr.Loc.Docked = false
 	}
-	return jePostHdr
+	return webui.UIHdr
 }
 
-func jevtSupercruiseExit(ts time.Time, evt ggja.Obj) jePost {
+func jevtSupercruiseExit(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	// TODO NYI
 	return 0
 }

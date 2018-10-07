@@ -8,23 +8,17 @@
     <link rel="stylesheet" href="s/css/bcp.css">
     <script src="s/js/bcp.js"></script>
     <script src="s/js/vue.js"></script>
-    <style>
-div.body {
-  float: left;
+    <!-- >>> head >>> -->
+        <style>
+main th { text-align: left; }
+main td {
   background-color: var(--colBkgDim);
-  padding: .2em .3em .2em .3em;
-  margin: .2em;
-  font-size: 80%;
+  padding-left: .4em;
+  padding-right: .4em;
 }
-div.body h1 {
-  margin: 0;
-  font-size: 120%;
-  font-weight: bold;
-}
-div.body td {
-  background-color: var(--colBkg);
-}
-    </style>
+        </style>
+
+    <!-- <<< head <<< -->
   </head>
   <body>
     <template>
@@ -61,6 +55,7 @@ Missions
         <tr style="font-weight:bold">
           <td class="right">Travel Distance:</td>
           <td>{{topic.Dist | toDist}} Ly</td>
+          <td colspan="2"/>
         </tr>
       </table>
 <!-- <<< main <<< -->

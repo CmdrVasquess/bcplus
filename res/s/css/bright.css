@@ -1,0 +1,10 @@
+:root {
+  --colBkg: white;
+  --colBkgDim: #DDD;
+  --colFgr: black;
+  --colFgrDim: grey;
+  --colTxt: black;
+  --colTxtDim: grey;
+  --colGud: green;
+  --colBad: red;
+}

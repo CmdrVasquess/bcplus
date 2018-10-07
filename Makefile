@@ -19,10 +19,10 @@ godepgraph.dot: Makefile
 pack: pack/pack BCplus
 	pack/pack -pack zip
 
-BCplus: version.go
+BCplus: core/version.go
 	go build
 
-version.go: VERSION
+core/version.go: VERSION
 	go generate
 
 pack/pack: $(wildcard pack/*.go)

@@ -2,21 +2,49 @@ package cmdr
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"time"
 
 	l "git.fractalqb.de/fractalqb/qblog"
+	"github.com/CmdrVasquess/BCplus/galaxy"
 )
 
 var log = l.Std("bc+cdr:")
 var LogConfig = l.Package(log)
 
+type CooNaN float32
+
+func (cn CooNaN) MarshalJSON() ([]byte, error) {
+	if math.IsNaN(float64(cn)) {
+		return []byte(`null`), nil
+	} else {
+		res := fmt.Sprint(cn)
+		return []byte(res), nil
+	}
+}
+
+func (cn *CooNaN) UnmarshalJSON(j []byte) error {
+	if string(j) == "null" {
+		*cn = CooNaN(galaxy.NaN32)
+	} else {
+		x, err := strconv.ParseFloat(string(j), 32)
+		if err != nil {
+			return err
+		}
+		*cn = CooNaN(x)
+	}
+	return nil
+}
+
 type Location struct {
-	SysId    int64
-	LocId    int64
-	Docked   bool
-	Lat, Lon float32
+	SysId         int64
+	LocId         int64
+	Docked        bool
+	Alt, Lat, Lon CooNaN
+	Heading       CooNaN
 }
 
 func (loc *Location) Clear() {
@@ -27,8 +55,9 @@ func (loc *Location) Clear() {
 }
 
 func (loc *Location) ClearGeo() {
-	loc.Lat = float32(math.NaN())
-	loc.Lon = float32(math.NaN())
+	loc.Alt = CooNaN(galaxy.NaN32)
+	loc.Lat = CooNaN(galaxy.NaN32)
+	loc.Lon = CooNaN(galaxy.NaN32)
 }
 
 func (loc *Location) ValidGeo() bool {
@@ -68,6 +97,11 @@ type Rank struct {
 	Progress int
 }
 
+type Surface struct {
+	Dest [2]CooNaN
+	Box  float32
+}
+
 type State struct {
 	Name        string
 	Scrambled   string
@@ -88,6 +122,7 @@ type State struct {
 	Ships      map[int]*Ship
 	Mats       map[Material]*MatState
 	RcpDmnd    map[RcpDef][]int
+	Surface    Surface
 	EddnMode   string
 	Edsm       struct {
 		Name   string
@@ -105,6 +140,8 @@ func NewState(init *State) *State {
 	init.Ships = make(map[int]*Ship)
 	init.Mats = make(map[Material]*MatState)
 	init.RcpDmnd = make(map[RcpDef][]int)
+	init.Loc.ClearGeo()
+	init.Home = init.Loc
 	return init
 }
 
@@ -137,7 +174,7 @@ func (s *State) Save(filename string) error {
 }
 
 func (s *State) Load(filename string) error {
-	log.Logf(l.Linfo, "load commander state from '%s'", filename)
+	log.Infof("load commander state from '%s'", filename)
 	f, err := os.Open(filename)
 	if err != nil {
 		return err

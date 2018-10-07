@@ -1,11 +1,15 @@
-package main
+package core
 
 import (
 	"encoding/json"
 	"os"
 
+	"github.com/CmdrVasquess/BCplus/webui"
+
 	"git.fractalqb.de/fractalqb/ggja"
 	l "git.fractalqb.de/fractalqb/qblog"
+	"github.com/CmdrVasquess/BCplus/cmdr"
+	"github.com/CmdrVasquess/BCplus/galaxy"
 )
 
 // https://github.com/EDCD/EDDI/issues/371
@@ -89,19 +93,31 @@ func jstatShipyard(statFile string) {
 	}
 }
 
-func jstatStatus(statFile string) {
+func jstatOutfitting(statFile string) {
+	stat, err := jstatRead(statFile)
+	if err == nil && theEddn != nil {
+		go eddnSendOutfitting(theEddn, stat)
+	}
+}
+
+func jstatStatus(statFile string) (wuiupd webui.UIUpdate) {
 	jStat, err := jstatRead(statFile)
 	if err != nil {
 		return
 	}
-	// TODO remove logging when enough records collected
-	jStr, _ := json.Marshal(jStat)
-	log.Logf(l.Ltrace, "Status.json: %s", string(jStr))
+	if log.Logs(l.Ltrace) {
+		jStr, _ := json.Marshal(jStat)
+		log.Tracef("Status.json: %s", string(jStr))
+	}
 	if theCmdr != nil {
 		stateLock.Lock()
 		defer stateLock.Unlock()
 		stat := ggja.Obj{Bare: jStat}
 		theCmdr.JStatFlags = stat.MUint32("Flags")
-		// TODO update location
+		theCmdr.Loc.Alt = cmdr.CooNaN(stat.F32("Altitude", galaxy.NaN32))
+		theCmdr.Loc.Lat = cmdr.CooNaN(stat.F32("Latitude", galaxy.NaN32))
+		theCmdr.Loc.Lon = cmdr.CooNaN(stat.F32("Longitude", galaxy.NaN32))
+		theCmdr.Loc.Heading = cmdr.CooNaN(stat.F32("Heading", galaxy.NaN32))
 	}
+	return webui.UISurface
 }

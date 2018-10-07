@@ -15,4 +15,5 @@ func tpcSysPop(w http.ResponseWriter, r *http.Request) {
 	bindTpcHeader(bt, &gxtSysPop)
 	bt.BindP(gxtSysPop.TopicData, "null")
 	bt.Emit(w)
+	CurrentTopic = UISysPop
 }

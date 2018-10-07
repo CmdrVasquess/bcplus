@@ -1,23 +1,3 @@
-:root {
-/*
-  --colBkg: black;
-  --colBkgDim: #411D00;
-  --colFgr: #FF7000;
-  --colFgrDim: #be5400;
-  --colTxt: #FF7000;
-  --colTxtDim: #D25C00;
-  --colGud: #00A6EA;
-  --colBad: #FD0406;
-*/
-  --colBkg: white;
-  --colBkgDim: #DDD;
-  --colFgr: black;
-  --colFgrDim: grey;
-  --colTxt: black;
-  --colTxtDim: grey;
-  --colGud: green;
-  --colBad: red;
-}
 .left {	text-align: left; }
 .center {	text-align: center; }
 .right { text-align: right; }
@@ -32,6 +12,12 @@
 img.picgrm {
   height: 1em;
   vertical-align: text-top;
+}
+details { margin-bottom: .5em; }
+details > summary {
+  font-weight: bold;
+  background-color: var(--colBkgDim);
+  padding: .2em;
 }
 body {
   background-color: var(--colBkg);
@@ -55,13 +41,9 @@ select {
 header {
   font-size: 140%;
   font-weight: bold;
-  margin-bottom: 1em;
+  margin-bottom: .3em;
   display: flex;
   flex-flow: row wrap;
-}
-header img {
-  height: 3em;
-  margin-right: .5em;
 }
 nav ul {
   list-style-type: none;
@@ -74,17 +56,19 @@ nav li {
   float: left;
   display: block;
   text-align: center;
-  padding: .4em 1em;
+  padding: .4em 0;
   margin-left: 2px;
   margin-right: 2px;
 }
 nav li.current {
   background-color: var(--colFgrDim);
   color: var(--colBkg);
+  padding: .4em 1em;
 }
 nav li:hover:not(.current) { background-color: var(--colFgr); }
 nav li a {
   color: var(--colFgrDim);
   text-decoration: none;
+  padding: .4em 1em;
 }
 nav li:hover a { color: var(--colBkg); }

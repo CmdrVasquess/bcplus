@@ -12,6 +12,9 @@ INSERT INTO meta (key, val) VALUES
 -- since 2
 UPDATE meta SET val='2' WHERE key='version';
 
+-- since 4
+UPDATE meta SET val='4' WHERE key='version';
+
 -- since 1
 CREATE TABLE system (
   id INTEGER PRIMARY KEY
@@ -21,6 +24,9 @@ CREATE TABLE system (
 , z REAL
 , UNIQUE (name COLLATE NOCASE)
 );
+
+-- since 4
+ALTER TABLE system ADD COLUMN bno INTEGER;
 
 -- since 1
 CREATE INDEX sysXcoo ON system(x);
@@ -45,6 +51,31 @@ CREATE TABLE syspart (
 , lon REAL
 , UNIQUE (sys, name)
 );
+
+-- since 4
+CREATE TABLE _syspart (
+  id INTEGER PRIMARY KEY
+, sys INTEGER NOT NULL
+              REFERENCES system(id)
+, typ INTEGER NOT NULL
+, name TEXT NOT NULL
+, dfc REAL
+, tto INTEGER
+, hgt REAL
+, lat REAL
+, lon REAL
+, UNIQUE (sys, name)
+);
+
+-- since 4
+INSERT INTO _syspart (id,sys,typ,name,dfc,tto,hgt,lat,lon)
+SELECT id,sys,typ,name,dfc,tto,hgt,lat,lon FROM syspart;
+
+-- since 4
+DROP TABLE syspart;
+
+-- since 4
+ALTER TABLE _syspart RENAME TO syspart;
 
 -- since 1
 CREATE TABLE resource (
