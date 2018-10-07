@@ -42,13 +42,13 @@ func addSystem(jsys map[string]interface{}, repo *gxy.Repo) {
 				part = &gxy.SysPart{
 					Type:       gxy.Star,
 					Name:       jbdy["Name"].(string),
-					FromCenter: int(jbdy["Dist"].(float64)),
+					FromCenter: float32(jbdy["Dist"].(float64)),
 				}
 			case 2:
 				part = &gxy.SysPart{
 					Type:       gxy.Planet,
 					Name:       jbdy["Name"].(string),
-					FromCenter: int(jbdy["Dist"].(float64)),
+					FromCenter: float32(jbdy["Dist"].(float64)),
 				}
 			}
 			if part != nil {
@@ -114,7 +114,7 @@ func main() {
 	}
 	defer repo.Close()
 	if len(*creSql) > 0 {
-		err := repo.RunSql(*creSql)
+		err := repo.RunSql(0, *creSql)
 		if err != nil {
 			panic(err)
 		}
