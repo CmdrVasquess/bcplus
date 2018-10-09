@@ -4,7 +4,8 @@ include VERSION
 
 #PACK:=BCplus-$(major).$(minor).$(bugfix)$(quality).zip
 
-all: data godepgraph.svg
+#all: data godepgraph.svg
+all: data
 
 data:
 	$(MAKE) -C data all
