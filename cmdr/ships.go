@@ -7,6 +7,24 @@ import (
 
 const NoShip = -1
 
+type SlotKind int
+
+//go:generate stringer -type SlotKind
+const (
+	Hardpoint SlotKind = (iota + 1)
+	Utility
+	CoreModule
+	OptModule
+)
+
+type Module struct {
+	Kind  SlotKind
+	Slot  int
+	Size  int
+	Class int // A-E
+	Name  string
+}
+
 type Ship struct {
 	Id          int
 	Type        string
@@ -18,6 +36,10 @@ type Ship struct {
 	Rebuy       int
 	HullValue   int
 	ModuleValue int
+	Hardpoints  []*Module `json:",omitempty"`
+	Utilities   []*Module `json:",omitempty"`
+	CoreModules []*Module `json:",omitempty"`
+	OptModules  []*Module `json:",omitempty"`
 }
 
 func (s *State) MustHaveShip(id int, typ string) *Ship {

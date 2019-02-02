@@ -23,11 +23,14 @@
   color: var(--colFgr);
   text-shadow: 0 0 8px var(--colBad);
 }
-input { width: 6em; text-align: center; }
+input[type=number] { width: 6em; text-align: center; }
+input.goal { color: var(--colGud); }
 table { margin: auto; }
 td { text-align: center; }
+.btn {
+  cursor: pointer;
+}
         </style>
-
     <!-- <<< head <<< -->
   </head>
   <body>
@@ -54,7 +57,8 @@ Surface
     </nav>
  	  <main>
 <!-- >>> main >>> -->
-      <div id="compass">
+      <!--canvas id="tbear" width="500" height="20" style="border:1px solid red"></canvas-->
+      <div id="compass"><!-- put canvas as background: http://jsfiddle.net/6t3xX/1/ -->
         <span v-bind:class="{dark: !goLeft, glow: goLeft}">◄</span>
         <span style="color:var(--colFgrDim)">{{bearing}}</span>
         <span v-bind:class="{dark: !goRight, glow: goRight}">►</span>
@@ -62,28 +66,62 @@ Surface
         <span style="color:var(--colFgrDim)">{{topic.Head}}</span>
       </div>
       <table>
-        <tr><th>Altitude</th><th>Latitude</th><th>Longitude</th><th>Box</th></tr>
+        <thead>
+        <tr><th/><th>Altitude</th><th>Latitude</th><th>Longitude</th><th>Box</th></tr>
         <tr>
+          <td/>
           <td>{{topic.Alt|toDist}}m</td>
           <td>{{topic.Lat|cooNum}}°</td>
           <td>{{topic.Lon|cooNum}}°</td>
-          <td v-bind:class="{gud: dbox <= topic.Surf.Box}">{{dbox|cooNum}}</tr>
-        <tr>
-          <td style="font-weight:bold" class="right">Destination:</td>
-          <td><input id="tlat" type="number" min="-90" max="90" step="0.0001"
-                     v-model.number="topic.Surf.Dest[0]"
-                     v-on:change="sendDest"></td>
-          <td><input id="tlon" type="number" min="0" max="360" step="0.0001"
-                     v-model.number="topic.Surf.Dest[1]"
-                     v-on:change="sendDest"></td>
-          <td><input id="tbox" type="number" min="0" step="0.0001"
-                     v-model.number="topic.Surf.Box"
-                     v-on:change="sendDest"></td>
+          <td v-if="dest" v-bind:class="{gud: dbox <= dest.Box}">{{dbox|cooNum}}</td>
+          <td v-else>–</td>
+          <td colspan="3" class="right"><button type="button" v-on:click="newDest">Add</button></td>
         </tr>
+        </thead>
+        <tbody v-if="topic.Surf.Dests && topic.Surf.Dests.length > 0">
+          <tr v-for="(dest, idx) in topic.Surf.Dests" :key="idx">
+            <td><input type="radio" name="ton" v-model="topic.Surf.Goal" v-bind:value="idx"
+                       v-on:click="setGoal(idx)"></td>
+            <td><input type="text" size="12" v-model="dest.Tag"
+                       v-bind:class="{goal: idx == topic.Surf.Goal}"
+                       v-on:change="sendDest(idx)"></td>
+            <td><input type="number" min="-90" max="90" step="0.0001"
+                       v-model.number="dest.Point[0]"
+                       v-bind:class="{goal: idx == topic.Surf.Goal}"
+                       v-on:change="sendDest(idx)"></td>
+            <td><input type="number" min="0" max="360" step="0.0001"
+                       v-model.number="dest.Point[1]"
+                       v-bind:class="{goal: idx == topic.Surf.Goal}"
+                       v-on:change="sendDest(idx)"></td>
+            <td><input type="number" min="0" step="0.0001"
+                       v-model.number="dest.Box"
+                       v-bind:class="{goal: idx == topic.Surf.Goal}"
+                       v-on:change="sendDest(idx)"></td>
+            <td class="btn" style="padding-left:1em" v-on:click="destUp(idx)">▲</td>
+            <td class="btn" style="padding-left:.5em" v-on:click="destDown(idx)">▼</td>
+            <td class="btn bad" style="padding-left:1em" v-on:dblclick="delDest(idx)">⨂</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr><td colspan="6" style="font-weight:bold">No surface location, use Add button.</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td/>
+            <td class="right" colspan="4">
+              <label><input type="checkbox" v-model="topic.Surf.Switch"
+                            v-on:click="setASwitch">Auto-Switch</label>
+            </td>
+          </tr>
+        </tfoot>
       </table>
 <!-- <<< main <<< -->
 <!-- >>> script >>> -->
       <script>
+/*var tb2d = document.getElementById('tbear').getContext('2d');
+tb2d.fillStyle = "rgb(100, 250, 100)";
+tb2d.fillRect (10, 10, 35, 30);*/
+
 function toRad(x) { return x * Math.PI / 180.0; }
 function toDeg(x) { return x * 180.0 / Math.PI; }
 function cmpBrng(p2, l2, p1, l1) {
@@ -111,20 +149,23 @@ var surfaceApp = new Vue({
   data: store.state,
   filters: {
     cooNum: function(val) {
-      if (!val) { return "NaN"; }
+      if (val === null) { return "NaN"; }
       return val.toLocaleString('en', {maximumFractionDigits:4, minimumFractionDigits:4});
     }
   },
   computed: {
+    dest: function() {
+      return this.topic.Surf.Dests
+             ? this.topic.Surf.Dests[this.topic.Surf.Goal]
+             : null;
+    },
     bearing: function() {
+      if (!this.dest) { return "–"; }
       var pLat = this.topic.Lat, pLon = this.topic.Lon;
-      if (!pLat || !pLon) {
+      if (pLat === null || pLon === 0) {
         return "offline";
       }
-      var dLat = this.topic.Surf.Dest[0], dLon = this.topic.Surf.Dest[1];
-      if (!dLat || !dLon) {
-        return "–";
-      }
+      var dLat = this.dest.Point[0], dLon = this.dest.Point[1];
       var b = cmpBrng(pLat, pLon, dLat, dLon);
       return b.toLocaleString('en', {maximumFractionDigits:2, minimumFractionDigits:2})
     },
@@ -137,25 +178,98 @@ var surfaceApp = new Vue({
 			return turnTo(this.topic.Head, b) > 1;
 		},
     dbox: function() {
+      if (!this.dest) { return "–"; }
       var pLat = this.topic.Lat, pLon = this.topic.Lon;
-      if (!pLat || !pLon) {
+      if (pLat === null || pLon === null) {
         return "–";
       }
-      var dLat = this.topic.Surf.Dest[0], dLon = this.topic.Surf.Dest[1];
-      if (!dLat || !dLon) {
-        return "–";
-      }
+      var dLat = this.dest.Point[0], dLon = this.dest.Point[1];
       dLat = Math.abs(dLat - pLat);
       dLon = Math.abs(dLon - pLon);
       return (dLon > dLat) ? dLon : dLat;
     }
   },
   methods: {
-    sendDest: function() {
-      var surf = this.topic.Surf;
+    sendDest: function(idx) {
+      var dst = this.topic.Surf.Dests[idx];
       var rq = { cmd:"surf-dest",
-                 lat: surf.Dest[0], lon: surf.Dest[1],
-                 box: surf.Box };
+                 idx: idx,
+                 tag: dst.Tag,
+                 lat: dst.Point[0], lon: dst.Point[1],
+                 box: dst.Box };
+      wsock.send(JSON.stringify(rq));
+    },
+    newDest: function(event) {
+      var dests = this.topic.Surf.Dests;
+      var tag = dests ? "#"+(dests.length+1) : "#1";
+      var dst = { Tag: tag, Point: [0,0], Box: 0 };
+      if (this.topic.Lat !== null) { dst.Point[0] = this.topic.Lat; }
+      if (this.topic.Lon !== null) { dst.Point[1] = this.topic.Lon; }
+      if (dests) {
+        dests.push(dst);
+        if (dests.length == 1) { this.topic.Surf.Goal = 0; }
+      } else {
+        this.topic.Surf.Dests = [ dst ];
+        this.topic.Surf.Goal = 0;
+        dests = this.topic.Surf.Dests;
+      }
+      var rq = { cmd:"surf-dest",
+                 tag: dst.Tag,
+                 lat: dst.Point[0], lon: dst.Point[1],
+                 box: dst.Box };
+      wsock.send(JSON.stringify(rq));
+    },
+    delDest: function(idx) {
+      var dests = this.topic.Surf.Dests;
+      dests.splice(idx, 1);
+      if (this.topic.Surf.Goal >= dests.length)  {
+        this.topic.Surf.Goal = dests.length - 1;
+      }
+      var rq = { cmd: "surf-dest-del", idxs: [idx] };
+      wsock.send(JSON.stringify(rq));
+    },
+    setGoal: function(idx) {
+      var rq = { cmd: "surf-goal", idx: idx };
+      wsock.send(JSON.stringify(rq));
+    },
+    destUp : function(idx) {
+      if (idx > 0) {
+        var dests = this.topic.Surf.Dests;
+        var tmp = dests[idx-1];
+        Vue.set(dests, idx-1, dests[idx]);
+        Vue.set(dests, idx, tmp);
+        switch (this.topic.Surf.Goal) {
+        case idx:
+          this.topic.Surf.Goal = idx - 1;
+          break;
+        case idx - 1:
+          this.topic.Surf.Goal = idx;
+          break;
+        }
+        var rq = { cmd: "surf-dest-up", idx: idx, goal: this.topic.Surf.Goal };
+        wsock.send(JSON.stringify(rq));
+      }
+    },
+    destDown : function(idx) {
+      var dests = this.topic.Surf.Dests;
+      if (idx + 1 < dests.length) {
+        var tmp = dests[idx+1];
+        Vue.set(dests, idx+1, dests[idx]);
+        Vue.set(dests, idx, tmp);
+        switch (this.topic.Surf.Goal) {
+        case idx:
+          this.topic.Surf.Goal = idx + 1;
+          break;
+        case idx + 1:
+          this.topic.Surf.Goal = idx;
+          break;
+        }
+        var rq = { cmd: "surf-dest-down", idx: idx, goal: this.topic.Surf.Goal };
+        wsock.send(JSON.stringify(rq));
+      }
+    },
+    setASwitch: function() {
+      var rq = { cmd: "surf-dest-switch", flag: !this.topic.Surf.Switch };
       wsock.send(JSON.stringify(rq));
     }
   }

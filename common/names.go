@@ -9,11 +9,13 @@ import (
 
 	"git.fractalqb.de/fractalqb/ggja"
 	"git.fractalqb.de/fractalqb/namemap"
-	"git.fractalqb.de/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/qbsllm"
 )
 
-var log = qblog.Std("bc+cmn:")
-var LogConfig = qblog.Package(log)
+var (
+	log       = qbsllm.New(qbsllm.Lnormal, "bc+cmn", nil, nil)
+	LogConfig = qbsllm.Config(log)
+)
 
 const (
 	DefaultLang    = "en"
@@ -61,19 +63,19 @@ func (nm *NMap) jicSave() {
 	if !nm.save {
 		return
 	}
-	log.Infof("writing namemap '%s'", nm.file)
+	log.Infoa("writing namemap `file`", nm.file)
 	dir := filepath.Dir(nm.file)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		log.Infof("create directoty '%s'", dir)
+		log.Infoa("create `directoty`", dir)
 		err = os.MkdirAll(dir, 0777)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatala("`err`", err)
 		}
 	}
 	tmpNm := nm.file + "~"
 	wr, err := os.Create(tmpNm)
 	if err != nil {
-		log.Error(err)
+		log.Errora("`err`", err)
 	}
 	defer func() {
 		if wr != nil {
@@ -82,7 +84,7 @@ func (nm *NMap) jicSave() {
 	}()
 	err = nm.Base().Save(wr, "_")
 	if err != nil {
-		log.Error(err)
+		log.Errora("`err`", err)
 	}
 	wr.Close()
 	wr = nil
@@ -117,7 +119,7 @@ func (nm *NameMaps) loadLangs() {
 	}
 	err := nm.Lang.LoadFile(filepath.Join(nm.resDir, namesDir, "lang.xsx"))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatala("`err`", err)
 	}
 	nm.LangEd = nm.Lang.DomainIdx(DomGame)   // TODO error
 	nm.LangLoc = nm.Lang.DomainIdx(DomLocal) // TODO error
@@ -125,7 +127,7 @@ func (nm *NameMaps) loadLangs() {
 	langs := bytes.NewBuffer(nil)
 	nm.Lang.ForEach(nm.LangEd,
 		func(v string) { fmt.Fprintf(langs, "%s%s", sep, v) })
-	log.Info("available languages ", langs.String())
+	log.Infoa("available `languages`", langs.String())
 }
 
 // TODO If there is something like stat.CanRead() use that
@@ -162,9 +164,9 @@ func (nm *NameMaps) tryLocale(lang string, do func(dir string) error) (hitDir st
 }
 
 func (nm *NameMaps) loadL10n(lang, mapName string, xDom []string) (nmap *namemap.NameMap) {
-	log.Infof("loading name map '%s' for locale '%s'", mapName, lang)
+	log.Infoa("loading name `map` for `locale`", mapName, lang)
 	loadMap := func(dir string) error {
-		log.Tracef("try name map '%s' in '%s'", mapName, dir)
+		log.Tracea("try name `map` in `dir`", mapName, dir)
 		rd, err := os.Open(filepath.Join(dir, mapName))
 		if err != nil {
 			return err
@@ -176,11 +178,11 @@ func (nm *NameMaps) loadL10n(lang, mapName string, xDom []string) (nmap *namemap
 	}
 	hitDir := nm.tryLocale(lang, loadMap)
 	if len(hitDir) == 0 {
-		log.Errorf("could not load name map '%s'", mapName)
+		log.Errora("could not load name `map`", mapName)
 	} else {
-		log.Debugf("took name map '%s' for '%s' from '%s'", mapName, lang, hitDir)
+		log.Debuga("took name `map` for `locale` from `dir`", mapName, lang, hitDir)
 		if nmap == nil {
-			log.Errorf("found name map '%s/%s' but result is nil", hitDir, mapName)
+			log.Errora("found name map `dir`/`file` but result is nil", hitDir, mapName)
 		}
 	}
 	if nmap == nil {

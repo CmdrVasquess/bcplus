@@ -15,7 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"git.fractalqb.de/fractalqb/ggja"
-	l "git.fractalqb.de/fractalqb/qblog"
+	log "git.fractalqb.de/fractalqb/qbsllm"
 
 	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/common"
@@ -72,7 +72,7 @@ func stateFileName() string {
 }
 
 func (s *state) save(filename string) error {
-	log.Logf(l.Linfo, "save BC+ state to '%s'", filename)
+	lgr.Infoa("save BC+ state to `file`", filename)
 	tmpnm := filename + "~"
 	f, err := os.Create(tmpnm)
 	if err != nil {
@@ -100,14 +100,14 @@ func (s *state) save(filename string) error {
 }
 
 func (s *state) load(filename string) error {
-	log.Logf(l.Linfo, "load BC+ state from '%s'", filename)
+	lgr.Infoa("load BC+ state from `file`", filename)
 	f, err := os.Open(filename)
 	if os.IsNotExist(err) {
 		s.clear()
 		if s.MatCats == nil {
 			s.MatCats = make(map[string]string)
 		}
-		log.Logf(l.Lwarn, "BC+ state '%s' not exists", filename)
+		lgr.Warna("BC+ `state` not exists", filename)
 		return nil
 	} else if err != nil {
 		return err
@@ -121,10 +121,11 @@ func (s *state) load(filename string) error {
 }
 
 func eventLoop() {
-	log.Log(l.Linfo, "running bc+ event loop…")
+	lgr.Info(log.Str("running bc+ event loop…"))
 	var wuiupd webui.UIUpdate
 	for evt := range bcpEventQ {
-		log.Logf(l.Ltrace, "bc+ event from '%c'", evt.Source)
+		lgr.Tracea("bc+ event from `src`", evt.Source)
+		wuiupd = 0
 		switch evt.Source {
 		case watched.EscrJournal:
 			wuiupd = journalEvent(evt.Data.([]byte))
@@ -139,8 +140,7 @@ func eventLoop() {
 		case common.BCpEvtSrcWUI:
 			userEvent(evt.Data.(ggja.GenObj))
 		default:
-			wuiupd = 0
-			log.Errorf("unknown source tag '%c' in main event: %v", evt.Source, evt)
+			lgr.Errora("unknown source `tag` in main `event`", evt.Source, evt)
 		}
 		var cmd interface{}
 		if wuiupd&webui.UIReload == webui.UIReload {
@@ -148,18 +148,18 @@ func eventLoop() {
 				WsCommand: webui.WsCommand{Cmd: webui.WsLoadCmd},
 			}
 		} else if wuiupd != 0 {
-			const updLogLvl = l.Ldebug
+			const updLogLvl = log.Ldebug
 			updHdr := wuiupd&webui.UIHdr == webui.UIHdr
 			upd := webui.NewWsCmdUpdate(updHdr, nil)
 			switch {
 			case webui.Update(wuiupd, webui.UIShips):
-				log.Logf(updLogLvl, "wui update ships (header: %t)", updHdr)
+				lgr.Args(updLogLvl, "wui update ships (`header`)", updHdr)
 				upd.Tpc = webui.TpcShipsData(theCmdr)
 			case webui.Update(wuiupd, webui.UISurface):
-				log.Logf(updLogLvl, "wui update surface (header: %t)", updHdr)
+				lgr.Args(updLogLvl, "wui update surface (`header`)", updHdr)
 				upd.Tpc = webui.TpcSurfaceData(theCmdr)
 			default:
-				log.Logf(updLogLvl, "wui update header")
+				lgr.Wr(updLogLvl, log.Str("wui update header"))
 			}
 			cmd = upd
 		}
@@ -193,50 +193,50 @@ func openGalaxy() *galaxy.Repo {
 	newDB := false
 	if os.IsNotExist(err) {
 		fnm := resFile(sqlCreate)
-		log.Logf(l.Linfo, "init galaxy DB from '%s'", fnm)
+		lgr.Infoa("init galaxy DB from `file`", fnm)
 		err := res.RunSql(0, fnm)
 		if err != nil {
-			log.Panic(err)
+			lgr.Panica("`err`", err)
 		}
 		newDB = true
 	}
 	gxyv, err := res.Version()
 	if err != nil {
-		log.Panic(err)
+		lgr.Panica("`err`", err)
 	}
 	if !newDB {
 		fnm := resFile(sqlCreate)
-		log.Logf(l.Linfo, "check galaxy DB from '%s'", fnm)
+		lgr.Infoa("check galaxy DB from `file`", fnm)
 		err := res.RunSql(gxyv, fnm)
 		if err != nil {
-			log.Panic(err)
+			lgr.Panica("`err`", err)
 		}
 		v, err := res.Version()
 		if err != nil {
-			log.Panic(err)
+			lgr.Panica("`err`", err)
 		}
 		if v > gxyv {
-			log.Infof("updated galaxy DB from version: %d", gxyv)
+			lgr.Infoa("updated galaxy DB from `version`", gxyv)
 		}
 		gxyv = v
 	}
-	log.Logf(l.Linfo, "galaxy DB version: %d", gxyv)
+	lgr.Infoa("galaxy DB `version`", gxyv)
 	return res
 }
 
 func cmdrDir(name string) string {
 	if len(name) == 0 {
-		log.Log(l.Lwarn, "empty commander name for directory")
+		lgr.Warn(log.Str("empty commander name for directory"))
 		name = "_anonymous_"
 	} else {
 		name = strings.Replace(name, " ", "_", -1)
 	}
 	res := filepath.Join(FlagDDir, name)
 	if _, err := os.Stat(res); os.IsNotExist(err) {
-		log.Logf(l.Ldebug, "create commander dir '%s'", res)
+		lgr.Debuga("create commander's `dir`", res)
 		err = os.Mkdir(res, 0777)
 		if err != nil {
-			log.Logf(l.Lwarn, "cannot create commander dir '%s'", res)
+			lgr.Warna("cannot create commander's `dir`", res)
 		}
 	}
 	return res
@@ -263,7 +263,7 @@ func switchToCommander(name string) {
 		}
 		err := theCmdr.Save(cmdrFile(theCmdr.Name, cmdrState))
 		if err != nil {
-			log.Log(l.Lerror, "error while saving commander state:", err)
+			lgr.Errora("while saving commander state: `err`", err)
 		}
 		bcpState.Commanders[theCmdr.Name] = bcpState.LastEDEvent
 	}
@@ -276,7 +276,7 @@ func switchToCommander(name string) {
 			theCmdr.Name = name
 			err = nil
 		} else if err != nil {
-			log.Logf(l.Lerror, "cannot switch to commander '%s': %s", name, err)
+			lgr.Errora("cannot switch to commander `name`: `err`", name, err)
 			theCmdr = nil
 			return
 		}
@@ -305,15 +305,16 @@ func switchToCommander(name string) {
 		theEddn.Header.SwName = AppNameShort
 		theEddn.Header.SwVersion = vstr
 		if err != nil {
-			log.Log(l.Lwarn, "EDDN connect failed:", err)
+			lgr.Warna("EDDN connect failed: `err`", err)
 			theEddn = nil
 		} else {
-			log.Logf(l.Linfo, "connected to EDDN as %s / %s / %s", upldr, AppNameShort, vstr)
+			lgr.Infoa("connected to EDDN as `uploader` / `app` / `version`",
+				upldr, AppNameShort, vstr)
 		}
 	} else {
 		theCmdr = nil
 		theEddn = nil
-		log.Log(l.Linfo, "disconnected from EDDN")
+		lgr.Info(log.Str("disconnected from EDDN"))
 	}
 }
 
@@ -355,13 +356,15 @@ func FlagCheckEddn() {
 			theCmdr.EddnMode = FlagEddn
 		}
 	default:
-		log.Fatalf("illegal EDDN mode: %s", eddnMode)
+		lgr.Fatala("illegal EDDN `mode`", eddnMode)
 	}
 }
 
 func Run() {
 	var err error
-	log.Logf(l.Ldebug, "BC+ root: '%s'", bcpRoot)
+	lgr.Wr(log.Linfo,
+		log.Fmt("goEDDNc v%d.%d.%d%s", eddn.Major, eddn.Minor, eddn.Bugfix, eddn.Quality))
+	lgr.Wr(log.Ldebug, log.Fmt("BC+ root: '%s'", bcpRoot))
 	nameMaps.Load(resDir, FlagDDir, "English\\\\UK")
 	bcpState.load(stateFileName())
 	bcpState.Version.Major = BCpMajor
@@ -395,19 +398,19 @@ func Run() {
 	signal.Notify(signals, os.Interrupt)
 	<-signals
 	close(sysResolveQ)
-	log.Log(l.Linfo, "BC+ interrupted with Ctrl-C, shutting down…")
-	log.Log(l.Linfo, "closing galaxy repo")
+	lgr.Info(log.Str("BC+ interrupted with Ctrl-C, shutting down…"))
+	lgr.Info(log.Str("closing galaxy repo"))
 	theGalaxy.Close()
 	if theCmdr != nil {
 		err = theCmdr.Save(cmdrFile(theCmdr.Name, cmdrState))
 		if err != nil {
-			log.Log(l.Lerror, "error while saving commander state:", err)
+			lgr.Errora("while saving commander state: `err`", err)
 		}
 	}
 	err = bcpState.save(stateFileName())
 	if err != nil {
-		log.Log(l.Lerror, "error while saving BC+ state:", err)
+		lgr.Errora("while saving BC+ state: `err`", err)
 	}
 	nameMaps.Save()
-	log.Log(l.Linfo, "Fly safe commander! o7")
+	lgr.Info(log.Str("Fly safe commander! o7"))
 }

@@ -8,12 +8,14 @@ import (
 	"strconv"
 	"time"
 
-	l "git.fractalqb.de/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/BCplus/galaxy"
 )
 
-var log = l.Std("bc+cdr:")
-var LogConfig = l.Package(log)
+var (
+	log       = qbsllm.New(qbsllm.Lnormal, "bc+cdr", nil, nil)
+	LogConfig = qbsllm.Config(log)
+)
 
 type CooNaN float32
 
@@ -98,8 +100,15 @@ type Rank struct {
 }
 
 type Surface struct {
-	Dest [2]CooNaN
-	Box  float32
+	Dests  []SurfDest
+	Goal   int
+	Switch bool
+}
+
+type SurfDest struct {
+	Tag   string
+	Point [2]CooNaN
+	Box   float32
 }
 
 type State struct {
@@ -142,11 +151,12 @@ func NewState(init *State) *State {
 	init.RcpDmnd = make(map[RcpDef][]int)
 	init.Loc.ClearGeo()
 	init.Home = init.Loc
+	init.Surface.Dests = nil
 	return init
 }
 
 func (s *State) Save(filename string) error {
-	log.Logf(l.Linfo, "save commander state to '%s'", filename)
+	log.Infoa("save commander state to `file`", filename)
 	tmpnm := filename + "~"
 	f, err := os.Create(tmpnm)
 	if err != nil {
@@ -174,7 +184,7 @@ func (s *State) Save(filename string) error {
 }
 
 func (s *State) Load(filename string) error {
-	log.Infof("load commander state from '%s'", filename)
+	log.Infoa("load commander state from `file`", filename)
 	f, err := os.Open(filename)
 	if err != nil {
 		return err

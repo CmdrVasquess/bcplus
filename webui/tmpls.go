@@ -10,6 +10,7 @@ import (
 	gxc "git.fractalqb.de/fractalqb/goxic"
 	gxw "git.fractalqb.de/fractalqb/goxic/html"
 	"git.fractalqb.de/fractalqb/nmconv"
+	l "git.fractalqb.de/fractalqb/qbsllm"
 )
 
 const (
@@ -68,7 +69,7 @@ func prepareOffline(btPage *gxc.BounT, resDir, lang string) {
 	btPage.BindName("body", gxc.Data(tmp))
 	pgOffline, ok = btPage.Fixate().Static()
 	if !ok {
-		log.Panic("cannot generate static offline page")
+		log.Panic(l.Str("cannot generate static offline page"))
 	}
 }
 
@@ -76,7 +77,7 @@ func prepareTopics(btPage *gxc.BounT, resDir, lang string) (tpc, cur, oth *gxc.B
 	tSet := loadTemplate(resDir, "topic", lang)
 	tmpl := lookupTmpl(tSet, "head")
 	if tmpl == nil {
-		log.Panic("cannot find head template for topics")
+		log.Panic(l.Str("cannot find head template for topics"))
 	} else {
 		btPage.BindName("head", tmpl.NewBounT(nil))
 	}
@@ -93,20 +94,20 @@ func prepareTopics(btPage *gxc.BounT, resDir, lang string) (tpc, cur, oth *gxc.B
 }
 
 func prepareTopic(btTopic *gxc.BounT, key, resDir, lang string) *gxc.Template {
-	log.Debug("prepare topic " + key)
+	log.Debuga("prepare `topic`", key)
 	tSet := loadTemplate(resDir, key, lang)
 	title, ok := lookupTmpl(tSet, "title").Static()
 	if ok {
 		btTopic.BindName("title", gxc.Data(title))
 	} else {
-		log.Panicf("no title for topic '%s'", key)
+		log.Panica("no title for `topic`", key)
 	}
 	if tmp := tSet["head"]; tmp == nil {
 		btTopic.BindName("head", gxc.Empty)
 	} else if stat, ok := tmp.Static(); ok {
 		btTopic.BindName("head", gxc.Data(stat))
 	} else {
-		log.Panicf("not static content: %s", tmp.Name)
+		log.Panica("not static content: `name`", tmp.Name)
 	}
 	if tmp, ok := lookupTmpl(tSet, "nav-name").Static(); ok {
 		getTopic(key).nav = string(tmp)
@@ -151,24 +152,24 @@ func finalizeNav(key string, tmpl *gxc.Template, cTop, oTop *gxc.BounT) *gxc.Tem
 func withTmpl(resDir, tmpl, lang string, do func(filename string) error) error {
 	if len(lang) > 2 {
 		fnm := filepath.Join(resDir, tmplDir, lang, tmpl+tmplExt)
-		log.Tracef("check template file '%s'", fnm)
+		log.Tracea("check template `file`", fnm)
 		if err := do(fnm); err == nil {
-			log.Debugf("loaded: '%s'", fnm)
+			log.Debuga("loaded `file`", fnm)
 			return nil
 		}
 	}
 	if len(lang) >= 2 {
 		fnm := filepath.Join(resDir, tmplDir, lang[:2], tmpl+tmplExt)
-		log.Tracef("check template file '%s'", fnm)
+		log.Tracea("check template `file`", fnm)
 		if err := do(fnm); err == nil {
-			log.Debugf("loaded: '%s'", fnm)
+			log.Debuga("loaded `file`", fnm)
 			return nil
 		}
 	}
 	fnm := filepath.Join(resDir, tmplDir, tmplDefaultLang, tmpl+tmplExt)
-	log.Tracef("check template file '%s'", fnm)
+	log.Tracea("check template `file`", fnm)
 	if err := do(fnm); err == nil {
-		log.Debugf("loaded: '%s'", fnm)
+		log.Debuga("loaded `filie`", fnm)
 		return nil
 	} else {
 		return err
@@ -176,7 +177,7 @@ func withTmpl(resDir, tmpl, lang string, do func(filename string) error) error {
 }
 
 func loadTemplate(resDir, tmpl, lang string) map[string]*gxc.Template {
-	log.Tracef("load template '%s' (%s) from '%s'", tmpl, lang, resDir)
+	log.Tracea("load `template` (`lang`) from `dir`", tmpl, lang, resDir)
 	res := make(map[string]*gxc.Template)
 	tpars := gxw.NewParser()
 	tpars.PrepLine = strings.TrimSpace
@@ -184,7 +185,7 @@ func loadTemplate(resDir, tmpl, lang string) map[string]*gxc.Template {
 		return tpars.ParseFile(file, tmpl, res)
 	})
 	if err != nil {
-		panic(fmt.Errorf("canot load template '%s' (%s) from '%s': %s",
+		panic(fmt.Errorf("canot load `template` (`lang`) from `dir`: `err`",
 			tmpl,
 			lang,
 			resDir,
@@ -196,7 +197,7 @@ func loadTemplate(resDir, tmpl, lang string) map[string]*gxc.Template {
 func lookupTmpl(tSet map[string]*gxc.Template, path string) *gxc.Template {
 	res, ok := tSet[path]
 	if !ok {
-		log.Panicf("no template '%s' ", path)
+		log.Panica("no `template`", path)
 	}
 	return res
 }

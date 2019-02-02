@@ -1,0 +1,16 @@
+default namespace = "https://fractalqb.de/ed/engineers/2.5"
+
+start =
+  element engineers {
+    element engineer {
+      attribute id { xsd:NCName },
+      attribute name { text },
+      attribute region { text },
+      element discover {
+        attribute idref { xsd:NCName },
+        text
+      }?,
+      element meet { text },
+      element unlock { text }
+    }+
+  }

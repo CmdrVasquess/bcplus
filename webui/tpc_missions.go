@@ -61,16 +61,16 @@ func (slv *tpcMsnSolver) best(
 	chSys, err := theGalaxy.GetSystem(chMsn.Dests[slv.stat[chose]])
 	if err != nil {
 		sysId := slv.msns[chose].Dests[slv.stat[chose]]
-		log.Errorf("failed to load mission destination system %d: %s", sysId, err)
+		log.Errora("failed to load mission destination system `id`: `err`", sysId, err)
 		return 0.0, nil, nil
 	}
 	if chSys == nil {
 		sysId := slv.msns[chose].Dests[slv.stat[chose]]
-		log.Errorf("cannot find mission destination system %d", sysId)
+		log.Errora("cannot find mission destination system `id`", sysId)
 		return 0.0, nil, nil
 	}
 	if !galaxy.V3dValid(chSys.Coos) {
-		log.Tracef("system w/o coos: %d '%s'", chSys.Id, chSys.Name)
+		log.Tracea("system w/o coos: `id` `name`", chSys.Id, chSys.Name)
 		slv.resolve[chSys.Name] = 1
 		return 0.0, nil, nil
 	}
@@ -145,24 +145,24 @@ func newMissions() (res *tpcMissionData) {
 	mslv := newMsnSolver(c)
 	sys, err := theGalaxy.GetSystem(c.Loc.SysId)
 	if err != nil {
-		log.Panicf("cannot resolve current system %d: %s", c.Loc.SysId, err)
+		log.Panica("cannot resolve current system `id`: `err`", c.Loc.SysId, err)
 	}
 	if !galaxy.V3dValid(sys.Coos) {
-		log.Tracef("system w/o coos: %d '%s'", sys.Id, sys.Name)
+		log.Tracea("system w/o coos: `id` `name`", sys.Id, sys.Name)
 		sysResolve <- common.SysResolve{
 			Names: []string{sys.Name},
 		}
 		return nil
 	}
 	if c.MissPath == nil {
-		log.Debug("compute optimal mission path…")
+		log.Debugs("compute optimal mission path…")
 		start := time.Now()
 		c.MissPath, c.MissDist = mslv.solve(&sys.Coos)
 		durtn := time.Since(start)
 		if c.MissPath == nil {
-			log.Debugf("no mission path after %s", durtn)
+			log.Debuga("no mission path after `dur`", durtn)
 		} else {
-			log.Debugf("mission path took %s", durtn)
+			log.Debuga("mission path took `dur`", durtn)
 		}
 		if len(mslv.resolve) > 0 {
 			var rq common.SysResolve
@@ -176,7 +176,7 @@ func newMissions() (res *tpcMissionData) {
 	mslv.visit(c.MissPath, func(m *cmdr.Mission, dst int) {
 		dsys, err := theGalaxy.GetSystem(m.Dests[dst])
 		if err != nil {
-			log.Panicf("cannot find mission destination system %d", m.Dests[dst])
+			log.Panica("cannot find mission destination system `id`", m.Dests[dst])
 		}
 		res.Dests = append(res.Dests, &tpcMsnDest{
 			Title:   m.Title,
@@ -198,5 +198,5 @@ func tpcMissions(w http.ResponseWriter, r *http.Request) {
 	}
 	bt.BindGen(gxtMissions.TopicData, jsonContent(data))
 	bt.Emit(w)
-	CurrentTopic = UIMissions
+	currentTopic = UIMissions
 }

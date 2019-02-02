@@ -1,6 +1,7 @@
 package core
 
 import (
+	log "git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
@@ -29,7 +30,7 @@ func (es *edsmState) SetSysAddr(v int64) {
 func (es *edsmState) SysName() string {
 	ssys, err := theGalaxy.GetSystem(es.Loc.SysId)
 	if err != nil {
-		logEdsm.Panic(err)
+		logEdsm.Panica("`err`", err)
 	}
 	return ssys.Name
 }
@@ -41,7 +42,7 @@ func (es *edsmState) SetSysName(v string) {
 func (es *edsmState) SysCoo() []float64 {
 	ssys, err := theGalaxy.GetSystem(es.Loc.SysId)
 	if err != nil {
-		logEdsm.Panic(err)
+		logEdsm.Panica("`err`", err)
 	}
 	return ssys.Coos[:]
 }
@@ -89,13 +90,13 @@ func (es *edsmState) SetCommand(v edsm.Command) {
 var sysResolveQ = make(chan common.SysResolve, 24)
 
 func sysResolver() {
-	log.Info("running EDSM system resolver")
+	lgr.Info(log.Str("running EDSM system resolver"))
 NEXT_RQ:
 	for rq := range sysResolveQ {
 		for _, sysNm := range rq.Names {
 			ssys, err := theGalaxy.MustSystem(sysNm)
 			if err != nil {
-				log.Error(err)
+				lgr.Errora("`err`", err)
 				continue NEXT_RQ
 			}
 			if galaxy.V3dValid(ssys.Coos) {
@@ -103,21 +104,21 @@ NEXT_RQ:
 			}
 			sys, err := edsmSvc.System(sysNm, edsm.SYSTEM_COOS)
 			if err != nil {
-				log.Error(err)
+				lgr.Errora("`err`", err)
 				continue NEXT_RQ
 			}
 			if sys == nil {
-				log.Warnf("no system '%s' from edsm", sysNm)
+				lgr.Warna("no system `name` from edsm", sysNm)
 				continue
 			}
 			galaxy.V3dSet3(&ssys.Coos, sys.Coords.X, sys.Coords.Y, sys.Coords.Z)
-			log.Debugf("serolved system '%s' coos: %v", sysNm, ssys.Coos)
+			lgr.Debuga("resolved `system` `coos`", sysNm, ssys.Coos)
 			_, err = theGalaxy.PutSystem(ssys)
 			if err != nil {
-				log.Error(err)
+				lgr.Errora("`err`", err)
 				continue NEXT_RQ
 			}
 		}
 	}
-	log.Info("EDSM system resolver terminated")
+	lgr.Info(log.Str("EDSM system resolver terminated"))
 }

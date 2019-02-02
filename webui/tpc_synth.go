@@ -50,5 +50,5 @@ func tpcSynth(w http.ResponseWriter, r *http.Request) {
 	bindTpcHeader(bt, &gxtSynth)
 	bt.BindGen(gxtSynth.TopicData, jsonContent(data))
 	bt.Emit(w)
-	CurrentTopic = UISynth
+	currentTopic = UISynth
 }

@@ -7,13 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/CmdrVasquess/BCplus/webui"
 
 	"git.fractalqb.de/fractalqb/ggja"
-	l "git.fractalqb.de/fractalqb/qblog"
+	log "git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
@@ -27,10 +28,10 @@ func takeTimeFromName(jfnm string) (time.Time, error) {
 }
 
 func spoolJouranls(jdir string, startAfter time.Time) string {
-	log.Logf(l.Ldebug, "spool journal events after %s", startAfter)
+	lgr.Debuga("spool journal events after `time`", startAfter)
 	rddir, err := os.Open(jdir)
 	if err != nil {
-		log.Log(l.Lerror, "fail to scan journal-dir: ", err)
+		lgr.Errora("fail to scan journal-dir: `err`", err)
 		return ""
 	}
 	defer rddir.Close()
@@ -73,10 +74,10 @@ func spoolJouranls(jdir string, startAfter time.Time) string {
 }
 
 func readJournal(jfnm string) {
-	log.Logf(l.Linfo, "reading missed events from '%s'", jfnm)
+	lgr.Infoa("reading missed events from `file`", jfnm)
 	jf, err := os.Open(jfnm)
 	if err != nil {
-		log.Logf(l.Lerror, "cannot open journal: %s", err)
+		lgr.Errora("cannot open journal: `err`", err)
 		return
 	}
 	defer jf.Close()
@@ -135,23 +136,23 @@ func journalEvent(jLine []byte) (wuiupd webui.UIUpdate) {
 	eJson := make(ggja.GenObj)
 	err := json.Unmarshal(jLine, &eJson)
 	if err != nil {
-		log.Logf(l.Lerror, "cannot parse journal event: %s: %s", err, string(jLine))
+		lgr.Errora("cannot parse journal event: `error`@`line`", err, string(jLine))
 		return 0
 	}
 	defer func() {
 		if p := recover(); p != nil {
-			log.Log(l.Lerror, "recover journal panic:", p)
+			lgr.Errora("recover journal `panic`", p)
 		}
 	}()
 	evt := ggja.Obj{Bare: eJson}
 	ets := evt.MTime("timestamp")
 	enm := evt.Str("event", "")
 	if len(enm) == 0 {
-		log.Logf(l.Lerror, "no event name in journal event: %s", string(jLine))
+		lgr.Errora("no event name in journal `event`", string(jLine))
 		return 0
 	}
 	if ets.Before(bcpState.LastEDEvent) {
-		log.Tracef("ignore historic event '%s' @%s <= %s",
+		lgr.Tracea("ignore historic event `name` `at` <= `start`",
 			enm,
 			ets.Format(time.RFC3339),
 			bcpState.LastEDEvent.Format(time.RFC3339))
@@ -173,13 +174,13 @@ func journalEvent(jLine []byte) (wuiupd webui.UIUpdate) {
 	acnt, ok := jEventHdl[enm]
 	if ok {
 		if theCmdr == nil && acnt.backlog {
-			log.Log(l.Ldebug, "putting event '%s' to backlog", enm)
+			lgr.Debuga("putting `event` to backlog", enm)
 			jevtBacklog = append(jevtBacklog, eJson)
 		} else {
 			if jevtSpooling {
-				log.Debugf("spooling to '%s' handler", enm)
+				lgr.Debuga("spooling to `event` handler", enm)
 			} else {
-				log.Debugf("dispatch to '%s' handler", enm)
+				lgr.Debuga("dispatch to `event` handler", enm)
 			}
 			if len(jevtBacklog) > 0 {
 				var nbl []ggja.GenObj
@@ -188,7 +189,7 @@ func journalEvent(jLine []byte) (wuiupd webui.UIUpdate) {
 					ets := evt.MTime("timestamp")
 					enm := evt.MStr("event")
 					blActn, _ := jEventHdl[enm]
-					log.Logf(l.Ldebug, "dispatch from backlog to '%s' handler", enm)
+					lgr.Debuga("dispatch from backlog to `event` handler", enm)
 					wuiupd |= blActn.hdlr(ets, ggja.Obj{Bare: jEvt})
 				}
 				jevtBacklog = nbl
@@ -197,7 +198,7 @@ func journalEvent(jLine []byte) (wuiupd webui.UIUpdate) {
 			bcpState.LastEDEvent = ets
 		}
 	} else {
-		log.Debugf("no handler for event '%s'", enm)
+		lgr.Debuga("no handler for `event`", enm)
 	}
 	return wuiupd
 }
@@ -211,7 +212,7 @@ func sysByName(name string, coos *ggja.Arr) (res *galaxy.System) {
 			coos.MF64(0), coos.MF64(1), coos.MF64(2))
 	}
 	if err != nil {
-		log.Panic(err)
+		lgr.Panica("`err`", err)
 	}
 	return res
 }
@@ -219,7 +220,7 @@ func sysByName(name string, coos *ggja.Arr) (res *galaxy.System) {
 func partFromSys(sys *galaxy.System, typ galaxy.PartType, partName string) *galaxy.SysPart {
 	res, err := sys.MustPart(typ, partName)
 	if err != nil {
-		log.Panic(err)
+		lgr.Panica("`err`", err)
 	}
 	return res
 }
@@ -274,7 +275,7 @@ func jevtDocked(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	theCmdr.Loc.LocId = port.Id
 	theCmdr.Loc.Docked = true
 	if err != nil {
-		log.Panic(err)
+		lgr.Panica("`err`", err)
 	}
 	eddnSendJournal(theEddn, ts, evt, ssys)
 	return webui.UIHdr
@@ -304,10 +305,157 @@ func jevtLoadGame(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	return webui.UIReload
 }
 
+func jevtModSzNCls(item string) (name string, size, class int) {
+	var err error
+	szIdx := strings.LastIndex(item, "_Size")
+	if szIdx < 0 {
+		return item, 0, 0
+	}
+	clsIdx := strings.LastIndex(item, "_Class")
+	if clsIdx < 0 {
+		return item, 0, 0
+	}
+	size, err = strconv.Atoi(item[szIdx+5 : clsIdx])
+	if err != nil {
+		panic(err)
+	}
+	class, err = strconv.Atoi(item[clsIdx+6:])
+	if err != nil {
+		panic(err)
+	}
+	name = item[:szIdx]
+	return name, size, class
+}
+
+func jevtSlot2Mod(sm ggja.Obj) (kind cmdr.SlotKind, mdl *cmdr.Module) {
+	item := sm.MStr("Item")
+	switch slot := sm.MStr("Slot"); slot {
+	case "Armour":
+		c, _ := strconv.Atoi(item[len(item)-1:])
+		name := item[:len(item)-7]
+		if sep := strings.IndexRune(name, '_'); sep > 0 {
+			name = name[sep+1:]
+		}
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  0,
+			Name:  name,
+			Class: c,
+		}
+	case "PowerPlant":
+		n, s, c := jevtModSzNCls(item)
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  1,
+			Name:  n[4:],
+			Size:  s,
+			Class: c,
+		}
+	case "MainEngines":
+		n, s, c := jevtModSzNCls(item)
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  2,
+			Name:  n[4:],
+			Size:  s,
+			Class: c,
+		}
+	case "FrameShiftDrive":
+		n, s, c := jevtModSzNCls(item)
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  3,
+			Name:  n[4:],
+			Size:  s,
+			Class: c,
+		}
+	case "LifeSupport":
+		n, s, c := jevtModSzNCls(item)
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  4,
+			Name:  n[4:],
+			Size:  s,
+			Class: c,
+		}
+	case "PowerDistributor":
+		n, s, c := jevtModSzNCls(item)
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  5,
+			Name:  n[4:],
+			Size:  s,
+			Class: c,
+		}
+	case "Radar":
+		n, s, c := jevtModSzNCls(item)
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  6,
+			Name:  n[4:],
+			Size:  s,
+			Class: c,
+		}
+	case "FuelTank":
+		n, s, c := jevtModSzNCls(item)
+		mdl = &cmdr.Module{
+			Kind:  cmdr.CoreModule,
+			Slot:  7,
+			Name:  n[4:],
+			Size:  s,
+			Class: c,
+		}
+	case "PlanetaryApproachSuite":
+		return cmdr.OptModule, nil
+	case "WeaponColour":
+		return cmdr.OptModule, nil
+	case "EngineColour":
+		return cmdr.OptModule, nil
+	case "VesselVoice":
+		return cmdr.OptModule, nil
+	case "ShipCockpit":
+		return cmdr.CoreModule, nil
+	case "CargoHatch":
+		return cmdr.CoreModule, nil
+	default:
+		if strings.HasPrefix(slot, "Slot") {
+			slotNo, _ := strconv.Atoi(slot[4:6])
+			n, s, c := jevtModSzNCls(item)
+			mdl = &cmdr.Module{
+				Kind:  cmdr.OptModule,
+				Slot:  slotNo,
+				Name:  n[4:],
+				Size:  s,
+				Class: c,
+			}
+		} else if pos := strings.LastIndex(slot, "Hardpoint"); pos >= 0 {
+			slotNo, _ := strconv.Atoi(slot[pos+9:])
+			mdl = &cmdr.Module{
+				Kind: cmdr.Hardpoint,
+				Slot: slotNo,
+				Name: item,
+			}
+		} else if strings.HasPrefix(slot, "Decal") {
+			return cmdr.OptModule, nil
+		} else if strings.HasPrefix(slot, "ShipName") {
+			return cmdr.OptModule, nil
+		} else if strings.HasPrefix(slot, "Bobble") {
+			return cmdr.OptModule, nil
+		} else if strings.HasPrefix(slot, "PaintJob") {
+			return cmdr.OptModule, nil
+		} else {
+			lgr.Warna("unknown module `slot`", slot)
+			return cmdr.OptModule, nil
+		}
+	}
+	return mdl.Kind, mdl
+}
+
 func jevtLoadout(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	if theCmdr.JStatFlags&statInMainShip != statInMainShip {
+		lgr.Debug(log.Str("ignore loadout for non-mainship"))
 		return 0
 	}
 	ship := theCmdr.MustHaveShip(evt.MInt("ShipID"), evt.MStr("Ship"))
@@ -319,13 +467,48 @@ func jevtLoadout(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	ship.Rebuy = evt.Int("Rebuy", ship.Rebuy)
 	ship.HullValue = evt.Int("HullValue", ship.HullValue)
 	ship.ModuleValue = evt.Int("ModulesValue", ship.ModuleValue)
+	if modls := evt.Arr("Modules"); modls != nil {
+		ship.Hardpoints = nil
+		ship.Utilities = nil
+		ship.CoreModules = nil
+		ship.OptModules = nil
+		for _, jm := range modls.Bare {
+			s := ggja.Obj{Bare: jm.(ggja.GenObj), OnError: evt.OnError}
+			kind, mod := jevtSlot2Mod(s)
+			if mod == nil {
+				continue
+			}
+			switch kind {
+			case cmdr.Hardpoint:
+				ship.Hardpoints = append(ship.Hardpoints, mod)
+			case cmdr.Utility:
+				ship.Utilities = append(ship.Utilities, mod)
+			case cmdr.CoreModule:
+				ship.CoreModules = append(ship.CoreModules, mod)
+			case cmdr.OptModule:
+				ship.OptModules = append(ship.OptModules, mod)
+			}
+		}
+		sort.Slice(ship.Hardpoints, func(i, j int) bool {
+			return ship.Hardpoints[i].Slot < ship.Hardpoints[j].Slot
+		})
+		sort.Slice(ship.Utilities, func(i, j int) bool {
+			return ship.Utilities[i].Slot < ship.Utilities[j].Slot
+		})
+		sort.Slice(ship.CoreModules, func(i, j int) bool {
+			return ship.CoreModules[i].Slot < ship.CoreModules[j].Slot
+		})
+		sort.Slice(ship.OptModules, func(i, j int) bool {
+			return ship.OptModules[i].Slot < ship.OptModules[j].Slot
+		})
+	}
 	return webui.UIHdr
 }
 
 func akkuMats(cat string, mat string, d int) {
 	catId, ok := jEvtMatCat[cat]
 	if !ok {
-		log.Warnf("unknown material category: '%s'", cat)
+		lgr.Warna("unknown material `category`", cat)
 		return
 	}
 	cmdrMat := cmdr.DefMaterial(catId, mat)
@@ -434,11 +617,11 @@ func jevtMissionAccepted(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 		for _, d := range dests {
 			sys, err = theGalaxy.MustSystem(d)
 			if err != nil {
-				log.Panic(err)
+				lgr.Panica("`err`", err)
 			}
 			mssn.Dests = append(mssn.Dests, sys.Id)
 			if !galaxy.V3dValid(sys.Coos) {
-				log.Warnf("system %d '%s' without coos", sys.Id, sys.Name)
+				lgr.Warna("system `id` `name` without coos", sys.Id, sys.Name)
 			}
 		}
 	}
@@ -477,7 +660,7 @@ func jevtMissionCompleted(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 				level := theCmdr.MinorRep[faction]
 				theCmdr.MinorRep[faction] = level - impact
 			default:
-				log.Logf(l.Lwarn, "illegal mission reputation trend: '%s'", rep)
+				lgr.Warna("illegal mission reputation trend: `rep`", rep)
 			}
 		}
 	}
@@ -577,7 +760,7 @@ func jevtLocation(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 		}
 		if putStn {
 			if _, err := theGalaxy.PutSysPart(stn); err != nil {
-				log.Panic(err)
+				lgr.Panica("`err`", err)
 			}
 		}
 	} else if bdynm := evt.Str("Body", ""); len(bdynm) > 0 {
@@ -657,7 +840,7 @@ func jevtScan(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 func jevtShipyardBuy(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	storeId := evt.MInt("StoreShipID")
 	if storeId != theCmdr.InShip {
-		log.Logf(l.Lwarn, "inconsistent ids for current ship bc+:%d / event:%d",
+		lgr.Warna("inconsistent ids for current ship `bc+` / `event`",
 			theCmdr.InShip, storeId)
 	}
 	stateLock.Lock()
@@ -678,8 +861,7 @@ func jevtShipyardNew(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	if theCmdr.InShip > cmdr.NoShip {
-		log.Log(l.Lwarn, "commander in a ship %d when new ship arrives",
-			theCmdr.InShip)
+		lgr.Warna("commander in `ship` when new ship arrives", theCmdr.InShip)
 		if s2s, ok := theCmdr.Ships[theCmdr.InShip]; ok {
 			s2s.BerthLoc = theCmdr.Loc.LocId
 		}
@@ -707,7 +889,7 @@ func saveSoldShip(cmdr string, ship *cmdr.Ship) {
 	fnm = cmdrFile(cmdr, fnm)
 	f, err := os.Create(fnm)
 	if err != nil {
-		log.Logf(l.Lwarn, "cannot save sold ship %d %s", ship.Id, fnm)
+		lgr.Warna("cannot save sold ship `id` to `file`", ship.Id, fnm)
 		return
 	}
 	defer f.Close()
@@ -720,7 +902,7 @@ func jevtShipyardSell(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	if theCmdr.InShip == sid {
-		log.Logf(l.Lwarn, "commander in sold ship %d", sid)
+		lgr.Warna("commander in sold ship `id`", sid)
 		theCmdr.InShip = cmdr.NoShip
 	}
 	if ship, ok := theCmdr.Ships[sid]; ok && ship != nil {
@@ -759,7 +941,7 @@ func jevtShipyardTransfer(ts time.Time, evt ggja.Obj) webui.UIUpdate {
 	stateLock.Lock()
 	defer stateLock.Unlock()
 	if theCmdr.InShip == sid {
-		log.Logf(l.Lwarn, "commander in transferred ship %d", sid)
+		lgr.Warna("commander in transferred ship `id`", sid)
 		theCmdr.InShip = cmdr.NoShip
 	}
 	ship := theCmdr.MustHaveShip(sid, evt.MStr("ShipType"))

@@ -7,12 +7,14 @@ import (
 	"strconv"
 	"strings"
 
-	l "git.fractalqb.de/fractalqb/qblog"
+	l "git.fractalqb.de/fractalqb/qbsllm"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var log = l.Std("bc+gxy:")
-var LogConfig = l.Package(log)
+var (
+	log       = l.New(l.Lnormal, "bc+gxy", nil, nil)
+	LogConfig = l.Config(log)
+)
 
 var NaN32 = float32(math.NaN())
 
@@ -48,9 +50,9 @@ func NewRepo(dbFile string) (res *Repo, err error) {
 		}
 	}()
 	if len(dbFile) == 0 {
-		log.Fatal("galaxy repo created with empty dbConnect string")
+		log.Fatals("galaxy repo created with empty dbConnect string")
 	}
-	log.Logf(l.Linfo, "galaxy repo connecting to DB: '%s'", dbFile)
+	log.Infoa("galaxy repo connecting to `DB`", dbFile)
 	_, notExists := os.Stat(dbFile)
 	if !os.IsNotExist(notExists) {
 		notExists = nil
@@ -93,7 +95,7 @@ func (rpo *Repo) Close() {
 	if rpo.db != nil {
 		err := rpo.db.Close()
 		if err != nil {
-			log.Log(l.Lerror, err)
+			log.Errora("`err`", err)
 		}
 		rpo.db = nil
 	}

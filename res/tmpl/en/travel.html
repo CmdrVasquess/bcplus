@@ -8,31 +8,37 @@
     <link rel="stylesheet" href="s/css/bcp.css">
     <script src="s/js/bcp.js"></script>
     <script src="s/js/vue.js"></script>
+<!-- >>> head >>> -->
     <style>
-div.body {
-  float: left;
-  background-color: var(--colBkgDim);
-  padding: .2em .3em .2em .3em;
-  margin: .2em;
-  font-size: 80%;
+main {
+  display: grid;
+  grid-template-columns: 2fr 6fr;
 }
-div.body h1 {
-  margin: 0;
-  font-size: 120%;
-  font-weight: bold;
+#jumplog {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  border: 1px solid red;
 }
-div.body td {
-  background-color: var(--colBkg);
+#jumpstats {
+  grid-column: 2;
+  grid-row: 1;
+  border: 1px solid red;
+}
+#dests {
+  grid-column: 2;
+  grid-row: 2;
+  border: 1px solid red;
 }
     </style>
+<!-- <<< head <<< -->
   </head>
   <body>
     <template>
 <!-- >>> title >>> -->
-System Bodies
+Travel
 <!-- <<< title <<< -->
 <!-- >>> nav-name >>> -->
-Bodies
+Travel
 <!-- <<< nav-name <<< -->
     </template>
     <header style="display:block;" class="center">
@@ -50,33 +56,27 @@ Bodies
     </nav>
  	  <main>
 <!-- >>> main >>> -->
-      <div class="body">
-        <h1>✴ Galam A</h1>
-      </div>
-      <div class="body">
-        <h1>◌ Galam A Belt</h1>
-        4.78 Ls
-      </div>
-      <div class="body">
-        <h1>✴ Galam B</h1>
-        35,765 Ls
-      </div>
-      <div class="body">
-        <h1 class="bad">❍ Galam B2</h1>
-        35,261 Ls
-        <table>
-          <tr><td title="Arsenic">As</td><td>44.44%</td></tr>
-          <tr class="bad"><td title="Polonium">Po</td><td>2.31%</td><td>-3</td></tr>
-        </table>
-      </div>
-      <div class="body">
-        <h1 class="gud">⦿ Galam B2 Ring</h1>
-        1.2–2.5 Mm
-        <table>
-          <tr class="gud"><td title="Yttrium">Yt</td><td>1.27%</td><td>+32</td></tr>
-        </table>
-      </div>
+<div id="jumplog">
+  This is<br>the<br>Jump<br>Log
+</div>
+<details id="jumpstats">
+  <summary>
+    Jump Statistics
+  </summary>
+  <table>
+    <tr><th>Last…</th><th>Jump</th><th>5 Jumps</th>
+  </table>
+</details>
+<div id="dests">
+  <table>
+    <tr><th>Name</th><th>System</th><th>Distance</th></tr>
+  </table>
+</div>
 <!-- <<< main <<< -->
+<!-- >>> script >>> -->
+    <script>
+    </script>
+<!-- <<< script <<< -->
     </main>
   </body>
 </html>

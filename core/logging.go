@@ -4,7 +4,8 @@ import (
 	"io"
 	"os"
 
-	"git.fractalqb.de/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/c4hgol"
+	log "git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/BCplus/cmdr"
 	"github.com/CmdrVasquess/BCplus/common"
 	"github.com/CmdrVasquess/BCplus/galaxy"
@@ -13,27 +14,29 @@ import (
 )
 
 var (
-	log         = qblog.Std("bcplus:")
-	logEddn     = log.NewSub("bc+edn:")
-	logEdsm     = log.NewSub("bc+eds:")
+	lgr         = log.New(log.Lnormal, "bcplus", nil, nil)
+	logEddn     = log.New(log.Lnormal, "bc+edn", nil, nil)
+	logEdsm     = log.New(log.Lnormal, "bc+eds", nil, nil)
 	LogV, LogVV bool
+	logCfg      = log.Config(lgr,
+		common.LogConfig,
+		watched.LogConfig,
+		galaxy.LogConfig,
+		cmdr.LogConfig,
+		webui.LogConfig,
+	)
 )
 
 func init() {
-	common.LogConfig.SetParent(log)
-	watched.LogConfig.SetParent(log)
-	galaxy.LogConfig.SetParent(log)
-	cmdr.LogConfig.SetParent(log)
-	webui.LogConfig.SetParent(log)
 	logFile, _ := os.Create("BCplus.log")
 	logWr := io.MultiWriter(logFile, os.Stderr)
-	log.SetOutput(logWr)
+	lgr.SetOutput(logWr)
 }
 
 func FlagLogLevel() {
 	if LogVV {
-		log.SetLevel(qblog.Ltrace)
+		logCfg.SetLevel(c4hgol.Trace)
 	} else if LogV {
-		log.SetLevel(qblog.Ldebug)
+		logCfg.SetLevel(c4hgol.Debug)
 	}
 }

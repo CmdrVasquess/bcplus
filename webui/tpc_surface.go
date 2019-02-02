@@ -33,5 +33,5 @@ func tpcSurface(w http.ResponseWriter, r *http.Request) {
 	data := TpcSurfaceData(theCmdr())
 	bt.BindGen(gxtSurface.TopicData, jsonContent(data))
 	bt.Emit(w)
-	CurrentTopic = UISurface
+	currentTopic = UISurface
 }

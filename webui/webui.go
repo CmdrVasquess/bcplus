@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	gxc "git.fractalqb.de/fractalqb/goxic"
-	l "git.fractalqb.de/fractalqb/qblog"
+	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/BCplus/cmdr"
 
 	"github.com/CmdrVasquess/BCplus/common"
@@ -19,7 +19,12 @@ import (
 
 type UIUpdate = uint32
 
-func Update(uiu UIUpdate, ui UIUpdate) bool { return uiu&ui == ui }
+func Update(uiu UIUpdate, ui UIUpdate) bool {
+	if uiu&ui != ui {
+		return false
+	}
+	return currentTopic == ui
+}
 
 const (
 	UIReload UIUpdate = (1 << iota)
@@ -30,9 +35,10 @@ const (
 	UISynth
 	UISurface
 	UIMissions
+	UITravel
 )
 
-var CurrentTopic uint32
+var currentTopic uint32
 
 const (
 	certFile = "webui.cert"
@@ -40,8 +46,8 @@ const (
 )
 
 var (
-	log       = l.Std("bc+wui:")
-	LogConfig = l.Package(log)
+	log       = qbsllm.New(qbsllm.Lnormal, "bc+wui", nil, nil)
+	LogConfig = qbsllm.Config(log)
 	pgOffline []byte
 )
 
@@ -127,6 +133,7 @@ var topics = []*topic{
 	&topic{key: tkeySurface, path: "/surface", gxt: &gxtSurface, hdlr: tpcSurface},
 	&topic{key: tkeySysNat, path: "/sysnat", gxt: &gxtSysNat, hdlr: tpcSysNat},
 	&topic{key: tkeySynth, path: "/synth", gxt: &gxtSynth, hdlr: tpcSynth},
+	&topic{key: tkeyTravel, path: "/travel", gxt: &gxtTravel, hdlr: tpcTravel},
 }
 
 func getTopic(key string) *topic {
@@ -139,12 +146,12 @@ func getTopic(key string) *topic {
 }
 
 func Run(init *Init) chan<- interface{} {
-	log.Log(l.Linfo, "Initialize Web UI…")
+	log.Infos("Initialize Web UI…")
 	init.configure()
 	loadTemplates(init.ResourceDir, init.Lang, init.BCpVersion)
 	err := mustTLSCert(init.DataDir, init.CommonName)
 	if err != nil {
-		log.Panic(err)
+		log.Panica("`err`", err)
 	}
 	htStatic := http.FileServer(http.Dir(filepath.Join(init.ResourceDir, "s")))
 	http.Handle("/s/", http.StripPrefix("/s", htStatic))
@@ -165,13 +172,13 @@ func Run(init *Init) chan<- interface{} {
 	//go http.ListenAndServe(fmt.Sprintf(":%d", init.Port), nil)
 	addls, err := ownAddrs()
 	if err != nil {
-		log.Panic(err)
+		log.Panica("`err`", err)
 	} else {
-		log.Log(l.Linfo, "Local Web UI address:")
-		log.Logf(l.Linfo, "\thttps://localhost:%d/", init.Port)
-		log.Log(l.Linfo, "This host's addresses to connect to Web UI from remote:")
+		log.Infos("Local Web UI address:")
+		log.Infof("\thttps://localhost:%d/", init.Port)
+		log.Infos("This host's addresses to connect to Web UI from remote:")
 		for _, addr := range addls {
-			log.Logf(l.Linfo, "\thttps://%s:%d/", addr, init.Port)
+			log.Infof("\thttps://%s:%d/", addr, init.Port)
 		}
 	}
 	return wscSendTo

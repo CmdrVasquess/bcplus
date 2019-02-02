@@ -13,6 +13,20 @@ img.picgrm {
   height: 1em;
   vertical-align: text-top;
 }
+button {
+  background-color: var(--colBkgDim);
+  color: var(--colFrg);
+  font-weight: bold;
+  padding: .3em 1em;
+  border: 1px solid;
+  border-color: var(--colFrg);
+  cursor: pointer;
+}
+button:hover {
+  background-color: var(--colFgrDim);
+  color: var(--colBkgDim);
+  border-color: var(--colBkgDim);
+}
 details { margin-bottom: .5em; }
 details > summary {
   font-weight: bold;
@@ -45,14 +59,14 @@ header {
   display: flex;
   flex-flow: row wrap;
 }
-nav ul {
+nav > ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
   overflow: hidden;
   border-bottom: 2px solid var(--colFgrDim);
 }
-nav li {
+nav > ul > li {
   float: left;
   display: block;
   text-align: center;
@@ -60,15 +74,15 @@ nav li {
   margin-left: 2px;
   margin-right: 2px;
 }
-nav li.current {
+nav > ul > li.current {
   background-color: var(--colFgrDim);
   color: var(--colBkg);
   padding: .4em 1em;
 }
-nav li:hover:not(.current) { background-color: var(--colFgr); }
-nav li a {
+nav > ul > li:hover:not(.current) { background-color: var(--colFgr); }
+nav > ul > li a {
   color: var(--colFgrDim);
   text-decoration: none;
   padding: .4em 1em;
 }
-nav li:hover a { color: var(--colBkg); }
+nav > ul > li:hover a { color: var(--colBkg); }

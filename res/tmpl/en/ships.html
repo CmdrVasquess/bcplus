@@ -12,6 +12,21 @@
     <style>
 div#ships { margin-top: .5em; }
 /*summary > div { border: 1px solid red; }*/
+span.shid { display: inline-block; width: 5em; }
+span.shnm { display: inline-block; width: 12em; }
+span.shty { display: inline-block; width: 12em; }
+summary { margin-bottom: .3em; }
+details table {
+  font-size: 90%;
+  display: inline-block;
+  vertical-align: top;
+  border: 1px solid;
+  margin: .3em;
+}
+details table th {
+  color: var(--colBkg);
+  background-color: var(--colFgrDim);
+}
     </style>
 <!-- <<< head <<< -->
   </head>
@@ -53,29 +68,57 @@ Vue.component('ship', {
     hasIdent: function() { return this.data.Ident && this.data.Ident.length > 0; },
     hasLoc: function() { return this.data.BSys &&  this.data.BSys.length > 0; }
   },
+  methods: {
+    modClass: function(idx) {
+      var map = ['–','E','D','C','B','A'];
+      return map[idx];
+    }
+  },
   template:
   '<details>\
     <summary v-bind:class="{gud: inUse}">\
-      {{data.Type}} \
-      <span v-if="hasName">“{{data.Name}}”</span><span v-else>–</span> \
-      <span v-if="hasIdent">{{data.Ident}}</span><span v-else>–</span> \
-      ∙ <span v-if="hasLoc">{{data.BLoc}} \
+      <span class="shid"><span v-if="hasIdent">{{data.Ident}} </span></span>\
+      <span class="shnm"><span v-if="hasName">“{{data.Name}}” </span></span>\
+      <span class="shty">{{data.Type}}</span> \
+      <span v-if="!inUse">⊝ <span v-if="hasLoc">{{data.BLoc}} \
         <img v-if="hdr.Home.Name==data.BSys" class="picgrm" src="s/img/Home.png" alt="Home"> \
         <img v-else class="picgrm" src="s/img/notHome.png" alt="Home"> \
         <kbd-send v-bind:text="data.BSys"></kbd-send>\
       </span>\
-      <span v-else>–</span>\
+      <span v-else>–</span></span>\
       <!--div title="Hull Value / Modules Value / Rebuy Costs">H/M/R:</div>\
       <div>&nbsp;123.456.789</div><div>&nbsp;123.456.789</div><div>&nbsp;12.345</div-->\
     </summary>\
-    <div><h1>Hard Points</h1>\
-    </div>\
-    <div><h1>Utilities</h1>\
-    </div>\
-    <div><h1>Core Modules</h1>\
-    </div>\
-    <div><h1>Optional Modules</h1>\
-    </div>\
+    Bought: {{data.Bought|toDate}} ∙ \
+    Health: {{data.Health}} ∙ \
+    Rebuy: {{data.Rebuy|int}} Cr ∙ \
+    Rebuy: {{data.HullValue|int}} Cr ∙ \
+    Rebuy: {{data.ModuleValue|int}} Cr\
+    <br>\
+    <table>\
+      <tr><th colspan="2">Core Modules</th></tr>\
+      <tr v-for="m in data.Core" :key="m.Slot">\
+        <td>{{m.Size}}{{modClass(m.Class)}}</td><td>{{m.Name}}</td>\
+      </tr>\
+    </table>\
+    <table>\
+      <tr><th colspan="2">Optional Modules</th></tr>\
+      <tr v-for="m in data.Opts" :key="m.Slot">\
+        <td>{{m.Size}}{{modClass(m.Class)}}</td><td>{{m.Name}}</td>\
+      </tr>\
+    </table>\
+    <table>\
+      <tr><th colspan="2">Hardpoints</th></tr>\
+      <tr v-for="m in data.Hardp" :key="m.Slot">\
+        <td>{{m.Size}}{{modClass(m.Class)}}</td><td>{{m.Name}}</td>\
+      </tr>\
+    </table>\
+    <table>\
+      <tr><th colspan="2">Utility Mounts</th></tr>\
+      <tr v-for="m in data.Util" :key="m.Slot">\
+        <td>{{m.Size}}{{modClass(m.Class)}}</td><td>{{m.Name}}</td>\
+      </tr>\
+    </table>\
    </details>'
 });
 /*

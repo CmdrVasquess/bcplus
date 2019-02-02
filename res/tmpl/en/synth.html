@@ -11,6 +11,8 @@
 <!-- >>> head >>> -->
     <style>
 div#recipes { margin-top: .5em; }
+summary span.rcpnm { display: inline-block; width: 17em; }
+summary span.num { display: inline-block; width: 2em; text-align: right; }
 details table {
   margin-top: .3em;
   border-collapse: collapse;
@@ -23,6 +25,7 @@ details td:first-child { text-align: right; }
 details th:nth-child(3), td:nth-child(3) {
   border-right: 2px solid var(--colFgrDim);
 }
+.nodmd { color: var(--colFgrDim); }
     </style>
 
 <!-- <<< head <<< -->
@@ -151,10 +154,10 @@ Vue.component('recipe', {
   template:
   '<details>\
     </summary>\
-    <summary>{{data.name}} – Demand: \
-      <span v-for="(grade, i) in data.grades">\
-      <span v-if="i==0">{{dmnds[i]}} {{grades[i]}}</span>\
-      <span v-else> ∙ {{dmnds[i]}} {{grades[i]}}</span></span>\
+    <summary><span class="rcpnm">{{data.name}}</span> Demand: \
+      <span v-for="(grade, i) in data.grades" v-bind:class="{nodmd: dmnds[i]==0}">\
+        <span class="num">{{dmnds[i]}}</span> ⨉ {{grades[i]}}\
+      </span>\
     </summary>\
     <table style="width:100%">\
       <tr><th class="right">Effect:</th><th>{{data.effect}}<th>Demand</th></th>\
