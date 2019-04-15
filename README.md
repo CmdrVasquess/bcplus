@@ -1,6 +1,6 @@
 Goal reached: Know Go language and have an overview of what pure 
 HTML/CSS/JS can do! Web frontend definitley needs better structure.
-Reworking the thing is still a Work in (slow) Progress…
+Reworking the thing is currently not in progress…
 
 --------------------
 
