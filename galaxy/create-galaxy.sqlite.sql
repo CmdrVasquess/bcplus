@@ -1,1 +1,0 @@
-../res/db/create-galaxy.sqlite.sql
