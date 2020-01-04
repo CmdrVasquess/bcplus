@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="`lang`">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+<!-- >>> title >>> -->
+Ships
+<!-- <<< title <<< -->
+    </title>
+	  <link rel="stylesheet" type="text/css" href="../../s/css/th-bright.css">
+	  <link rel="stylesheet" type="text/css" href="../../s/css/bcp.css">
+    <script src="../../s/js/vue.js"></script>
+<!-- >>> style >>> -->
+    <style>
+main table { width: 100%; border-collapse: collapse; }
+main th { text-align: left; cursor: pointer; padding-top: .2em; }
+main tr.open {
+  background-image: linear-gradient(var(--colFgr),var(--colFgrDim));
+  color: var(--colBkg);
+}
+main td { background-color: var(--colFgrDim); padding: .5em 1em; }
+div.details {
+  display: flex;
+  flex-wrap: wrap;
+}
+.details > div {
+  background-color: var(--colBkg);
+  margin-right: .5em;
+  margin-bottom: .5em;
+  padding: 0.3em 0.8em;
+}
+.details > div:last-child { margin-right: 0; }
+.details h1 { margin: 0; font-size: 100%; }
+table.modules td {
+  background-color: var(--colBkg);
+  margin: 0;
+  padding: 0 .2em;
+}
+    </style>
+<!-- <<< style <<< -->
+  </head>
+  <body>
+    <header>
+      <div id="hdrCmd">John Doe</div>
+      <div id="hdrShp">Ship Name [Ident]</div>
+      <div id="hdrHSy">System</div><div id="hdrSys">System</div>
+      <div id="hdrHRf">Reference</div><div id="hdrRef">RefType: Reference</div>
+      <div id="hdrHVc">Vehicle</div><div id="hdrVhc">Type</div>
+      <div id="hdrHMd">Mode</div><div id="hdrMod">mode</div>
+      <div id="hdrAlt" v-if="hdr.Loc.sc">Alt: x</div>
+      <div id="hdrCoo" v-if="hdr.Loc.sc">x.yy / y.xx</div>
+    </header>
+<!-- >>> main >>> -->
+    <main>
+      <table>
+	  <tbody v-for="ship in Ships" :key="ship.ShipID">
+	  <tr v-on:click="toggleDetails(ship.ShipID)"
+        v-bind:class="{open:showDetails(ship.ShipID)}">
+	    <th v-if="showDetails(ship.ShipID)" style="text-align: center">▾</th>
+	    <th v-else style="text-align: center">▸</th>
+	    <th>{{ship.Ship|shipTyNm}}</th>
+	    <th>“{{ship.ShipName}}”</th>
+	    <th>[{{ship.ShipIdent}}]</th>
+	    <th>Jump: {{ship.MaxJump|f4}} Ly</th>
+	    <th>As of {{ship.AsOf.Date}} {{ship.AsOf.Time}}</th>
+	  </tr>
+	  <tr v-if="showDetails(ship.ShipID)"><td colspan="6">
+      <div class="details">
+        <div>
+          <h1>Core Modules</h1>
+          <table class="modules">
+            <tr v-for="(m, i) in ship.Core" :key="i">
+              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+            </tr>
+          </table>
+        </div>
+        <div>
+          <h1>Optional Modules</h1>
+          <table class="modules">
+            <tr v-for="(m, i) in ship.Opt" :key="i">
+              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+            </tr>
+          </table>
+        </div>
+        <div>
+          <h1>Hardpoints</h1>
+          <table class="modules" v-if="ship.Weap">
+            <tr v-for="(m, i) in ship.Weap" :key="i">
+              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+            </tr>
+          </table>
+          <div v-else>– empty –</div>
+          <h1>Utility Mounts</h1>
+          <table class="modules" v-if="ship.Util">
+            <tr v-for="(m, i) in ship.Util" :key="i">
+              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+            </tr>
+          </table>
+          <div v-else>– empty –</div>
+        </div>
+      </div>
+	  </td></tr>
+	</tbody>
+      </table>
+    </main>
+    <script src="../../s/js/ships.js"></script>
+    <script>
+var shipsApp = new Vue({
+    el: "main",
+    data: {
+	Ships: `data`,
+	show: {}
+    },
+    methods: {
+	showDetails: function(shipid) {
+	    var res = this.show[shipid];
+	    if (res) {
+		return res;
+	    } else {
+		Vue.set(this.show, shipid, false);
+	    }
+	    return false;
+	},
+	toggleDetails: function(shipid) {
+	    var flag = this.showDetails(shipid);
+	    this.show[shipid] = !flag;
+	}
+    }
+})
+    </script>
+<!-- <<< main <<< -->
+  </body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>
+<!-- >>> title >>> -->
+Crafting
+<!-- <<< title <<< -->
+	</title>
+	<script src="./vue.js"></script>
+<!-- >>> style >>> -->
+	<style>
+	  #ctrls  {
+		  display: flex;
+		  flex-flow: row wrap;
+		  margin: 1em 0;
+	  }
+	  div.ctrl {
+		  display: flex;
+		  flex-direction: column;
+		  border: 2px solid val(--colFgr);
+		  margin-right: .5em;
+		  padding: .2em .5em;
+	  }
+	  div.ctrl h1 {
+		  font-size: 100%;
+		  margin: 0;
+	  }
+	  #addrcp {
+		  display: flex;
+		  flex-direction: column;
+		  gap: .3em 0;
+	  }
+	  #plan th {
+	      color: black;
+	      background-color: orange;
+	  }
+	  #plan td {
+		  padding: 0 0.2em;
+		  background-color: #311;
+		  text-align: center;
+	  }
+	  #plan td:nth-child(2) { text-align: left; }
+	</style>
+<!-- <<< style <<< -->
+  </head>
+  <body>
+<!-- >>> main >>> -->
+    <main id="mats">
+      <div id="ctrls">
+	<div class="ctrl">
+	  <h1>Material Type</h1>
+	  <label>{{db.matKinds.raw.sym}}<input type="checkbox"
+					       v-model="ctrl.showRaw">Raw</label>
+	  <label>{{db.matKinds.man.sym}}<input type="checkbox"
+					       v-model="ctrl.showMan">Manufatured</label>
+	  <label>{{db.matKinds.enc.sym}}<input type="checkbox"
+					       v-model="ctrl.showEnc">Encoded</label>
+	</div>
+	<div class="ctrl">
+	  <h1>Demand</h1>
+	  <label><input type="checkbox" v-model="ctrl.showMis">Missing</label>
+	  <label><input type="checkbox" v-model="ctrl.showNuf">Enough</label>
+	  <label><input type="checkbox" v-model="ctrl.showOth">Other</label>
+	</div>
+	<div id="addrcp">
+	  <select v-model="ctrl.addKind">
+	    <option v-for="(name, key) in l10n.rcpKind" :value="key">
+	      {{name.long}}
+	    </option>
+	  </select>
+	  <select v-model="ctrl.addRcp">
+	    <option v-for="rcp in addrcps" :key="rcp.key" :value="rcp.key">
+	      {{rcp.name.long}}
+	    </option>
+	  </select>
+	  <button :disabled="!(ctrl.addKind && ctrl.addRcp)"
+		  v-on:click="doAddRcp">Add Recipe</button>
+	</div>
+      </div>
+      <table id="plan">
+	<thead>
+	  <tr>
+	    <th colspan="3">Material</th>
+	    <th>Stock</th>
+	    <th>Want</th>
+	    <th v-for="rcp in rcpls" :key="rcp.key">
+	      <input type="number" v-model="rcpNeed[rcp.key]"
+		     min="0" step="1" style="width:3em">
+	      <br>{{rcp.name.short}}
+	    </th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr v-for="mat in matls" :key="mat.key">
+	    <td>{{db.matKinds[mat.val.kind].sym}}</td>
+	    <td>{{mat.name.long}}</td>
+	    <td><img :src="'s/img/grade-'+mat.val.grade+'.svg'" style="height:1em;"></td>
+	    <td v-if="matNdTtl(mat.key)&gt;0">
+	      {{haveMat(mat.key)}} / {{matNdTtl(mat.key)}}
+	    </td>
+	    <td v-else-if="haveMat(mat.key)&gt;0">
+	      {{haveMat(mat.key)}}
+	    </td>
+	    <td v-else></td>
+	    <td><input type="number" min="0" step="1" style="width:3em"
+		       v-bind:value="matNdFree(mat.key)"
+		       v-on:input="setNdFree(mat.key,$event.target.value)"></td>
+	    <td v-for="rcp in rcpls" :key="rcp.key">
+	      <span v-if="matNd4(mat.key, rcp.key) == 0"></span>
+	      <span v-else>{{matNd4(mat.key, rcp.key)}}</span>
+	    </td>
+	  </tr>
+	</tbody>
+      </table>
+    </main>
+    <script src="s/js/mats-db.js"></script>
+    <script src="s/l10n/en/mats.js"></script>
+<script>
+  var matApp = new Vue({
+      el: '#mats',
+      data: {
+	  db: db,
+	  l10n: l10n,
+	  ctrl: {
+	      addKind: null, addRcp: null,
+	      showRaw: true, showMan: true, showEnc: true,
+	      showMis: true, showNuf: true, showOth: true
+	  },
+	  matNeed: `mat-need`,
+	  rcpNeed: `rcp-need` },
+      computed: {
+	  matls: function() {
+	      var ls = [];
+	      for (m in db.mats) {
+		  var v = db.mats[m];
+		  if (this.matFilter(v) && this.dmndFilter(m)) {
+		      var nm = l10n.mats[m];
+		      ls.push({key: m, val: v, name: nm});
+		  }
+	      }
+	      ls.sort(function(lhs, rhs) {
+		  var lord = db.matKinds[lhs.key];
+		  var rord = db.matKinds[rhs.key];
+		  var res = lord - rord;
+		  if (res == 0) {
+		      res = lhs.name.localeCompare(rhs.name.long);
+		  }
+		  return res;
+	      });
+	      return ls;
+	  },
+	  rcpls: function() {
+	      return this.fltRcpLs(this.neededRcp);
+	  },
+	  addrcps: function() {
+	      var neededRcp = this.neededRcp;
+	      var ctrl = this.ctrl;
+	      return this.fltRcpLs(function(rcp) {
+		  if (neededRcp(rcp)) return false;
+		  var nnr = db.rcps[rcp];
+		  return nnr.kind == ctrl.addKind;
+	      });
+	  }
+      },
+      methods: {
+	  matFilter: function(mat) {
+	      switch (mat.kind) {
+	      case 'raw': return this.ctrl.showRaw;
+	      case 'man': return this.ctrl.showMan;
+	      case 'enc': return this.ctrl.showEnc;
+	      }
+	      console.log("unknown mat kind: "+mat);
+	      return false;
+	  },
+	  dmndFilter: function(mat) {
+	      var need = this.matNdTtl(mat);
+	      if (need == 0) { return this.ctrl.showOth; }
+	      var have = this.haveMat(mat);
+	      if (have < need) { return this.ctrl.showMis; }
+	      return this.ctrl.showNuf;
+	  },
+	  fltRcpLs: function(flt) {
+	      var ls = [];
+	      for (r in db.rcps) {
+		  if (!flt(r)) continue;
+		  var v = db.rcps[r];
+		  var nm = l10n.rcps[r];
+		  ls.push({key: r, val: v, name: nm});
+	      }
+	      ls.sort(function(lhs, rhs) {
+		  var lnm = lhs.key;
+		  var rnm = rhs.key;
+		  var res = lnm.localeCompare(rnm);
+		  if (res == 0) {
+		      lnm = lhs.name.long;
+		      rnm = rhs.name.long;
+		      res = lnm.localeCompare(rnm);
+		  }
+		  return res;
+	      });
+	      return ls;
+	  },
+	  neededRcp: function(rcp) {
+	      var rnd = this.rcpNeed[rcp];
+	      return rnd > 0;
+	  },
+	  haveMat: function(key) {
+	      var md = this.matNeed[key];
+	      return md ? md.have : 0;
+	  },
+	  matNdFree: function(key) {
+	      var res = 0;
+	      var md = this.matNeed[key];
+	      res = md ? md.free : 0;
+	      return res;
+	  },
+	  setNdFree: function(key, num) {
+	      var n = parseInt(num)
+	      var mat = this.matNeed[key];
+	      if (mat) {
+		  mat.free = n;
+	      } else {
+		  Vue.set(this.matNeed, key, {have: 0, free: n});
+	      }
+	  },
+	  matNd4: function(key, use) {
+	      var rnd = this.rcpNeed[use];
+	      if (!rnd) { return 0; }
+	      var res = 0;
+	      var mult = db.rcps[use].mats[key];
+	      res = mult ? mult * rnd : 0;
+	      return res;
+	  },
+	  matNdTtl: function(key) {
+	      var res = 0;
+	      var md = this.matNeed[key];
+	      if (md) {
+		  res = md.free;
+	      }
+	      for (rcp in this.rcpNeed) {
+		  var rdef = db.rcps[rcp].mats;
+		  if (rdef[key] > 0) {
+		      res += rdef[key] * this.rcpNeed[rcp];
+		  }
+	      }
+	      return res;
+	  },
+	  doAddRcp: function(evt) {
+	      var rcp = this.ctrl.addRcp;
+	      var nrcp = this.rcpNeed[rcp];
+	      if (nrcp) {
+		  this.rcpNeed[rcp] = nrcp + 1;
+	      } else {
+		  Vue.set(this.rcpNeed, rcp, 1);
+	      }
+	  }
+      }
+  });
+</script>
+<!-- <<< main <<< -->
+  </body>
+</html>

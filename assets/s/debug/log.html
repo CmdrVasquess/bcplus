@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BC+ log</title>
+    <style>
+body {
+	font-family: monospace;
+	background-color: black;
+	color: greenyellow;
+}
+h1 { font-size: 110%; }
+div { background-color: green; color: black; }
+div.trace { background-color: black; color: #55F; } 
+div.debug { background-color: black; color: turquoise; } 
+div.info { background-color: black; color: greenyellow; } 
+div.wanr { background-color: black; color: yellow; } 
+div.error { background-color: black; color: red; } 
+    </style>
+    <script src="/s/js/vue.js"></script>
+  </head>
+  <body>
+	<h1>BC+ log output:</h1>
+	<main>
+		<div v-for="(msg, idx) in lines" :key="idx" v-bind:class="[msgClass(msg)]">{{msg}}</div>
+	</main>
+	<script>
+var wsock = null;
+var logApp = new Vue({
+	el: 'main',
+	data: {
+		lines: []
+	},
+	methods: {
+		addmsg: function(msg) {
+			this.lines.unshift(msg);
+			if (this.lines.length > 512) {
+				this.lines = this.lines.slice(0, 512);
+			}
+		},
+		locmsg: function (msg) {
+			this.addmsg("[local] "+msg);
+		},
+		msgClass: function(msg) {
+			if (msg.startsWith("[local]")) { return null; }
+			if (msg.indexOf("TRACE") >= 0) { return "trace"; }
+			if (msg.indexOf("DEBUG") >= 0) { return "debug"; }
+			if (msg.indexOf("INFO") >= 0) { return "info"; }
+			if (msg.indexOf("WARN") >= 0) { return "warn"; }
+			if (msg.indexOf("ERROR") >= 0) { return "error"; }
+		}
+	},
+	mounted: function () {
+		if (!window["WebSocket"]) {
+			this.locmsg("your browser does not support web sockets, log view not working");
+			return;
+		}
+		var wsurl = "wss://"+location.hostname+":"+location.port+"/ws/log";
+		wsock = new WebSocket(wsurl);
+		var addmsg = this.addmsg;
+		wsock.onmessage = function(evt) {
+			addmsg(evt.data);
+		}
+		this.locmsg("connected to "+wsurl);
+	}
+});
+	</script>
+  </body>
+</html>
