@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="`lang`">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+<!-- >>> title >>> -->
+BC+ Local System
+<!-- <<< title <<< -->
+    </title>
+    <link rel="stylesheet" type="text/css" href="../../s/css/th-bright.css">
+    <link rel="stylesheet" type="text/css" href="../../s/css/bcp.css">
+    <script src="../../s/js/vue.js"></script>
+<!-- >>> style >>> -->
+    <style>
+summary { font-weight: bold; font-size: 120%; }
+#sigtab td:first-child { text-align: right; }
+#bdytab th { background-color: var(--colFgr); color: var(--colBkg); }
+#bdytab td {
+    padding: 0 .4em;
+    text-align: right;
+    background-color: var(--colBkgDim);
+}
+#bdytab td:first-child { padding: 0 .4em; text-align: left; font-weight: bold; }
+#bdytab td:nth-child(2), #bdytab td:nth-child(3), #bdytab td:nth-child(5) {
+    color: var(--colGud);
+}
+#bdys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8em;
+    justify-content: space-between;
+}
+#bdys > div {
+    background-color: var(--colBkgDim);
+    border: 1px solid var(--colFgr);
+    font-size: 90%;
+    margin-top: .8em;
+}
+#bdys h1 {
+    font-size: 90%;
+    margin: 0;
+    background-color: var(--colFgr);
+    padding: 2px;
+    padding-left: .2em;
+    color: var(--colBkg);
+}
+#bdys span.tag {
+    color: var(--colGud);
+    background-color: var(--colBkgDim);
+    padding: 0 .2em;
+    margin-left: 0.2em;
+    float: right;
+}
+#bdys table { border-collapse: collapse; margin: .1em .2em; }
+#bdys td { padding: 0; color: var(--colFgr); }
+#bdys td:first-child { text-align: center; color: var(--colGud); }
+#bdys td:nth-child(2) {
+    text-align: right;
+    padding: 0 .2em;
+}
+#bdys td:nth-child(3) { font-weight: normal; }
+    </style>
+<!-- <<< style <<< -->
+  </head>
+  <body>
+    <header>
+      <div id="hdrCmd">John Doe</div>
+      <div id="hdrShp">Ship Name [Ident]</div>
+      <div id="hdrHSy">System</div><div id="hdrSys">System</div>
+      <div id="hdrHRf">Reference</div><div id="hdrRef">RefType: Reference</div>
+      <div id="hdrHVc">Vehicle</div><div id="hdrVhc">Type</div>
+      <div id="hdrHMd">Mode</div><div id="hdrMod">mode</div>
+	    <div id="hdrHSp" v-if="hdr.Loc.sc">Lat / Lon : Alt</div>
+      <div id="hdrAlt" v-if="hdr.Loc.sc">Alt: x</div>
+      <div id="hdrCoo" v-if="hdr.Loc.sc">x.yy / y.xx</div>
+    </header>
+<!-- >>> main >>> -->
+      <main>
+        <h2>Local FSS results:
+        <span v-if="BodyNum>=0">Bodies: {{BodyNum}}</span>
+        <span v-if="MiscNum>=0">Signals: {{MiscNum}}</span>
+        <span v-if="BodyNum&lt;0 &amp; MiscNum&lt;0">No scans</span>
+        </h2>
+	<details open>
+	  <summary>{{MiscNum}} Signals</summary>
+          <table id="sigtab">
+            <tr v-for="(n, s) in Sigs">
+              <td>{{n}}</td><td>×</td><td>{{s}}</td>
+            </tr>
+          </table>
+	</details>
+        <h3>{{BodyNum}} Bodies – Show
+	  <input type="radio" value="c" v-model="bdyDsp"> cards
+	  <input type="radio" value="t" v-model="bdyDsp"> table
+	</h3>
+	<table id="bdytab" v-if="bdyDsp=='t'">
+	  <tr>
+	    <th colspan="5">Body</th>
+	    <th>↦</th>
+	    <th>♨</th>
+	    <th>⌀</th>
+	    <th>⟱</th>
+	  </tr>
+	  <tr v-for="(b,i) in Bodies">
+	    <td>{{b.Name}}</td>
+	    <td><span v-if="b.Land" class="tag" title="landable">⤓🛬</span></td>
+	    <td>
+	      <span v-if="b.TidalLock" class="tag"
+		    title="titally locked">◑</span>
+	      <span v-else class="tag" title="not locked">↺</span>
+	    </td>
+	    <td><span v-if="b.Volcano.length>0" class="tag">🔥</span></td>
+	    <td>
+              <span v-if="b.Mapd" class="tag" title="mapped">🌐</span>
+              <span v-else-if="b.Disco" class="tag" title="discovered">⚑</span>
+	    </td>
+	    <td>{{b.Dist|f2}} ls</td>
+	    <td><span v-if="b.Temp">{{b.Temp|f2}} K</span></td>
+	    <td><span v-if="b.R>0">{{(b.R/1000)|f2}} km</span></td>
+	    <td><span v-if="b.Grav>0">{{(b.Grav/10)|f4}} g</span></td>
+	  </tr>
+	</table>
+	<div id="bdys" v-if="bdyDsp=='c'">
+	  <div v-for="(b,i) in Bodies">
+	    <h1>{{b.Name}}
+              <span v-if="b.Mapd" class="tag" title="mapped">🌐</span>
+              <span v-else-if="b.Disco" class="tag" title="discovered">⚑</span>
+	      <span v-if="b.Volcano.length>0" class="tag">🔥</span>
+	      <span v-if="b.TidalLock" class="tag"
+		    title="titally locked">◑</span>
+	      <span v-else class="tag" title="not locked">↺</span>
+        <span v-if="b.Land" class="tag" title="landable">⤓🛬</span>
+	    </h1>
+	    <table>
+	      <tr title="Distance from center">
+		<td>↦</td><td>{{b.Dist|f2}}</td><td> ls</td></tr>
+	      <tr v-if="b.Temp" title="Surface temperature">
+		<td>♨</td><td>{{b.Temp|f2}}</td><td> K</td></tr>
+	      <tr v-if="b.R>0" title="Radius! never mind that symbol">
+		<td>⌀</td><td>{{(b.R/1000)|f2}}</td><td> km</td></tr>
+	      <tr v-if="b.Grav>0" title="Surface gravity">
+		<td>⟱</td><td>{{(b.Grav/10)|f4}}</td><td> g</td></tr>
+	    </table>
+	  </div>
+	</div>
+      </main>
+      <script>
+var insysApp = new Vue({
+  el: "main",
+  data: `data`,
+  methods: {
+      onMsg: function(evt) {
+	  if (evt.Cmd != "upd") return;
+	  if (!evt.P) return;
+	  this.BodyNum = evt.P.BodyNum;
+	  this.MiscNum = evt.P.MiscNum;
+	  this.Sigs = evt.P.Sigs;
+	  this.Bodies = evt.P.Bodies;
+	  if (this.Bodies) {
+	      this.Bodies.sort(function(a, b) {
+		  return a.Dist - b.Dist;
+	      });
+	  }
+      }
+  },
+  mounted: function () {
+      wspgmsg.push(this.onMsg);
+      console.log("added insys callback");
+      if (this.Bodies) {
+	  this.Bodies.sort(function(a, b) {
+	      return a.Dist - b.Dist;
+	  });
+      }
+  }
+});
+      </script>
+<!-- <<< main <<< -->
+  </body>
+</html>
