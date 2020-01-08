@@ -1,6 +1,7 @@
 package app
 
 import (
+	"git.fractalqb.de/fractalqb/c4hgol"
 	"github.com/CmdrVasquess/watched"
 )
 
@@ -27,7 +28,10 @@ const (
 	WuiUpInSys
 )
 
-var EventQ = make(chan Event, 16)
+var (
+	EventQ  = make(chan Event, 16)
+	elogCfg = c4hgol.NewGroup("events", jelogCfg, selogCfg)
+)
 
 func watchJournalDir(dir string) (quit chan<- bool) {
 	res := &watched.JournalDir{

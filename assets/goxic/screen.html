@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="`lang`">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>`title`</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/s/img/logo.ico">
+    <link rel="stylesheet" type="text/css" href="/s/css/th-`theme`.css">
+    <link rel="stylesheet" type="text/css" href="/s/css/bcp.css">
+    <script src="/s/js/vue.js"></script>
+<!-- >>> style <<< -->
+  </head>
+  <body>
+    <div id="vue-app">
+      <header>
+	<div id="hdrCmd">CMDR {{hdr.Name}}</div>
+	<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Id}}]</div>
+	<div id="hdrHSy">System</div><div id="hdrSys">{{hdr.Loc.sn}}</div>
+	<div id="hdrHRf">Reference</div><div id="hdrRef">{{hdr.Loc.r|refTy}}: {{hdr.Loc.rn}}</div>
+	<div id="hdrHVc">Vehicle</div><div id="hdrVhc">{{hdr.Loc.v|vhcNm}}</div>
+	<div id="hdrHMd">Mode</div><div id="hdrMod">{{hdr.Loc.m|modNm}}</div>
+	<div id="hdrHSp" v-if="hdr.Loc.sc">Lat / Lon : Alt</div>
+	<div id="hdrCoo" v-if="hdr.Loc.sc">{{hdr.Loc.sc.ll[0]|f4}}° /
+	  {{hdr.Loc.sc.ll[1]|f4}}°</div>
+	<div id="hdrAlt" v-if="hdr.Loc.sc">{{hdr.Loc.sc.a|int}}m</div>
+      </header>
+      <nav>
+	<div id="mbtn">
+	  <span v-if="ctrl.showMenu"
+		v-on:click="ctrl.showMenu=false">⨯</span>
+	  <span v-else v-on:click="ctrl.showMenu=true">☰</span>
+	</div>
+	<div v-for="tab in tabs" :key="tab.key"
+	     v-bind:class="{current: tab.key == activeTab}">
+	  <span v-if="tab.key == activeTab">{{tab.title}}</span>
+	  <span v-else><a :href="tab.url">{{tab.title}}</a></span>
+	</div>
+      </nav>
+      <transition name="menu">
+	<aside v-show="ctrl.showMenu">
+	  <div>Settings…</div>
+	  <div><a href="/s/debug/log.html" target="bcplog">Show log…</a></div>
+	  <div>Quit</div>
+	</aside>
+      </transition>
+    </div>
+	<script>
+if (!window["WebSocket"]) {
+	console.log("browser does not support web sockets");
+}
+var wsurl = "wss://"+location.hostname+":"+location.port+"/ws/app";
+var wsock = new WebSocket(wsurl);
+var wspgmsg = [];
+wsock.onmessage = function(msg) {
+  console.log("Event:'"+msg.data+"'");
+  var evt = JSON.parse(msg.data);
+  for (var i=0; i<wspgmsg.length; i++) {
+    wspgmsg[i](evt);
+  }
+}
+console.log("connected to "+wsurl);
+const locRTyNm = ["?", "Deep Space", "Star", "Belt", "Planet",
+				  "Ring", "Station", "Outpost", "Port", "Settlement", "Jump Target"];
+const locModeNm = ["?", "Parked", "Travel", "Super Cruise", "FSD Jump"];
+const locVhclNm = ["?", "Ship", "SRV", "Fighter", "Crew Member"];
+Vue.filter('int', function(x) {
+    return x.toLocaleString('`lang\jsStr`',{
+      useGrouping: true
+    });
+});
+Vue.filter('f4', function(x) {
+    return x.toLocaleString('`lang\jsStr`',{
+      useGrouping: true,
+      minimumIntegerDigits: 1,
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4
+    });
+});
+Vue.filter('f2', function(x) {
+    return x.toLocaleString('`lang\jsStr`',{
+      useGrouping: true,
+      minimumIntegerDigits: 1,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+});
+var scrnApp = new Vue({
+    el: '#vue-app',
+    data: {
+	ctrl: { showMenu: false },
+	activeTab: "insys",
+	tabs: [
+	    {key: "insys", title: "Current System", url: "/insys"},
+	    {key: "ships", title: "Ships", url: "/ships"},
+	    {key: "mats", title: "Materials", url: "/mats"},
+	    ],
+		hdr: `init-hdr`
+	},
+	filters: {
+	    refTy: function(v) {
+			var res = locRTyNm[v];
+			return res ? res : "("+v+")";
+		},
+		modNm: function(v) { return locModeNm[v]; },
+		vhcNm: function(v) { return locVhclNm[v]; },
+		frac: function(v) {
+			return v.toLocaleString('`lang\jsStr`');
+		}
+	},
+	methods: {
+		onMsg: function(evt) {
+			switch (evt.Cmd) {
+			case "upd":
+				if (evt.Hdr) {
+					this.hdr = evt.Hdr;
+				}
+				break;
+			} 
+		}
+	},
+	mounted: function () {
+		wspgmsg.push(this.onMsg);
+		console.log("added page header callback");
+	}
+});
+	</script>
+	<!-- >>> main <<< \-->
+  </body>
+</html>
