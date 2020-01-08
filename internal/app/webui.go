@@ -105,7 +105,7 @@ var (
 
 func webLoadTmpls() {
 	var gxtPage WebPage
-	ts := App.tmpLd.load("page.html", "")
+	ts := App.tmpLd.load("screen.html", "")
 	goxic.MustIndexMap(&gxtPage, ts[""], false, gxName.Convert)
 	scrnShips.loadTmpl(&gxtPage)
 	scrnInSys.loadTmpl(&gxtPage)
@@ -144,7 +144,7 @@ func webRoutes() {
 	http.HandleFunc("/insys", webAuth(scrnInSys.ServeHTTP))
 	http.HandleFunc("/mats", webAuth(scrnMats.ServeHTTP))
 	http.HandleFunc("/", webAuth(func(wr http.ResponseWriter, rq *http.Request) {
-		http.Redirect(wr, rq, "/story", http.StatusSeeOther)
+		http.Redirect(wr, rq, "/insys", http.StatusSeeOther)
 	}))
 }
 

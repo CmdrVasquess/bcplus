@@ -2,11 +2,16 @@ body {
 	font-family: sans-serif;
 	background-color: var(--colBkg);
 	color: var(--colFgr);
+	margin: 0;
+}
+div#vue-app {
+	position: fixed;
+	width: 100%;
 }
 header {
-  display: grid;
-  grid-gap: 2px;
-  margin-bottom: .7em;
+	padding: .4em .7em;
+	display: grid;
+	grid-gap: 2px;
 }
 header div {
 	background-color: var(--colFgrDim);
@@ -44,10 +49,66 @@ header div {
 	#hdrAlt { grid-row: 8; grid-column: 1 / 3; }	
 }
 
-.surfloc-enter-active, .surfloc-leave-active {
+nav {
+	background-color: var(--colFgrDim);
+	color: var(--colFgrAlt);
+	font-weight: bold;
+	display: flex;
+	flex-flow: row nowrap;
+	overflow-x: auto;
+	padding-top: .4em;
+	padding-left: .8em;
+}
+nav > div {
+	white-space: nowrap;
+	font-size: 80%;
+	padding: .5em .7em;
+	margin-right: .3em;
+}
+nav a:any-link {
+	color: var(--colFgrAlt);
+	text-decoration: none;
+}
+nav > div:hover {
+	cursor: pointer;
+	background-color: var(--colBkgDim);
+}
+#mbtn {
+    padding-right: 2em;
+}
+#mbtn:hover {
+    background-color: var(--colFgrDim);
+}
+nav > div.current {
+	background-color: var(--colBkg);
+	cursor: auto;
+}
+aside {
+    background-color: var(--colFgrDim);
+    color: var(--colFgrAlt);
+    width: 15em;
+    padding: .3em .4em;
+    z-index: 1;
+}
+aside div { padding: .4em .5em; }
+aside div:hover {
+    background-color: var(--colBkgDim);
+}
+aside a:any-link {
+	color: var(--colFgrAlt);
+	text-decoration: none;
+}
+main {
+	position: absolute;
+	top: 6em;
+	padding: 0 1em;
+	z-index: -1;
+}
+.menu-enter-active, .menu-leave-active {
 	transition: all .3s ease;
 }
-.surfloc-enter, .surfloc-leave-to {
-  transform: translateY(-1em);
-  opacity: 0;
+.menu-enter, .menu-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+	transform: translateX(-2em);
+	opacity: 0;
 }

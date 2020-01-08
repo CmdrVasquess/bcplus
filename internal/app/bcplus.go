@@ -11,7 +11,6 @@ import (
 
 	"git.fractalqb.de/fractalqb/namemap"
 
-	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/common"
 	"github.com/CmdrVasquess/watched"
@@ -22,7 +21,6 @@ var (
 	App     BCpApp
 	cmdr    = NewCommander("", "")
 	LogWrs  = []io.Writer{os.Stderr, &webLog}
-	elogCfg = c4hgol.NewGroup("events", jelogCfg, selogCfg)
 	toSpeak chan<- VoiceMsg
 	log     = qbsllm.New(qbsllm.Lnormal, "BC+", nil, nil)
 	LogCfg  = qbsllm.Config(log, elogCfg, watched.LogCfg)
@@ -217,7 +215,9 @@ func (app *BCpApp) Run(signals <-chan os.Signal) {
 	log.Infof("BC+ %s interrupted; shutting down...", common.VersionLong)
 	close(EventQ)
 	close(webUiUpd)
-	close(toSpeak)
+	if toSpeak != nil {
+		close(toSpeak)
+	}
 	close(quitWatch)
 	app.save()
 	os.Exit(0)

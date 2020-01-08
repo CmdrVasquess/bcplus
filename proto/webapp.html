@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Screen</title>
+    <style>
+      body {
+	  font-family: sans-serif;
+	  margin: 0;
+      }
+      div#vue-app {
+	  position: fixed;
+	  width: 100%;
+      }
+      header {
+	  background-color: #ccc;
+	  padding: .4em .7em;
+      }
+      nav {
+	  background-color: gray;
+	  color: white;
+	  display: flex;
+	  flex-flow: row nowrap;
+	  overflow-x: auto;
+	  padding-top: .4em;
+	  padding-left: .8em;
+      }
+      nav > div {
+	  white-space: nowrap;
+	  font-size: 80%;
+	  padding: .5em .7em;
+	  margin-right: .3em;
+      }
+      nav a:any-link {
+	  color: white;
+	  text-decoration: none;
+      }
+      nav > div:hover {
+	  cursor: pointer;
+	  background-color: #666;
+      }
+      nav > div.current {
+	  background-color: #444;
+	  cursor: auto;
+      }
+      aside {
+	  background-color: black;
+	  color: #ccc;
+	  width: 15em;
+	  padding: .5em .8em;
+	  z-index: 1;
+      }
+      #filler { height: 5em; }
+      main {
+	  position: absolute;
+	  top: 5em;
+	  padding: 0 1em;
+	  z-index: -1;
+      }
+      .menu-enter-active, .menu-leave-active {
+	  transition: all .3s ease;
+      }
+      .menu-enter, .menu-leave-to
+      /* .slide-fade-leave-active below version 2.1.8 */ {
+	  transform: translateX(-2em);
+	  opacity: 0;
+      }
+    </style>
+    <script src="vue.js"></script>
+  </head>
+  <body>
+    <div id="vue-app">
+      <header>
+	This is the screen's header
+      </header>
+      <nav>
+	<div id="mbtn">
+	  <span v-if="ctrl.showMenu"
+		v-on:click="ctrl.showMenu=false">⨯</span>
+	  <span v-else v-on:click="ctrl.showMenu=true">☰</span>
+	</div>
+	<div v-for="tab in tabs" :key="tab.key"
+	     v-bind:class="{current: tab.key == activeTab}">
+	  <span v-if="tab.key == activeTab">{{tab.title}}</span>
+	  <span v-else><a :href="tab.url">{{tab.title}}</a></span>
+	</div>
+      </nav>
+      <transition name="menu">
+	<aside v-show="ctrl.showMenu">
+	  <div>Settings…</div>
+	  <div>Show log…</div>
+	  <div>Quit</div>
+	</aside>
+      </transition>
+    </div>
+    <script>
+      var vueApp = new Vue({
+	  el: '#vue-app',
+	  data: {
+	      ctrl: { showMenu: false },
+	      activeTab: "tab2",
+	      tabs: [
+		  {key: "tab1", title: "Tab 1 of Screen", url: "urn:1"},
+		  {key: "tab2", title: "Tab 2 of Screen", url: "urn:2"},
+		  {key: "tab3", title: "Tab 3 of Screen", url: "urn:3"},
+		  {key: "tab4", title: "Tab 4 of Screen", url: "urn:4"},
+		  {key: "tab5", title: "Tab 5 of Screen", url: "urn:5"},
+		  {key: "tab6", title: "Tab 6 of Screen", url: "urn:6"},
+		  {key: "tab7", title: "Tab 7 of Screen", url: "urn:7"},
+		  {key: "tab8", title: "Tab 8 of Screen", url: "urn:8"}
+	      ]
+	  }
+      });
+    </script>
+    <main>
+      <div style="color:red">Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+      <div style="height:5em">Here, we have the main area</div>
+    </div>
+  </body>
+</html>
