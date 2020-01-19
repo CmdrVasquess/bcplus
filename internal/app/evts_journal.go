@@ -10,10 +10,10 @@ import (
 	"text/template"
 	"time"
 
-	"git.fractalqb.de/fractalqb/namemap"
-
 	"git.fractalqb.de/fractalqb/ggja"
+	"git.fractalqb.de/fractalqb/namemap"
 	"git.fractalqb.de/fractalqb/qbsllm"
+	"github.com/CmdrVasquess/bcplus/internal/ship"
 	"github.com/CmdrVasquess/watched"
 )
 
@@ -236,12 +236,12 @@ func jsShutdown(t time.Time, evt ggja.Obj) Change {
 func jeTouchdown(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Head.Loc.SetMode(Parked)
+		chg |= cmdr.Loc.SetMode(Parked)
 		if nd := evt.Str("NearestDestination_Localised", ""); nd == "" {
-			chg |= cmdr.Head.Loc.SetRef(Planet)
+			chg |= cmdr.Loc.SetRef(Planet)
 		} else {
-			chg |= cmdr.Head.Loc.SetRef(RefUndef)
-			chg |= cmdr.Head.Loc.SetRefNm(nd)
+			chg |= cmdr.Loc.SetRef(RefUndef)
+			chg |= cmdr.Loc.SetRefNm(nd)
 		}
 	}))
 	return chg
@@ -272,7 +272,7 @@ func jeMaterials(t time.Time, evt ggja.Obj) Change {
 		jeParseMats(mats, evt.MArr("Encoded"), nmEncMat)
 		cmdr.Mats = mats
 	}
-	matfnm := filepath.Join(cmdrDir(cmdr.Head.Fid), "mats.json")
+	matfnm := filepath.Join(cmdrDir(cmdr.Fid), "mats.json")
 	wr, err := os.Create(matfnm)
 	if err != nil {
 		log.Panice(err)
@@ -289,25 +289,28 @@ func jeMaterials(t time.Time, evt ggja.Obj) Change {
 
 func jeLoadout(t time.Time, evt ggja.Obj) (chg Change) {
 	shipId := evt.MInt("ShipID")
-	shpFNm := fmt.Sprintf("ship-%d.json", shipId)
-	var shipsDir string
+	shp := ship.TheShips.Load(evt.MInt("ShipID"), evt.MStr("Ship"))
+	if shp.Type.ShipType.Refine(evt) {
+		err := ship.TheTypes.Save(shp.Type.ShipType)
+		log.Errore(err)
+	}
+	shp.Update(evt)
 	writeState(noErr(func() {
 		if cmdr.isVoid() {
 			log.Errors("loadout event without commander")
 			return
 		}
-		cmdr.Head.Ship.Id = evt.MStr("ShipIdent")
-		cmdr.Head.Ship.Name = evt.MStr("ShipName")
+		cmdr.Ship.Ship = shp
 		chg = ChgShip
-		shipsDir = filepath.Join(cmdrDir(cmdr.Head.Fid), "ships")
 	}))
+	shipsDir := filepath.Join(cmdrDir(cmdr.Fid), "ships")
 	if _, err := os.Stat(shipsDir); os.IsNotExist(err) {
 		err = os.MkdirAll(shipsDir, 0777)
 		if err != nil {
 			log.Panice(err)
 		}
 	}
-	shpFNm = filepath.Join(shipsDir, shpFNm)
+	shpFNm := filepath.Join(shipsDir, fmt.Sprintf("ship-%d.json", shipId))
 	wr, err := os.Create(shpFNm)
 	if err != nil {
 		log.Errore(err)
@@ -326,32 +329,32 @@ func jeLocation(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
 		inSysInfo.reset()
-		chg |= cmdr.Head.Loc.SetSys(
+		chg |= cmdr.Loc.SetSys(
 			evt.MUint64("SystemAddress"),
 			evt.MStr("StarSystem"),
 		)
 		if evt.MBool("Docked") {
-			chg |= cmdr.Head.Loc.SetMode(Parked)
+			chg |= cmdr.Loc.SetMode(Parked)
 		} else {
-			chg |= cmdr.Head.Loc.SetMode(Move)
+			chg |= cmdr.Loc.SetMode(Move)
 		}
 		if ref := evt.Str("StationName", ""); len(ref) > 0 {
-			chg |= cmdr.Head.Loc.SetRefNm(ref)
+			chg |= cmdr.Loc.SetRefNm(ref)
 			rty := evt.MStr("StationType")
 			if ty := jeStnTypeMap[rty]; ty == RefUndef {
 				log.Warna("unknown `station type` in location event", rty)
-				chg |= cmdr.Head.Loc.SetRef(RefUndef)
+				chg |= cmdr.Loc.SetRef(RefUndef)
 			} else {
-				chg |= cmdr.Head.Loc.SetRef(ty)
+				chg |= cmdr.Loc.SetRef(ty)
 			}
 		} else if ref := evt.Str("Body", ""); len(ref) > 0 {
-			chg |= cmdr.Head.Loc.SetRefNm(ref)
+			chg |= cmdr.Loc.SetRefNm(ref)
 			rty := evt.MStr("BodyType")
 			if ty := jeBodyTypeMap[rty]; ty == RefUndef {
 				log.Warna("unknown `body type` in location event", t)
-				chg |= cmdr.Head.Loc.SetRef(RefUndef)
+				chg |= cmdr.Loc.SetRef(RefUndef)
 			} else {
-				chg |= cmdr.Head.Loc.SetRef(ty)
+				chg |= cmdr.Loc.SetRef(ty)
 			}
 		}
 	}))
@@ -361,8 +364,8 @@ func jeLocation(t time.Time, evt ggja.Obj) Change {
 func jeApproachBody(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Head.Loc.SetRef(RefUndef)
-		chg |= cmdr.Head.Loc.SetRefNm(evt.MStr("Body"))
+		chg |= cmdr.Loc.SetRef(RefUndef)
+		chg |= cmdr.Loc.SetRefNm(evt.MStr("Body"))
 	}))
 	return chg
 }
@@ -370,13 +373,13 @@ func jeApproachBody(t time.Time, evt ggja.Obj) Change {
 func jeFsdJump(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Head.Loc.SetSys(
+		chg |= cmdr.Loc.SetSys(
 			evt.MUint64("SystemAddress"),
 			evt.MStr("StarSystem"),
 		)
-		chg |= cmdr.Head.Loc.SetRef(jeBodyTypeMap[evt.MStr("BodyType")])
-		chg |= cmdr.Head.Loc.SetRefNm(evt.MStr("Body"))
-		chg |= cmdr.Head.Loc.SetMode(Cruise)
+		chg |= cmdr.Loc.SetRef(jeBodyTypeMap[evt.MStr("BodyType")])
+		chg |= cmdr.Loc.SetRefNm(evt.MStr("Body"))
+		chg |= cmdr.Loc.SetMode(Cruise)
 		inSysInfo.reset()
 	}))
 	return chg | WuiUpInSys
@@ -430,13 +433,13 @@ func jeStartJump(t time.Time, evt ggja.Obj) Change {
 	switch evt.MStr("JumpType") {
 	case "Hyperspace":
 		writeState(noErr(func() {
-			chg |= cmdr.Head.Loc.SetRef(JTarget)
-			chg |= cmdr.Head.Loc.SetRefNm(evt.MStr("StarSystem"))
-			chg |= cmdr.Head.Loc.SetMode(Jump)
+			chg |= cmdr.Loc.SetRef(JTarget)
+			chg |= cmdr.Loc.SetRefNm(evt.MStr("StarSystem"))
+			chg |= cmdr.Loc.SetMode(Jump)
 		}))
 	case "Supercruise":
 		writeState(noErr(func() {
-			chg |= cmdr.Head.Loc.SetMode(Cruise)
+			chg |= cmdr.Loc.SetMode(Cruise)
 		}))
 	}
 	return chg
@@ -446,12 +449,12 @@ func jeSupercruiseExit(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
 		if bdy := evt.Str("Body", ""); bdy == "" {
-			chg |= cmdr.Head.Loc.SetRef(Space)
-			chg |= cmdr.Head.Loc.SetRefNm("?")
+			chg |= cmdr.Loc.SetRef(Space)
+			chg |= cmdr.Loc.SetRefNm("?")
 		} else {
 			bty := evt.MStr("BodyType")
-			chg |= cmdr.Head.Loc.SetRef(jeBodyTypeMap[bty])
-			chg |= cmdr.Head.Loc.SetRefNm(bdy)
+			chg |= cmdr.Loc.SetRef(jeBodyTypeMap[bty])
+			chg |= cmdr.Loc.SetRefNm(bdy)
 		}
 	}))
 	return chg
@@ -461,11 +464,10 @@ func jeLoadGame(t time.Time, evt ggja.Obj) Change {
 	fid := evt.MStr("FID")
 	nm := evt.MStr("Commander")
 	writeState(noErr(func() {
-		if fid != cmdr.Head.Fid {
+		if fid != cmdr.Fid {
 			cmdr.switchTo(fid, nm)
 		}
-		cmdr.Head.Ship.Id = evt.MStr("ShipIdent")
-		cmdr.Head.Ship.Name = evt.MStr("ShipName")
+		cmdr.Ship.Ship = ship.TheShips.Load(evt.MInt("ShipID"), evt.MStr("Ship"))
 	}))
 	return ChgCmdr | ChgShip
 }
@@ -473,8 +475,8 @@ func jeLoadGame(t time.Time, evt ggja.Obj) Change {
 func jeLeaveBody(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Head.Loc.SetRef(Space)
-		chg |= cmdr.Head.Loc.SetRefNm("")
+		chg |= cmdr.Loc.SetRef(Space)
+		chg |= cmdr.Loc.SetRefNm("")
 	}))
 	return chg
 }
@@ -485,8 +487,8 @@ func jeApproachSettlement(t time.Time, evt ggja.Obj) Change {
 		if watched.FlagsAny(cmdr.statFlags, watched.StatFlagSupercruise) {
 			return
 		}
-		chg |= cmdr.Head.Loc.SetRef(Settlement)
-		chg |= cmdr.Head.Loc.SetRefNm(evt.MStr("Name"))
+		chg |= cmdr.Loc.SetRef(Settlement)
+		chg |= cmdr.Loc.SetRefNm(evt.MStr("Name"))
 	}))
 	return chg
 }
@@ -494,7 +496,7 @@ func jeApproachSettlement(t time.Time, evt ggja.Obj) Change {
 func jeJoinACrew(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Head.Loc.SetVehicle(AsCrew)
+		chg |= cmdr.Loc.SetVehicle(AsCrew)
 	}))
 	return chg
 }
@@ -502,7 +504,7 @@ func jeJoinACrew(t time.Time, evt ggja.Obj) Change {
 func jeEndCrewSession(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Head.Loc.SetVehicle(InShip)
+		chg |= cmdr.Loc.SetVehicle(InShip)
 	}))
 	return chg
 }

@@ -18,11 +18,47 @@ import (
 
 type Screen struct {
 	*goxic.Template
-	Theme   goxic.PhIdxs
-	InitHdr goxic.PhIdxs
+	Theme     goxic.PhIdxs
+	ActiveTab goxic.PhIdxs
+	InitHdr   goxic.PhIdxs
+}
+
+func (scr *Screen) init(bt *goxic.BounT, head *Head, tab string) {
+	scr.NewBounT(bt)
+	bt.BindP(scr.Theme, App.WebTheme)
+	bt.BindP(scr.ActiveTab, tab)
+	bt.BindGen(scr.InitHdr, jsonContent(head.set(cmdr)))
 }
 
 type DateTime time.Time
+
+type Head struct {
+	Name string
+	Ship struct {
+		Ident string
+		Name  string
+	}
+}
+
+func (h *Head) set(cmdr *Commander) *Head {
+	h.Name = ""
+	h.Ship.Ident = ""
+	h.Ship.Name = ""
+	if cmdr != nil {
+		h.Name = cmdr.Name
+		if s := cmdr.Ship.Ship; s != nil {
+			h.Ship.Ident = s.Ident
+			h.Ship.Name = s.Name
+		}
+	}
+	return h
+}
+
+type Tab struct {
+	Key   string `json:"key"`
+	Title string `json:"title"`
+	Url   string `json:"url"`
+}
 
 func (dt DateTime) MarshalJSON() ([]byte, error) {
 	year, month, day := time.Time(dt).Date()
@@ -53,6 +89,7 @@ func (dt DateTime) UnmarshalJSON(data []byte) error {
 
 type WebPage struct {
 	*goxic.Template
+	Lang  goxic.PhIdxs
 	Title goxic.PhIdxs
 	Style goxic.PhIdxs
 	Main  goxic.PhIdxs
@@ -75,6 +112,7 @@ func (page *WebPage) from(scrnFile, scrnLang string) map[string]*goxic.Template 
 		return t.NewBounT(nil)
 	}
 	btPage := page.NewBounT(nil)
+	btPage.BindP(page.Lang, App.Lang)
 	btPage.Bind(page.Title, mustBount("title"))
 	btPage.Bind(page.Style, mayBount("style"))
 	btPage.Bind(page.Main, mustBount("main"))
@@ -84,7 +122,7 @@ func (page *WebPage) from(scrnFile, scrnLang string) map[string]*goxic.Template 
 		log.Fatale(err)
 	}
 	tmp.NewBounT(btPage)
-	btPage.BindPName("lang", App.Lang)
+	btPage.BindGenName("tabs", jsonContent(tabs))
 	tmp = btPage.Fixate()
 	err = tmp.XformPhs(true, goxic.StripPath)
 	if err != nil {
@@ -96,7 +134,7 @@ func (page *WebPage) from(scrnFile, scrnLang string) map[string]*goxic.Template 
 
 var (
 	webUiUpd chan Change
-	gxName   = nmconv.Conversion{
+	GxName   = nmconv.Conversion{
 		Norm:   nmconv.Uncamel,
 		Xform:  nmconv.PerSegment(strings.ToLower),
 		Denorm: nmconv.Sep(nmconv.Lisp),
@@ -106,7 +144,7 @@ var (
 func webLoadTmpls() {
 	var gxtPage WebPage
 	ts := App.tmpLd.load("screen.html", "")
-	goxic.MustIndexMap(&gxtPage, ts[""], false, gxName.Convert)
+	goxic.MustIndexMap(&gxtPage, ts[""], false, GxName.Convert)
 	scrnShips.loadTmpl(&gxtPage)
 	scrnInSys.loadTmpl(&gxtPage)
 	scrnMats.loadTmpl(&gxtPage)
@@ -135,14 +173,27 @@ func webAuth(h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+var (
+	tabs = []Tab{
+		Tab{"insys", "Current System", "/insys"},
+		Tab{"ships", "Fleet", "/ships"},
+		Tab{"mats", "Materials", "/mats"},
+	}
+	tabHdlr = map[string]http.HandlerFunc{
+		"insys": scrnInSys.ServeHTTP,
+		"ships": scrnShips.ServeHTTP,
+		"mats":  scrnMats.ServeHTTP,
+	}
+)
+
 func webRoutes() {
 	htStatic := http.FileServer(http.Dir(filepath.Join(App.assetDir, "s")))
 	http.HandleFunc("/s/", webAuth(http.StripPrefix("/s", htStatic).ServeHTTP))
 	http.HandleFunc("/ws/app", webAuth(appWs))
 	http.HandleFunc("/ws/log", webAuth(logWs))
-	http.HandleFunc("/ships", webAuth(scrnShips.ServeHTTP))
-	http.HandleFunc("/insys", webAuth(scrnInSys.ServeHTTP))
-	http.HandleFunc("/mats", webAuth(scrnMats.ServeHTTP))
+	for _, tab := range tabs {
+		http.HandleFunc(tab.Url, tabHdlr[tab.Key])
+	}
 	http.HandleFunc("/", webAuth(func(wr http.ResponseWriter, rq *http.Request) {
 		http.Redirect(wr, rq, "/insys", http.StatusSeeOther)
 	}))
@@ -168,7 +219,10 @@ type WuiHdr struct {
 	Fid  string
 	Name string
 	Loc  *Location
-	Ship *Ship
+	Ship struct {
+		Id   string
+		Name string
+	}
 }
 
 type WuiUpdate struct {
@@ -198,10 +252,11 @@ func wuiUpdate() {
 		updMsg := WuiUpdate{WuiMsg: WuiMsg{Cmd: "upd"}}
 		readState(noErr(func() {
 			if upd&wuiChgHdr != 0 {
-				hdr.Fid = cmdr.Head.Fid
-				hdr.Name = cmdr.Head.Name
-				hdr.Loc = &cmdr.Head.Loc
-				hdr.Ship = &cmdr.Head.Ship
+				hdr.Fid = cmdr.Fid
+				hdr.Name = cmdr.Name
+				hdr.Loc = &cmdr.Loc
+				hdr.Ship.Id = cmdr.Ship.Ident
+				hdr.Ship.Name = cmdr.Ship.Name
 				updMsg.Hdr = &hdr
 			}
 			if upd&WuiUpInSys == WuiUpInSys {
