@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="`lang`">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,13 +13,26 @@ Ships
     <script src="../../s/js/vue.js"></script>
 <!-- >>> style >>> -->
     <style>
-main table { width: 100%; border-collapse: collapse; }
-main th { text-align: left; cursor: pointer; padding-top: .2em; }
-main tr.open {
-  background-image: linear-gradient(var(--colFgr),var(--colFgrDim));
-  color: var(--colBkg);
+main table {
+	width: 100%;
+	border-collapse: collapse;
 }
-main td { background-color: var(--colFgrDim); padding: .5em 1em; }
+main th {
+	text-align: left;
+	padding-top: .2em;
+}
+main thead th {
+	background-color: var(--colBkgDim);
+	color: var(--colGud);
+}
+main tbody th {
+	cursor: pointer;
+}
+main tr.open {
+  background-image: linear-gradient(var(--colBkg),var(--colBkgDim),var(--colBkgDim));
+  color: var(--colFgr);
+}
+main td { background-color: var(--colBkgDim); padding: .3em .7em; }
 div.details {
   display: flex;
   flex-wrap: wrap;
@@ -36,6 +49,15 @@ table.modules td {
   background-color: var(--colBkg);
   margin: 0;
   padding: 0 .2em;
+  vertical-align: top;
+}
+table.modules td:last-child {
+    color: var(--colGud);
+    text-align: center;
+}
+table.modules div.engy {
+    font-size: 90%;
+    color: var(--colGud);
 }
     </style>
 <!-- <<< style <<< -->
@@ -54,58 +76,113 @@ table.modules td {
 <!-- >>> main >>> -->
     <main>
       <table>
-	  <tbody v-for="ship in Ships" :key="ship.ShipID">
-	  <tr v-on:click="toggleDetails(ship.ShipID)"
-        v-bind:class="{open:showDetails(ship.ShipID)}">
-	    <th v-if="showDetails(ship.ShipID)" style="text-align: center">▾</th>
-	    <th v-else style="text-align: center">▸</th>
-	    <th>{{ship.Ship|shipTyNm}}</th>
-	    <th>“{{ship.ShipName}}”</th>
-	    <th>[{{ship.ShipIdent}}]</th>
-	    <th>Jump: {{ship.MaxJump|f4}} Ly</th>
-	    <th>As of {{ship.AsOf.Date}} {{ship.AsOf.Time}}</th>
-	  </tr>
-	  <tr v-if="showDetails(ship.ShipID)"><td colspan="6">
-      <div class="details">
-        <div>
-          <h1>Core Modules</h1>
-          <table class="modules">
-            <tr v-for="(m, i) in ship.Core" :key="i">
-              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
-            </tr>
-          </table>
-        </div>
-        <div>
-          <h1>Optional Modules</h1>
-          <table class="modules">
-            <tr v-for="(m, i) in ship.Opt" :key="i">
-              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
-            </tr>
-          </table>
-        </div>
-        <div>
-          <h1>Hardpoints</h1>
-          <table class="modules" v-if="ship.Weap">
-            <tr v-for="(m, i) in ship.Weap" :key="i">
-              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
-            </tr>
-          </table>
-          <div v-else>– empty –</div>
-          <h1>Utility Mounts</h1>
-          <table class="modules" v-if="ship.Util">
-            <tr v-for="(m, i) in ship.Util" :key="i">
-              <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
-            </tr>
-          </table>
-          <div v-else>– empty –</div>
-        </div>
-      </div>
-	  </td></tr>
-	</tbody>
+		<thead>
+          <tr><th></th>
+			<th>Model</th><th>Name</th><th>Ident</th><th>Max. Jump</th><th>Docked</th>
+          </tr>
+		</thead>
+		<tbody v-for="ship in Ships" :key="ship.Id">
+		  <tr v-on:click="toggleDetails(ship.Id)"
+			  v-bind:class="{open:showDetails(ship.Id)}">
+			<th v-if="showDetails(ship.Id)" style="text-align: center">▾</th>
+			<th v-else style="text-align: center">▸</th>
+			<th>{{ship.Type|shipTyNm}}</th>
+			<th>“{{ship.Name}}”</th>
+			<th>[{{ship.Ident}}]</th>
+			<th>{{ship.MaxJump|f2}} Ly</th>
+			<th>???</th>
+		  </tr>
+		  <tr v-if="showDetails(ship.Id)"><td colspan="6">
+			  <div class="details">
+				<div>
+				  <h1>Core Modules</h1>
+				  <table class="modules">
+					<tr>
+					  <td colspan="2">{{ship.Alloy.Rating|alloyNm}}</td>
+					  <td><span v-if="ship.Alloy.Blueprint">⬡</span>
+						<div v-if="ship.Alloy.EngyLevel" class="engy">{{ship.Alloy.EngyLevel}}</div>
+					  </td>
+					</tr>
+					<tr v-for="(m, i) in ship.Core" :key="i">
+					  <td>{{m.Size}}{{m.Rating|modRating}}</td>
+					  <td>{{coreName(i)}}
+	      				<div v-if="m.Blueprint" class="engy">{{m.Blueprint}}</div>
+					  </td>
+					  <td><span v-if="m.Blueprint">⬡</span>
+						<div v-if="m.EngyLevel" class="engy">{{m.EngyLevel}}</div>
+					  </td>	      
+					</tr>
+				  </table>
+				</div>
+				<div>
+				  <h1>Optional Modules</h1>
+				  <table class="modules">
+					<tr v-for="(m, i) in ship.Opt" :key="i">
+					  <td v-if="m.Name">{{m.Size}}{{m.Rating|modRating}}</td>
+					  <td v-else>–</td>
+					  <td v-if="m.Name">{{m.Name|moduleNm}}
+						<div v-if="m.Blueprint" class="engy">{{m.Blueprint}}</div>
+					  </td>
+					  <td v-else>–</td>
+					  <td v-if="m.Name"><span v-if="m.Blueprint">⬡</span>
+						<div v-if="m.EngyLevel" class="engy">{{m.EngyLevel}}</div>
+					  </td>
+					  <td v-else></td>
+					</tr>
+				  </table>
+				</div>
+				<div>
+				  <h1>Hardpoints</h1>
+				  <table class="modules" v-if="ship.Weap">
+					<tr v-for="(m, i) in ship.Weap" :key="i">
+					  <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+					</tr>
+				  </table>
+				  <div v-else>– empty –</div>
+				  <h1>Utility Mounts</h1>
+				  <table class="modules" v-if="ship.Util">
+					<tr v-for="(m, i) in ship.Util" :key="i">
+					  <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+					</tr>
+				  </table>
+				  <div v-else>– empty –</div>
+				</div>
+			  </div>
+		  </td></tr>
+		</tbody>
       </table>
     </main>
     <script src="../../s/js/ships.js"></script>
+    <script src="../../s/l10n/en/modules.js"></script>
     <script>
+const alloyNms = [
+    "Lightweight Alloy",
+    "Reinforced Alloy",
+    "Military Grade Composite",
+    "Mirrored Grade Composite",
+    "Reactive Grade Composite"
+];
+const coreNms = [
+    "Powerplant",
+    "Thrusters",
+    "Frame Shift Drive",
+    "Life Support",
+    "Power Distributor",
+    "Sensors",
+    "Fuel Tank"
+];
+Vue.filter('alloyNm', function(a) {
+    var res = alloyNms[a];
+    if (!res) { res = "<"+a+">"; }
+    return res;
+});
+const modRatings = ["E","D","C","B","A"];
+Vue.filter('modRating', function(r) {
+    if (r == 0) { return " "; }
+    var res = modRatings[r-1];
+    if (!res) { res = "<"+(r-1)+">"; }
+    return res;
+});
 var shipsApp = new Vue({
     el: "main",
     data: {
@@ -125,7 +202,9 @@ var shipsApp = new Vue({
 	toggleDetails: function(shipid) {
 	    var flag = this.showDetails(shipid);
 	    this.show[shipid] = !flag;
-	}
+		console.log("toggle:"+this.show);
+	},
+	coreName: function(idx) { return coreNms[idx]; }
     }
 })
     </script>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="`lang`">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,16 +13,10 @@
   <body>
     <div id="vue-app">
       <header>
+	<img id="hdrLgo" src="/s/img/Logo.png" alt="logo">
 	<div id="hdrCmd">CMDR {{hdr.Name}}</div>
-	<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Id}}]</div>
-	<div id="hdrHSy">System</div><div id="hdrSys">{{hdr.Loc.sn}}</div>
-	<div id="hdrHRf">Reference</div><div id="hdrRef">{{hdr.Loc.r|refTy}}: {{hdr.Loc.rn}}</div>
-	<div id="hdrHVc">Vehicle</div><div id="hdrVhc">{{hdr.Loc.v|vhcNm}}</div>
-	<div id="hdrHMd">Mode</div><div id="hdrMod">{{hdr.Loc.m|modNm}}</div>
-	<div id="hdrHSp" v-if="hdr.Loc.sc">Lat / Lon : Alt</div>
-	<div id="hdrCoo" v-if="hdr.Loc.sc">{{hdr.Loc.sc.ll[0]|f4}}° /
-	  {{hdr.Loc.sc.ll[1]|f4}}°</div>
-	<div id="hdrAlt" v-if="hdr.Loc.sc">{{hdr.Loc.sc.a|int}}m</div>
+	<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident
+  }}]</div>
       </header>
       <nav>
 	<div id="mbtn">
@@ -39,7 +33,7 @@
       <transition name="menu">
 	<aside v-show="ctrl.showMenu">
 	  <div>Settings…</div>
-	  <div><a href="/s/debug/log.html" target="bcplog">Show log…</a></div>
+	  <div><a href="/s/debug/log.html" target="bcplog" v-on:click="ctrl.showMenu=false">Show log…</a></div>
 	  <div>Quit</div>
 	</aside>
       </transition>
@@ -85,15 +79,11 @@ Vue.filter('f2', function(x) {
     });
 });
 var scrnApp = new Vue({
-    el: '#vue-app',
-    data: {
-	ctrl: { showMenu: false },
-	activeTab: "insys",
-	tabs: [
-	    {key: "insys", title: "Current System", url: "/insys"},
-	    {key: "ships", title: "Ships", url: "/ships"},
-	    {key: "mats", title: "Materials", url: "/mats"},
-	    ],
+  el: '#vue-app',
+  data: {
+	  ctrl: { showMenu: false },
+	  activeTab: '`active-tab\jsStr`',
+	  tabs: `tabs`,
 		hdr: `init-hdr`
 	},
 	filters: {

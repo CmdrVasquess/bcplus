@@ -94,7 +94,7 @@ l10n.mats = {
     dAtpDWE: {long: "Atypical Disrupted Wake Echoes", short: "Atp.DWE"},
     dAtpEncAr: {long: "Atypical Encryption Archives", short: "Atp.EAr"},
     dClfScDta: {long: "Classified Scan Databanks", short: "Clsf.ScnD"},
-    dDmWkXpt: {long: "Datamined Wake Exceptions", short: "Dm.Wk.Xept"}
+    dDmWkXpt: {long: "Datamined Wake Exceptions", short: "Dm.Wk.Xept"},
     dEccHypTr: {long: "Eccentric Hyperspace Trajectories", short: "Ecc.Hyp.Tr"},
     dIrrEmDta: {long: "Irregular Emission Data", short: "Irg.EmDta"},
     dSrgWkSol: {long: "Strange Wake Solutions", short: "Srg.Wk.Sol"},

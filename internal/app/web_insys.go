@@ -15,7 +15,7 @@ var scrnInSys insysScreen
 
 func (s *insysScreen) loadTmpl(page *WebPage) {
 	ts := page.from("insys.html", App.Lang)
-	goxic.MustIndexMap(s, ts[""], false, gxName.Convert)
+	goxic.MustIndexMap(s, ts[""], false, GxName.Convert)
 }
 
 func (s *insysScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
@@ -23,9 +23,9 @@ func (s *insysScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 		http.NotFound(wr, rq)
 		return
 	}
-	bt := s.NewBounT(nil)
-	bt.BindP(s.Theme, App.WebTheme)
-	bt.BindGen(s.InitHdr, jsonContent(&cmdr.Head))
+	var bt goxic.BounT
+	var h Head
+	s.init(&bt, &h, "insys")
 	bt.BindGen(s.Data, jsonContent(&inSysInfo))
 	readState(noErr(func() {
 		bt.Emit(wr)

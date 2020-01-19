@@ -38,21 +38,21 @@ func statusEvent(statFile string) (chg Change) {
 		cmdr.statFlags = flags
 		switch {
 		case watched.FlagsAny(flags, watched.StatFlagSupercruise):
-			chg |= cmdr.Head.Loc.SetMode(Cruise)
+			chg |= cmdr.Loc.SetMode(Cruise)
 		case watched.FlagsAny(flags, flagsParked):
-			chg |= cmdr.Head.Loc.SetMode(Parked)
+			chg |= cmdr.Loc.SetMode(Parked)
 		default:
-			chg |= cmdr.Head.Loc.SetMode(Move)
+			chg |= cmdr.Loc.SetMode(Move)
 		}
 		switch {
 		case watched.FlagsAny(flags, watched.StatFlagInMainShip):
-			chg |= cmdr.Head.Loc.SetVehicle(InShip)
+			chg |= cmdr.Loc.SetVehicle(InShip)
 		case watched.FlagsAny(flags, watched.StatFlagInSrv):
-			chg |= cmdr.Head.Loc.SetVehicle(InSRV)
+			chg |= cmdr.Loc.SetVehicle(InSRV)
 		case watched.FlagsAny(flags, watched.StatFlagInFighter):
-			chg |= cmdr.Head.Loc.SetVehicle(InFighter)
+			chg |= cmdr.Loc.SetVehicle(InFighter)
 		default:
-			chg |= cmdr.Head.Loc.SetVehicle(AsCrew)
+			chg |= cmdr.Loc.SetVehicle(AsCrew)
 		}
 		if watched.FlagsAny(flags, watched.StatFlagHasLatLon) {
 			chg |= cmdr.surfLoc.SetAlt(stats.MF64("Altitude"))
@@ -61,12 +61,12 @@ func statusEvent(statFile string) (chg Change) {
 				stats.MF64("Longitude"),
 			)
 			if watched.FlagsAny(flags, watched.StatFlagDocked) {
-				chg |= cmdr.Head.Loc.SetSurf(nil)
+				chg |= cmdr.Loc.SetSurf(nil)
 			} else {
-				chg |= cmdr.Head.Loc.SetSurf(&cmdr.surfLoc)
+				chg |= cmdr.Loc.SetSurf(&cmdr.surfLoc)
 			}
 		} else {
-			chg |= cmdr.Head.Loc.SetSurf(nil)
+			chg |= cmdr.Loc.SetSurf(nil)
 		}
 	}))
 	return chg

@@ -13,6 +13,7 @@ import (
 
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/common"
+	"github.com/CmdrVasquess/bcplus/internal/ship"
 	"github.com/CmdrVasquess/watched"
 )
 
@@ -23,7 +24,7 @@ var (
 	LogWrs  = []io.Writer{os.Stderr, &webLog}
 	toSpeak chan<- VoiceMsg
 	log     = qbsllm.New(qbsllm.Lnormal, "BC+", nil, nil)
-	LogCfg  = qbsllm.Config(log, elogCfg, watched.LogCfg)
+	LogCfg  = qbsllm.Config(log, elogCfg, ship.LogCfg, watched.LogCfg)
 	// TODO what to put into BCpApp struct
 	flagJournalDir string
 	flagWebPort    int
@@ -142,6 +143,7 @@ func (app *BCpApp) init() {
 	if !setup(app) {
 		app.load()
 	}
+	ship.TheTypes = ship.TypeRepo(app.dataDir)
 	if len(flagJournalDir) > 0 {
 		app.JournalDir = flagJournalDir
 	} else if len(app.JournalDir) == 0 {

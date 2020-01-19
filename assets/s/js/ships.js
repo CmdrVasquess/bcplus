@@ -25,6 +25,7 @@ const ships = {
 	independant_trader: "Keelback",
 	independent_fighter: "Taipan",
 	krait_mkii: "Krait MkII",
+	krait_light: "Krait Phantom",
 	mamba: "Mamba",
 	orca: "Orca",
 	python: "Python",
