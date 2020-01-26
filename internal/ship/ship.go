@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"git.fractalqb.de/fractalqb/ggja"
@@ -77,9 +78,37 @@ type NamedModule struct {
 	Name string
 }
 
+type Mount int
+
+const (
+	Fixed Mount = iota
+	Gimballed
+	Turret
+)
+
+func ParseMount(s string) Mount {
+	s = strings.ToLower(s)
+	switch s {
+	case "fixed":
+		return Fixed
+	case "gimballed":
+		return Gimballed
+	case "turret":
+		return Turret
+	}
+	return Mount(-1)
+}
+
+type Weapon struct {
+	Engineerable
+	Size  MountSize
+	Mount Mount
+	Name  string
+}
+
 func (m *NamedModule) update(size int, mod ggja.Obj) {
 	item := mod.MStr("Item")
-	match := rgxIntMod.FindStringSubmatch(item)
+	match := rgxIntItem.FindStringSubmatch(item)
 	if match == nil {
 		m.Name = item
 		m.Size = -1
@@ -99,10 +128,19 @@ type Ship struct {
 	Id      int
 	Name    string
 	Ident   string
+	Rebuy   int
 	MaxJump float64
+	Cargo   int
 	Alloy   Alloy
 	Core    [FuelTank + 1]Module
 	Opt     []NamedModule
+	Mount   [HugeWeapon + 1][]Weapon
+	Berth   struct {
+		SysAddr uint64
+		SysNm   string
+		SysCoo  [3]float64
+		Port    string
+	}
 	StateAt time.Time
 }
 
@@ -114,6 +152,9 @@ func (shp *Ship) Update(ldo ggja.Obj) {
 	shp.Id = ldo.MInt("ShipID")
 	shp.Name = ldo.MStr("ShipName")
 	shp.Ident = ldo.MStr("ShipIdent")
+	shp.Rebuy = ldo.MInt("Rebuy")
+	shp.MaxJump = ldo.MF64("MaxJumpRange")
+	shp.Cargo = ldo.MInt("CargoCapacity")
 	for _, bm := range ldo.MArr("Modules").Bare {
 		mod := ggja.Obj{Bare: bm.(ggja.GenObj), OnError: ldo.OnError}
 		slot := mod.MStr("Slot")
@@ -146,19 +187,58 @@ func (shp *Ship) Update(ldo ggja.Obj) {
 			continue
 		}
 		if match := rgxHpSlot.FindStringSubmatch(slot); match != nil {
-
+			shp.updateHp(mod, match)
 		} else if match = rgxOptSlot.FindStringSubmatch(slot); match != nil {
 			idx, _ := strconv.Atoi(match[1])
 			sz, _ := strconv.Atoi(match[2])
-			if idx > len(shp.Opt) {
-				tmp := make([]NamedModule, idx)
+			if idx >= len(shp.Opt) {
+				tmp := make([]NamedModule, idx+1)
 				copy(tmp, shp.Opt)
 				shp.Opt = tmp
 			}
-			idx--
 			shp.Opt[idx].update(sz, mod)
 		}
 	}
+}
+
+func hpStripTail(item string) (head, tail string) {
+	sep := strings.LastIndexByte(item, '_')
+	if sep < 0 {
+		return item, ""
+	}
+	head = item[:sep]
+	tail = item[sep+1:]
+	return head, tail
+}
+
+func parseHpItem(item string) (msz MountSize, name string, mount Mount) {
+	if !strings.HasPrefix(item, "hpt_") {
+		panic("not a hardpoint item: " + item)
+	}
+	item = item[4:]
+	var tag string
+	item, tag = hpStripTail(item)
+	msz = ParseMountSize(tag)
+	name, tag = hpStripTail(item)
+	if tag != "" {
+		mount = ParseMount(tag)
+	}
+	return msz, name, mount
+}
+
+func (shp *Ship) updateHp(mod ggja.Obj, slotDesc []string) {
+	slotSz := ParseMountSize(slotDesc[1])
+	slotIdx, _ := strconv.Atoi(slotDesc[2])
+	mlvl := &shp.Mount[slotSz]
+	if slotIdx >= len(*mlvl) {
+		nlvl := make([]Weapon, slotIdx+1)
+		copy(nlvl, *mlvl)
+		*mlvl = nlvl
+	}
+	mountSz, name, mount := parseHpItem(mod.MStr("Item"))
+	(*mlvl)[slotIdx].Size = mountSz
+	(*mlvl)[slotIdx].Mount = mount
+	(*mlvl)[slotIdx].Name = name
 }
 
 type ShipRef struct {
@@ -189,9 +269,9 @@ func (tr *ShipRef) UnmarshalJSON(b []byte) error {
 }
 
 var (
-	rgxClass  = regexp.MustCompile(`[cC]lass(\d+)`)
-	rgxGrade  = regexp.MustCompile(`[gG]rade(\d+)`)
-	rgxIntMod = regexp.MustCompile(`^int_(.+?)(_size(\d+))?(_class(\d+))?$`)
+	rgxClass   = regexp.MustCompile(`[cC]lass(\d+)`)
+	rgxGrade   = regexp.MustCompile(`[gG]rade(\d+)`)
+	rgxIntItem = regexp.MustCompile(`^int_(.+?)(_size(\d+))?(_class(\d+))?$`)
 )
 
 func findClass(s string) ModRating {

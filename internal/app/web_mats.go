@@ -19,14 +19,15 @@ func (s *matsScreen) loadTmpl(page *WebPage) {
 	goxic.MustIndexMap(s, ts[""], false, GxName.Convert)
 }
 
+const matsTab = "mats"
+
 func (s *matsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
-	// if cmdr.isVoid() {
-	// 	http.NotFound(wr, rq)
-	// 	return
-	// }
+	if offline.isOffline(matsTab, wr, rq) {
+		return
+	}
 	var bt goxic.BounT
 	var h Head
-	s.init(&bt, &h, "mats")
+	s.init(&bt, &h, matsTab)
 	bt.BindGen(s.MatNeed, jsonContent(&cmdr.Mats))
 	bt.BindGen(s.RcpNeed, jsonContent(&cmdr.Rcps))
 	readState(noErr(func() {

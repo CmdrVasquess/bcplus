@@ -16,6 +16,28 @@ import (
 	"git.fractalqb.de/fractalqb/nmconv"
 )
 
+type offPage Screen
+
+var offline offPage
+
+func (s *offPage) loadTmpl(page *WebPage) {
+	ts := page.from("offline.html", App.Lang)
+	goxic.MustIndexMap(s, ts[""], false, GxName.Convert)
+}
+
+func (s *offPage) isOffline(tab string, wr http.ResponseWriter, rq *http.Request) bool {
+	if !cmdr.isVoid() {
+		return false
+	}
+	var bt goxic.BounT
+	head := Head{Name: "…offline…"}
+	head.Ship.Name = "…offline…"
+	head.Ship.Ident = "…offline…"
+	(*Screen)(s).init(&bt, &head, tab)
+	bt.Emit(wr)
+	return true
+}
+
 type Screen struct {
 	*goxic.Template
 	Theme     goxic.PhIdxs
@@ -24,10 +46,13 @@ type Screen struct {
 }
 
 func (scr *Screen) init(bt *goxic.BounT, head *Head, tab string) {
+	if head.Name == "" {
+		head.set(cmdr)
+	}
 	scr.NewBounT(bt)
 	bt.BindP(scr.Theme, App.WebTheme)
 	bt.BindP(scr.ActiveTab, tab)
-	bt.BindGen(scr.InitHdr, jsonContent(head.set(cmdr)))
+	bt.BindGen(scr.InitHdr, jsonContent(head))
 }
 
 type DateTime time.Time
@@ -38,18 +63,26 @@ type Head struct {
 		Ident string
 		Name  string
 	}
+	Loc struct {
+		SysNm  string
+		SysCoo [3]float64
+		RefNm  string
+	}
 }
 
 func (h *Head) set(cmdr *Commander) *Head {
 	h.Name = ""
 	h.Ship.Ident = ""
 	h.Ship.Name = ""
+	h.Loc.SysNm = ""
 	if cmdr != nil {
 		h.Name = cmdr.Name
 		if s := cmdr.Ship.Ship; s != nil {
 			h.Ship.Ident = s.Ident
 			h.Ship.Name = s.Name
 		}
+		h.Loc.SysNm = cmdr.Loc.SysNm
+		h.Loc.RefNm = cmdr.Loc.RefNm
 	}
 	return h
 }
@@ -145,6 +178,7 @@ func webLoadTmpls() {
 	var gxtPage WebPage
 	ts := App.tmpLd.load("screen.html", "")
 	goxic.MustIndexMap(&gxtPage, ts[""], false, GxName.Convert)
+	offline.loadTmpl(&gxtPage)
 	scrnShips.loadTmpl(&gxtPage)
 	scrnInSys.loadTmpl(&gxtPage)
 	scrnMats.loadTmpl(&gxtPage)
@@ -220,8 +254,8 @@ type WuiHdr struct {
 	Name string
 	Loc  *Location
 	Ship struct {
-		Id   string
-		Name string
+		Ident string
+		Name  string
 	}
 }
 
@@ -255,8 +289,13 @@ func wuiUpdate() {
 				hdr.Fid = cmdr.Fid
 				hdr.Name = cmdr.Name
 				hdr.Loc = &cmdr.Loc
-				hdr.Ship.Id = cmdr.Ship.Ident
-				hdr.Ship.Name = cmdr.Ship.Name
+				if cmdr.Ship.Ship == nil {
+					hdr.Ship.Ident = ""
+					hdr.Ship.Name = ""
+				} else {
+					hdr.Ship.Ident = cmdr.Ship.Ident
+					hdr.Ship.Name = cmdr.Ship.Name
+				}
 				updMsg.Hdr = &hdr
 			}
 			if upd&WuiUpInSys == WuiUpInSys {

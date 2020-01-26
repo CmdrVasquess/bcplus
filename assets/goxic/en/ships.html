@@ -78,7 +78,9 @@ table.modules div.engy {
       <table>
 		<thead>
           <tr><th></th>
-			<th>Model</th><th>Name</th><th>Ident</th><th>Max. Jump</th><th>Docked</th>
+			<th>Model</th><th>Name</th><th>Ident</th>
+			<th>Max. Jump</th><th>Cargo</th><th>Rebuy</th>
+			<th>Docked</th>
           </tr>
 		</thead>
 		<tbody v-for="ship in Ships" :key="ship.Id">
@@ -90,9 +92,13 @@ table.modules div.engy {
 			<th>“{{ship.Name}}”</th>
 			<th>[{{ship.Ident}}]</th>
 			<th>{{ship.MaxJump|f2}} Ly</th>
-			<th>???</th>
+			<th></th>
+			<th></th>
+			<th v-if="ship.Berth.SysAddr==0">–</th>
+			<th v-else>{{ship.Berth.Port}} / {{ship.Berth.SysNm}}
+			({{sysDist(header("Loc").SysCoo, ship.Berth.SysCoo)|f2}} Ly)</th>
 		  </tr>
-		  <tr v-if="showDetails(ship.Id)"><td colspan="6">
+		  <tr v-if="showDetails(ship.Id)"><td colspan="8">
 			  <div class="details">
 				<div>
 				  <h1>Core Modules</h1>
@@ -133,16 +139,20 @@ table.modules div.engy {
 				</div>
 				<div>
 				  <h1>Hardpoints</h1>
-				  <table class="modules" v-if="ship.Weap">
-					<tr v-for="(m, i) in ship.Weap" :key="i">
-					  <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+				  <table class="modules" v-if="weaps(ship)">
+					<tr v-for="(m, i) in weaps(ship)" :key="i">
+					  <td>{{m.Size}} {{m.Name}}</td>
+					  <td v-if="m.Blueprint">⬡</td>
+					  <td v-else></td>
 					</tr>
 				  </table>
 				  <div v-else>– empty –</div>
 				  <h1>Utility Mounts</h1>
-				  <table class="modules" v-if="ship.Util">
-					<tr v-for="(m, i) in ship.Util" :key="i">
-					  <td>{{m.Slot}}:</td><td>{{m.Item}}</td>
+				  <table class="modules" v-if="utils(ship)">
+					<tr v-for="(m, i) in utils(ship)" :key="i">
+					  <td>M{{i+1}} {{m.Name}}</td>
+					  <td v-if="m.Blueprint">⬡</td>
+					  <td v-else></td>
 					</tr>
 				  </table>
 				  <div v-else>– empty –</div>
@@ -186,25 +196,50 @@ Vue.filter('modRating', function(r) {
 var shipsApp = new Vue({
     el: "main",
     data: {
-	Ships: `data`,
-	show: {}
+		Ships: `data`,
+		show: {}
     },
     methods: {
-	showDetails: function(shipid) {
-	    var res = this.show[shipid];
-	    if (res) {
-		return res;
-	    } else {
-		Vue.set(this.show, shipid, false);
-	    }
-	    return false;
-	},
-	toggleDetails: function(shipid) {
-	    var flag = this.showDetails(shipid);
-	    this.show[shipid] = !flag;
-		console.log("toggle:"+this.show);
-	},
-	coreName: function(idx) { return coreNms[idx]; }
+		showDetails: function(shipid) {
+			var res = this.show[shipid];
+			if (res) {
+				return res;
+			} else {
+				Vue.set(this.show, shipid, false);
+			}
+			return false;
+		},
+		toggleDetails: function(shipid) {
+			var flag = this.showDetails(shipid);
+			this.show[shipid] = !flag;
+			console.log("toggle:"+this.show);
+		},
+		coreName: function(idx) { return coreNms[idx]; },
+		utils: function(ship) {
+			if (!ship.Mount[0]) { return null; }
+			var res = [];
+			for (var u of ship.Mount[0]) {
+				if (u.Name) res.push(u);
+			}
+			return res.length == 0 ? null : res;
+		},
+		weaps: function(ship) {
+			var res = [];
+			for (var m = 1; m < 5; m++) {
+				if (!ship.Mount[m]) { continue; }
+				for (var w of ship.Mount[m]) {
+					if (w.Name)	res.push(w);
+				}
+			}
+			return res.length == 0 ? null : res;
+		},
+		header: function(what) {
+			return scrnApp.$root.$data["hdr"][what];
+		},
+		sysDist: function(s1, s2) {
+			var dx=s1[0]-s2[0], dy=s1[1]-s2[1], dz=s1[2]-s2[2];
+			return Math.sqrt(dx*dx + dy*dy + dz*dz);
+		}
     }
 })
     </script>
