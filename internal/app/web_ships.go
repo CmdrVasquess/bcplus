@@ -37,14 +37,15 @@ func wuiLoadShips(currentShip *ship.Ship) (res []*ship.Ship) {
 	return res
 }
 
+const shipsTab = "ships"
+
 func (s *shipsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
-	if cmdr.isVoid() {
-		http.NotFound(wr, rq)
+	if offline.isOffline(shipsTab, wr, rq) {
 		return
 	}
 	var bt goxic.BounT
 	var h Head
-	s.init(&bt, &h, "ships")
+	s.init(&bt, &h, shipsTab)
 	ships := wuiLoadShips(cmdr.Ship.Ship)
 	bt.BindGen(s.Data, jsonContent(ships))
 	readState(noErr(func() {

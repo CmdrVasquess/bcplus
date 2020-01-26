@@ -18,14 +18,15 @@ func (s *insysScreen) loadTmpl(page *WebPage) {
 	goxic.MustIndexMap(s, ts[""], false, GxName.Convert)
 }
 
+const insysTab = "insys"
+
 func (s *insysScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
-	if cmdr.isVoid() {
-		http.NotFound(wr, rq)
+	if offline.isOffline(insysTab, wr, rq) {
 		return
 	}
 	var bt goxic.BounT
 	var h Head
-	s.init(&bt, &h, "insys")
+	s.init(&bt, &h, insysTab)
 	bt.BindGen(s.Data, jsonContent(&inSysInfo))
 	readState(noErr(func() {
 		bt.Emit(wr)

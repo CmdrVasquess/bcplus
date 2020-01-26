@@ -36,6 +36,7 @@ func (tr TypeRepo) Load(name string) *ShipType {
 	if err != nil {
 		panic(err) // TODO
 	}
+	log.Debugs("ship type loaded")
 	return res
 }
 
@@ -89,6 +90,7 @@ func (sr ShipRepo) Load(id int, model string) *Ship {
 	log.Infoa("load `ship` `model` from `file`", id, model, fnm)
 	rd, err := os.Open(fnm)
 	if os.IsNotExist(err) {
+		log.Infos("ship not yet saved, create empty ship")
 		res := &Ship{Id: id}
 		if model != "" {
 			res.Type.ShipType = sr.types.Load(model)
@@ -102,6 +104,7 @@ func (sr ShipRepo) Load(id int, model string) *Ship {
 	if err != nil {
 		panic(err) // TODO
 	}
+	log.Debugs("ship loaded")
 	return res
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"git.fractalqb.de/fractalqb/ggja"
 )
@@ -41,6 +42,22 @@ const (
 	LargeWeapon
 	HugeWeapon
 )
+
+func ParseMountSize(s string) MountSize {
+	switch strings.ToLower(s) {
+	case "tiny":
+		return Utility
+	case "small":
+		return SmallWeapon
+	case "medium":
+		return MidWeapon
+	case "large":
+		return LargeWeapon
+	case "huge":
+		return HugeWeapon
+	}
+	return MountSize(-1)
+}
 
 type ShipType struct {
 	Name   string
@@ -147,13 +164,12 @@ func (st *ShipType) Refine(ldo ggja.Obj) (changed bool) {
 		} else if match = rgxOptSlot.FindStringSubmatch(slot); match != nil {
 			idx, _ := strconv.Atoi(match[1])
 			sz, _ := strconv.Atoi(match[2])
-			if idx > len(st.Opt) {
-				tmp := make([]SlotType, idx)
+			if idx >= len(st.Opt) {
+				tmp := make([]SlotType, idx+1)
 				copy(tmp, st.Opt)
 				st.Opt = tmp
 				changed = true
 			}
-			idx--
 			if sz > st.Opt[idx].Size {
 				st.Opt[idx].Size = sz
 				changed = true

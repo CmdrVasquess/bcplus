@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel</title>
+    <link rel="shortcut icon" type="image/x-icon" href="s/img/logo.ico">
+    <link rel="stylesheet" type="text/css" href="s/css/th-bright.css">
+    <link rel="stylesheet" type="text/css" href="s/css/bcp.css">
+    <!--script src="s/js/vue.js"></script-->
+	<style>
+	  canvas {
+		  background-image: url("s/img/trvlmap.jpeg");
+		  background-size: 250px 250px;
+		  background-repeat: no-repeat;
+		  background-color: black;
+	  }
+	</style>
+  </head>
+  <body>
+	<canvas id="map" width="540" height="250"></canvas>
+	<script>
+	  var map = document.getElementById("map");
+	  var g2 = map.getContext("2d");
+	  var px = 0, py = 25000, pz = 200;
+	  //var px = -1111, py = 65269, pz = 134; // beagle point
+	  //var px = -9530.5, py = 19808.125, pz = -910.28; // colonia
+	  const scale = 50000;
+	  var sx = 125+(125/scale)*px;
+	  var sy = 189.5-(125/scale)*py;
+	  var sz = 125-(125/3500)*pz;
+	  g2.font="14px Arial";
+	  g2.strokeStyle = "#ff8800";
+	  g2.fillStyle = "#606060";
+	  g2.fillRect(250, 0, 40, 250);
+	  g2.moveTo(250, 125);
+	  g2.lineTo(290, 125);
+	  g2.stroke();
+	  g2.shadowColor = "black";
+	  g2.shadowBlur = 8;
+	  g2.moveTo(255, sz);
+	  g2.lineTo(250, sz);
+	  g2.lineTo(sx, sy);
+	  g2.stroke();
+	  g2.moveTo(0, sy);
+	  g2.lineTo(sx, sy);
+	  g2.lineTo(sx, 250);
+	  g2.stroke();
+	  g2.shadowColor = 0;
+	  if (pz > 0) { g2.fillStyle = "#55ff55"; }
+	  else if (pz < 0) { g2.fillStyle = "#ff5555"; }
+	  else { g2.fillStyle = "#aaaaff"; }
+	  if (sz < 14) {
+		  g2.fillText(Math.round(Math.abs(pz)), 256, 14);
+	  } else if (sz > 240) {
+		  g2.fillText(Math.round(Math.abs(pz)), 256, 246);
+	  } else {
+		  g2.fillText(Math.round(Math.abs(pz)), 256, sz+5);
+	  }
+	  g2.fillStyle = "white";
+	  if (sx > 125) {
+		  var tw = g2.measureText(px).width;
+		  g2.fillText(Math.round(px), sx-tw-3, 247);
+	  } else {
+		  g2.fillText(Math.round(px), sx+5, 247);
+	  }
+	  if (sy > 125) {
+		  g2.fillText(Math.round(py), 5, sy-4);
+	  } else {
+		  g2.fillText(Math.round(py), 5, sy+15);
+	  }
+	</script>
+  </body>
+</html>

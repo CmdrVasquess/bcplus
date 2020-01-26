@@ -292,7 +292,9 @@ func jeLoadout(t time.Time, evt ggja.Obj) (chg Change) {
 	shp := ship.TheShips.Load(evt.MInt("ShipID"), evt.MStr("Ship"))
 	if shp.Type.ShipType.Refine(evt) {
 		err := ship.TheTypes.Save(shp.Type.ShipType)
-		log.Errore(err)
+		if err != nil {
+			log.Errore(err)
+		}
 	}
 	shp.Update(evt)
 	writeState(noErr(func() {

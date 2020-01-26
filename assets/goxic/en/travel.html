@@ -3,12 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>`title`</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/s/img/logo.ico">
-    <link rel="stylesheet" type="text/css" href="/s/css/th-`theme`.css">
-    <link rel="stylesheet" type="text/css" href="/s/css/bcp.css">
-    <script src="/s/js/vue.js"></script>
-<!-- >>> style <<< -->
+    <title>
+<!-- >>> title >>> -->
+Travel
+<!-- <<< title <<< -->
+	</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../s/img/logo.ico">
+    <link rel="stylesheet" type="text/css" href="../../s/css/th-bright.css">
+    <link rel="stylesheet" type="text/css" href="../../s/css/bcp.css">
+    <script src="../../s/js/vue.js"></script>
+	<!-- >>> style >>> -->
+	<style>
+#tmap {
+	display: block;
+	margin: 0 auto;
+	border: 2px solid var(--colFgrDim);
+	background-image: url("/s/img/mway.jpg");
+	background-size: 300px 300px;
+	background-repeat: no-repeat;
+	background-color: black;
+}
+	</style>
+<!-- <<< style <<< -->
   </head>
   <body>
     <div id="vue-app">
@@ -34,7 +50,9 @@
       <transition name="menu">
 	<aside v-show="ctrl.showMenu">
 	  <div>Settings…</div>
-	  <div><a href="/s/debug/log.html" target="bcplog" v-on:click="ctrl.showMenu=false">Show log…</a></div>
+	  <div><a href="/s/debug/log.html"
+			  target="bcplog"
+			  v-on:click="ctrl.showMenu=false">Show log…</a></div>
 	  <div>Quit</div>
 	</aside>
       </transition>
@@ -43,17 +61,6 @@
 if (!window["WebSocket"]) {
 	console.log("browser does not support web sockets");
 }
-var wsurl = "wss://"+location.hostname+":"+location.port+"/ws/app";
-var wsock = new WebSocket(wsurl);
-var wspgmsg = [];
-wsock.onmessage = function(msg) {
-  console.log("Event:'"+msg.data+"'");
-  var evt = JSON.parse(msg.data);
-  for (var i=0; i<wspgmsg.length; i++) {
-    wspgmsg[i](evt);
-  }
-}
-console.log("connected to "+wsurl);
 const locRTyNm = ["?", "Deep Space", "Star", "Belt", "Planet",
 				  "Ring", "Station", "Outpost", "Port", "Settlement", "Jump Target"];
 const locModeNm = ["?", "Parked", "Travel", "Super Cruise", "FSD Jump"];
@@ -83,9 +90,17 @@ var scrnApp = new Vue({
   el: '#vue-app',
   data: {
 	  ctrl: { showMenu: false },
-	  activeTab: '`active-tab\jsStr`',
-	  tabs: `tabs`,
-		hdr: `init-hdr`
+	  activeTab: 'travel',
+	  tabs: {
+		"key": "travel",
+		"title": "Travel",
+		"url": "/travel"
+	  },
+	  hdr: {
+		  Name: "–",
+		  Ship: {Name: "–", Ident: "–"},
+		  Loc: {}
+	  }
 	},
 	filters: {
 	    refTy: function(v) {
@@ -106,15 +121,73 @@ var scrnApp = new Vue({
 					this.hdr = evt.Hdr;
 				}
 				break;
-			} 
+			}
 		}
-	},
-	mounted: function () {
-		wspgmsg.push(this.onMsg);
-		console.log("added page header callback");
 	}
 });
 	</script>
-	<!-- >>> main <<< \-->
+<!-- >>> main >>> -->
+	  <main>
+		<trvlmap ref="tmap" :size="300" :hbar="50"></trvlmap>
+	  </main>
+	  <script>
+Vue.component('trvlmap', {
+	props: {
+		size: Number,
+		hbar: Number
+	},
+	template: '<canvas id="tmap" :width="(2*size)+hbar" :height="size"></canvas>',
+	computed: {
+		g2: function() {
+			var canvas = this.$el;
+			return canvas.getContext("2d");
+		}
+	},
+	methods: {
+		draw: function(lx, ly, lz) {
+			const sd2 = this.size/2;
+			const scale = this.size/25000;
+			var sx = sd2+scale*lx;
+			var sy = .8*this.size+scale*ly;
+			var sz = sd2-(sd2/3500)*lz;
+			var g2 = this.g2;
+			g2.font="14px Arial";
+			g2.strokeStyle = "#ff8800";
+			g2.shadowColor = "black";
+			g2.shadowBlur = 8;
+			g2.fillStyle="#606060";
+			g2.fillRect(this.size, 0, this.hbar, this.size);
+			g2.beginPath();
+			g2.moveTo(sx, sy);
+			g2.lineTo(this.size, sz);
+			g2.lineTo(this.size+this.hbar, sz);
+			g2.moveTo(0, sy);
+			g2.lineTo(sx, sy);
+			g2.lineTo(sx, this.size);
+			g2.stroke();
+			g2.closePath();
+			g2.fillStyle = "white";
+			if (sx > 125) {
+				var tw = g2.measureText(lx).width;
+				g2.fillText(Math.round(lx), sx-tw-3, 247);
+			} else {
+				g2.fillText(Math.round(lx), sx+5, 247);
+			}
+			if (sy > 125) {
+				g2.fillText(Math.round(ly), 5, sy-4);
+			} else {
+				g2.fillText(Math.round(ly), 5, sy+15);
+			}
+		}
+	},
+});
+var trvlApp = new Vue({
+	el: "main",
+	mounted: function() {
+		this.$refs.tmap.draw(0,0,0);
+	}
+});
+	  </script>
+<!-- <<< main <<< -->
   </body>
 </html>
