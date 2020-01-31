@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CmdrVasquess/bcplus/internal/galaxy"
+
 	"git.fractalqb.de/fractalqb/ggja"
 	"git.fractalqb.de/fractalqb/qbsllm"
 )
@@ -136,10 +138,8 @@ type Ship struct {
 	Opt     []NamedModule
 	Mount   [HugeWeapon + 1][]Weapon
 	Berth   struct {
-		SysAddr uint64
-		SysNm   string
-		SysCoo  [3]float64
-		Port    string
+		Sys  galaxy.SysDesc
+		Port string
 	}
 	StateAt time.Time
 }

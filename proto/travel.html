@@ -7,8 +7,18 @@
     <link rel="shortcut icon" type="image/x-icon" href="s/img/logo.ico">
     <link rel="stylesheet" type="text/css" href="s/css/th-bright.css">
     <link rel="stylesheet" type="text/css" href="s/css/bcp.css">
-    <!--script src="s/js/vue.js"></script-->
+    <script src="s/js/vue.js"></script>
 	<style>
+		#jumps {
+			float: left;
+			padding: 0 .5em;
+		}
+		#jumps>div {
+			border-radius: .4em;
+			padding: .3em .5em;
+			margin-bottom: .5em;
+			box-shadow: 0 0 5px gray;
+		}
 	  canvas {
 		  background-image: url("s/img/trvlmap.jpeg");
 		  background-size: 250px 250px;
@@ -18,8 +28,73 @@
 	</style>
   </head>
   <body>
-	<canvas id="map" width="540" height="250"></canvas>
+  	<main>
+  		<div id="jumps">
+  			<div v-for="(jump, i) in jumps" :key="i">
+  				<span v-if="jumps[i+1]">{{Math.round(dist(jumps[i+1].Coos,jump.Coos))}} Ly → </span>
+  				{{jump.SysNm}}
+  				<br/>{{new Date(jump.Arrive).toLocaleString()}}
+  			</div>
+  		</div>
+		<canvas id="map" width="540" height="250"></canvas>
+		<div id="bms">
+			<h1>Bookmarks {{maxJump}}</h1>
+			<table>
+				<tr>
+					<th>Dest</th>
+					<th>Name</th>
+					<th>Mark</th>
+					<th>Distance</th>
+					<th>X</th><th>Y</th><th>Z</th>
+				</tr>
+				<tr v-for="sys in Bookmarks.Systems" :key="sys.Addr">
+					<td><input type="radio" :id="'bm'+sys.Addr" name="bmsys"></td>
+					<td>{{sys.SysNm}}</td>
+					<td><input type="checkbox"></td>
+					<td></td>
+					<td>{{sys.Coos[0]}}</td><td>{{sys.Coos[1]}}</td><td>{{sys.Coos[2]}}</td>
+				</tr>
+			</table>
+		</div>
+	</main>
 	<script>
+var trvlApp = new Vue({
+	el: 'main',
+	data: {
+		jumps: [
+			{SysNm: "Sol", Arrive: "2020-01-30T20:00:00", Coos: [0,0,0]},
+			{SysNm: "Achenar", Arrive: "2020-01-30T20:00:00", Coos: [10,0,60]},
+			{SysNm: "Tiapalan", Arrive: "2020-01-30T20:00:00", Coos: [20,0,50]},
+			{SysNm: "Alioth", Arrive: "2020-01-30T20:00:00", Coos: [30,66,40]},
+			{SysNm: "Lave", Arrive: "2020-01-30T20:00:00", Coos: [40,0,30]},
+			{SysNm: "Maia", Arrive: "2020-01-30T20:00:00", Coos: [50,0,20]},
+			{SysNm: "Colonia", Arrive: "2020-01-30T20:00:00", Coos: [60,0,10]}
+		],
+		Bookmarks: {
+			Systems: [
+				{Addr: 47, SysNm: "Sol", Coos: [0,0,0]},
+				{Addr: 11, SysNm: "Tiapalan", Coos: [10,20,30]}
+			]
+		}
+	},
+	computed: {
+		maxJump: function () {
+			if (this.jumps.length < 2) { return 0; }
+			let max = this.dist(this.jumps[0].Coos, this.jumps[1].Coos);
+			for (let i=2; i < this.jumps.length; i++) {
+				let d = this.dist(this.jumps[i-1].Coos, this.jumps[i].Coos);
+				if (d > max) { max = d; }
+			}
+			return max;
+		}
+	},
+	methods: {
+		dist: function (p, q) {
+			let px = p[0]-q[0], py = p[1]-q[1], pz = p[2]-q[2];
+			return Math.sqrt(px*px+py*py+pz*pz);
+		}
+	}
+});		
 	  var map = document.getElementById("map");
 	  var g2 = map.getContext("2d");
 	  var px = 0, py = 25000, pz = 200;

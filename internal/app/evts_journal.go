@@ -10,6 +10,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/CmdrVasquess/bcplus/internal/galaxy"
+
 	"git.fractalqb.de/fractalqb/ggja"
 	"git.fractalqb.de/fractalqb/namemap"
 	"git.fractalqb.de/fractalqb/qbsllm"
@@ -227,7 +229,11 @@ func jeScan(t time.Time, evt ggja.Obj) Change {
 
 func jsShutdown(t time.Time, evt ggja.Obj) Change {
 	writeState(noErr(func() {
-		cmdr.switchTo("", "")
+		if App.GoOffline {
+			cmdr.switchTo("", "")
+		} else {
+			cmdr.switchTo(cmdr.Fid, cmdr.Name)
+		}
 		App.save()
 	}))
 	return ChgCmdr
@@ -331,9 +337,11 @@ func jeLocation(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
 		inSysInfo.reset()
+		spos := evt.MArr("StarPos")
 		chg |= cmdr.Loc.SetSys(
 			evt.MUint64("SystemAddress"),
 			evt.MStr("StarSystem"),
+			[]float32{spos.MF32(0), spos.MF32(1), spos.MF32(2)},
 		)
 		if evt.MBool("Docked") {
 			chg |= cmdr.Loc.SetMode(Parked)
@@ -374,11 +382,16 @@ func jeApproachBody(t time.Time, evt ggja.Obj) Change {
 
 func jeFsdJump(t time.Time, evt ggja.Obj) Change {
 	var chg Change
+	var coos galaxy.SysCoos
+	addr := evt.MUint64("SystemAddress")
+	sys := evt.MStr("StarSystem")
+	pos := evt.MArr("StarPos")
+	coos[0] = pos.MF32(0)
+	coos[1] = pos.MF32(1)
+	coos[2] = pos.MF32(2)
 	writeState(noErr(func() {
-		chg |= cmdr.Loc.SetSys(
-			evt.MUint64("SystemAddress"),
-			evt.MStr("StarSystem"),
-		)
+		cmdr.AddJump(t, addr, sys, coos)
+		chg |= cmdr.Loc.SetSys(addr, sys, coos[:])
 		chg |= cmdr.Loc.SetRef(jeBodyTypeMap[evt.MStr("BodyType")])
 		chg |= cmdr.Loc.SetRefNm(evt.MStr("Body"))
 		chg |= cmdr.Loc.SetMode(Cruise)

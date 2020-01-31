@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-
-	"github.com/CmdrVasquess/bcplus/internal/ship"
+	"time"
 
 	"git.fractalqb.de/fractalqb/ggja"
+	"github.com/CmdrVasquess/bcplus/internal/galaxy"
+	"github.com/CmdrVasquess/bcplus/internal/ship"
 	"github.com/jinzhu/gorm"
 )
 
@@ -21,14 +22,23 @@ type MatState struct {
 	Free int `json:"free"`
 }
 
+type FsdJump struct {
+	galaxy.SysDesc
+	Time time.Time
+}
+
+const JumpMax = 100
+
 type Commander struct {
 	Fid          string
 	Name         string
 	Loc          Location
 	Ship         ship.ShipRef
 	OnScreenShot ggja.GenArr
-	Mats         map[string]MatState `json:"matNeed"`
-	Rcps         map[string]int      `json:"rcpNeed"`
+	Mats         map[string]MatState `json:"MatNeed"`
+	Rcps         map[string]int      `json:"RcpNeed"`
+	Jumps        []FsdJump
+	JumpW        int
 	statFlags    uint32
 	surfLoc      SurfPos
 	db           *gorm.DB
@@ -44,6 +54,26 @@ func NewCommander(fid, name string) *Commander {
 }
 
 func (cdmr *Commander) isVoid() bool { return len(cmdr.Fid) == 0 }
+
+func (cmdr *Commander) AddJump(t time.Time, addr uint64, sys string, coos galaxy.SysCoos) {
+	if len(cmdr.Jumps) < JumpMax {
+		cmdr.Jumps = append(cmdr.Jumps, FsdJump{
+			Time: t,
+			SysDesc: galaxy.SysDesc{
+				Addr: addr,
+				Name: sys,
+				Coos: coos,
+			},
+		})
+	} else {
+		jump := &cmdr.Jumps[cmdr.JumpW]
+		jump.Time = t
+		jump.Addr = addr
+		jump.Name = sys
+		jump.Coos = coos
+		cmdr.JumpW++
+	}
+}
 
 func (cmdr *Commander) close() {
 	if cmdr.isVoid() {

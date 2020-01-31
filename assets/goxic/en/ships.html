@@ -15,24 +15,25 @@ Ships
     <style>
 main table {
 	width: 100%;
-	border-collapse: collapse;
+  padding: 0 1em;
 }
 main th {
 	text-align: left;
 	padding-top: .2em;
 }
-main thead th {
-	background-color: var(--colBkgDim);
-	color: var(--colGud);
-}
 main tbody th {
+  color: var(--colFgr);
+	background-color: var(--colBkg);
 	cursor: pointer;
 }
-main tr.open {
-  background-image: linear-gradient(var(--colBkg),var(--colBkgDim),var(--colBkgDim));
-  color: var(--colFgr);
+main tbody td {
+  background-color: var(--colBkgDim);
+  padding: .3em .7em;
+  padding-top: 0;
 }
-main td { background-color: var(--colBkgDim); padding: .3em .7em; }
+main tbody tr.open th {
+  background-color: var(--colBkgDim)
+}
 div.details {
   display: flex;
   flex-wrap: wrap;
@@ -84,19 +85,20 @@ table.modules div.engy {
           </tr>
 		</thead>
 		<tbody v-for="ship in Ships" :key="ship.Id">
-		  <tr v-on:click="toggleDetails(ship.Id)"
-			  v-bind:class="{open:showDetails(ship.Id)}">
-			<th v-if="showDetails(ship.Id)" style="text-align: center">▾</th>
-			<th v-else style="text-align: center">▸</th>
+		  <tr v-bind:class="{open:showDetails(ship.Id)}">
+			<th v-if="showDetails(ship.Id)" style="text-align: center"
+          v-on:click="toggleDetails(ship.Id)">▾</th>
+			<th v-else style="text-align: center"
+          v-on:click="toggleDetails(ship.Id)">▸</th>
 			<th>{{ship.Type|shipTyNm}}</th>
 			<th>“{{ship.Name}}”</th>
 			<th>[{{ship.Ident}}]</th>
 			<th>{{ship.MaxJump|f2}} Ly</th>
 			<th></th>
 			<th></th>
-			<th v-if="ship.Berth.SysAddr==0">–</th>
-			<th v-else>{{ship.Berth.Port}} / {{ship.Berth.SysNm}}
-			({{sysDist(header("Loc").SysCoo, ship.Berth.SysCoo)|f2}} Ly)</th>
+			<th v-if="ship.Berth.Sys.Addr==0">–</th>
+			<th v-else>{{ship.Berth.Port}} / {{ship.Berth.Sys.Name}}
+			({{sysDist(header("Loc").Sys.Coos, ship.Berth.Sys.Coos)|f2}} Ly)</th>
 		  </tr>
 		  <tr v-if="showDetails(ship.Id)"><td colspan="8">
 			  <div class="details">

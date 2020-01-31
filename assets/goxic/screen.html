@@ -17,7 +17,7 @@
 		<div id="hdrCmd">CMDR {{hdr.Name}}</div>
 		<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
 		<div id="hdrLoc"><span v-if="hdr.Loc.RefNm">{{hdr.Loc.RefNm}}
-		/ </span>{{hdr.Loc.SysNm}}</div>
+		/ </span>{{hdr.Loc.Sys.Name}}</div>
       </header>
       <nav>
 	<div id="mbtn">
@@ -79,13 +79,14 @@ Vue.filter('f2', function(x) {
       maximumFractionDigits: 2
     });
 });
+const hdrData = `init-hdr`;
 var scrnApp = new Vue({
   el: '#vue-app',
   data: {
 	  ctrl: { showMenu: false },
 	  activeTab: '`active-tab\jsStr`',
 	  tabs: `tabs`,
-		hdr: `init-hdr`
+		hdr: hdrData
 	},
 	filters: {
 	    refTy: function(v) {
@@ -103,7 +104,10 @@ var scrnApp = new Vue({
 			switch (evt.Cmd) {
 			case "upd":
 				if (evt.Hdr) {
-					this.hdr = evt.Hdr;
+					this.hdr.Fid = evt.Hdr.Fid;
+          this.hdr.Name = evt.Hdr.Name;
+          this.hdr.Loc = evt.Hdr.Loc;
+          this.hdr.Ship = evt.Hdr.Ship;
 				}
 				break;
 			} 

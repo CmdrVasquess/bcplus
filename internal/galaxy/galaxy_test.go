@@ -1,4 +1,4 @@
-package app
+package galaxy
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func TestGalaxy_putnget(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer g.Close()
-	sys := &System{EdId: 4711, Name: "Zeta Reticuli"}
+	sys := &System{Addr: 4711, Name: "Zeta Reticuli"}
 	err = g.PutSystem(sys)
 	if err != nil {
 		t.Fatal(err)

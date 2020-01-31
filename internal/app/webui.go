@@ -30,7 +30,7 @@ func (s *offPage) isOffline(tab string, wr http.ResponseWriter, rq *http.Request
 		return false
 	}
 	var bt goxic.BounT
-	head := Head{Name: "…offline…"}
+	head := WuiHdr{Name: "…offline…"}
 	head.Ship.Name = "…offline…"
 	head.Ship.Ident = "…offline…"
 	(*Screen)(s).init(&bt, &head, tab)
@@ -45,7 +45,7 @@ type Screen struct {
 	InitHdr   goxic.PhIdxs
 }
 
-func (scr *Screen) init(bt *goxic.BounT, head *Head, tab string) {
+func (scr *Screen) init(bt *goxic.BounT, head *WuiHdr, tab string) {
 	if head.Name == "" {
 		head.set(cmdr)
 	}
@@ -56,36 +56,6 @@ func (scr *Screen) init(bt *goxic.BounT, head *Head, tab string) {
 }
 
 type DateTime time.Time
-
-type Head struct {
-	Name string
-	Ship struct {
-		Ident string
-		Name  string
-	}
-	Loc struct {
-		SysNm  string
-		SysCoo [3]float64
-		RefNm  string
-	}
-}
-
-func (h *Head) set(cmdr *Commander) *Head {
-	h.Name = ""
-	h.Ship.Ident = ""
-	h.Ship.Name = ""
-	h.Loc.SysNm = ""
-	if cmdr != nil {
-		h.Name = cmdr.Name
-		if s := cmdr.Ship.Ship; s != nil {
-			h.Ship.Ident = s.Ident
-			h.Ship.Name = s.Name
-		}
-		h.Loc.SysNm = cmdr.Loc.SysNm
-		h.Loc.RefNm = cmdr.Loc.RefNm
-	}
-	return h
-}
 
 type Tab struct {
 	Key   string `json:"key"`
@@ -182,6 +152,7 @@ func webLoadTmpls() {
 	scrnShips.loadTmpl(&gxtPage)
 	scrnInSys.loadTmpl(&gxtPage)
 	scrnMats.loadTmpl(&gxtPage)
+	scrnTravel.loadTmpl(&gxtPage)
 }
 
 func webAuth(h http.HandlerFunc) http.HandlerFunc {
@@ -209,14 +180,16 @@ func webAuth(h http.HandlerFunc) http.HandlerFunc {
 
 var (
 	tabs = []Tab{
-		Tab{"insys", "Current System", "/insys"},
-		Tab{"ships", "Fleet", "/ships"},
-		Tab{"mats", "Materials", "/mats"},
+		Tab{insysTab, "Current System", "/insys"},
+		Tab{shipsTab, "Fleet", "/ships"},
+		Tab{matsTab, "Materials", "/mats"},
+		Tab{travelTab, "Travel", "/travel"},
 	}
 	tabHdlr = map[string]http.HandlerFunc{
-		"insys": scrnInSys.ServeHTTP,
-		"ships": scrnShips.ServeHTTP,
-		"mats":  scrnMats.ServeHTTP,
+		insysTab:  scrnInSys.ServeHTTP,
+		shipsTab:  scrnShips.ServeHTTP,
+		matsTab:   scrnMats.ServeHTTP,
+		travelTab: scrnTravel.ServeHTTP,
 	}
 )
 
@@ -250,13 +223,31 @@ type WuiMsg struct {
 }
 
 type WuiHdr struct {
-	Fid  string
 	Name string
 	Loc  *Location
 	Ship struct {
 		Ident string
 		Name  string
 	}
+}
+
+func (h *WuiHdr) set(cmdr *Commander) *WuiHdr {
+	if cmdr == nil || cmdr.isVoid() {
+		*h = WuiHdr{
+			Name: "",
+			Loc:  nil,
+		}
+		h.Ship.Ident = ""
+		h.Ship.Name = ""
+	} else {
+		h.Name = cmdr.Name
+		if s := cmdr.Ship.Ship; s != nil {
+			h.Ship.Ident = s.Ident
+			h.Ship.Name = s.Name
+		}
+		h.Loc = &cmdr.Loc
+	}
+	return h
 }
 
 type WuiUpdate struct {
@@ -286,16 +277,7 @@ func wuiUpdate() {
 		updMsg := WuiUpdate{WuiMsg: WuiMsg{Cmd: "upd"}}
 		readState(noErr(func() {
 			if upd&wuiChgHdr != 0 {
-				hdr.Fid = cmdr.Fid
-				hdr.Name = cmdr.Name
-				hdr.Loc = &cmdr.Loc
-				if cmdr.Ship.Ship == nil {
-					hdr.Ship.Ident = ""
-					hdr.Ship.Name = ""
-				} else {
-					hdr.Ship.Ident = cmdr.Ship.Ident
-					hdr.Ship.Name = cmdr.Ship.Name
-				}
+				hdr.set(cmdr)
 				updMsg.Hdr = &hdr
 			}
 			if upd&WuiUpInSys == WuiUpInSys {

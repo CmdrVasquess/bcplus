@@ -1,8 +1,9 @@
 :root {
   --colBkg: black;
   --colBkgDim: #411D00;
+  --colBkgTh: #713200;
   --colFgr: #FF7000;
-  --colFgrDim: #be5400;
+  --colFgrDim: #BE5400;
   --colFgrAlt: white;
   --colTxt: #FF7000;
   --colTxtDim: #D25C00;
