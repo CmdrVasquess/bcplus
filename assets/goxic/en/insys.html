@@ -150,28 +150,28 @@ var insysApp = new Vue({
   el: "main",
   data: `data`,
   methods: {
-      onMsg: function(evt) {
-	  if (evt.Cmd != "upd") return;
-	  if (!evt.P) return;
-	  this.BodyNum = evt.P.BodyNum;
-	  this.MiscNum = evt.P.MiscNum;
-	  this.Sigs = evt.P.Sigs;
-	  this.Bodies = evt.P.Bodies;
-	  if (this.Bodies) {
+    onMsg: function(evt) {
+	    if (evt.Cmd != "upd") return;
+	    if (!evt.P) return;
+	    this.BodyNum = evt.P.BodyNum;
+	    this.MiscNum = evt.P.MiscNum;
+	    this.Sigs = evt.P.Sigs;
+	    this.Bodies = evt.P.Bodies;
+	    if (this.Bodies) {
 	      this.Bodies.sort(function(a, b) {
-		  return a.Dist - b.Dist;
+		      return a.Dist - b.Dist;
 	      });
-	  }
-      }
+	    }
+    }
   },
   mounted: function () {
-      wspgmsg.push(this.onMsg);
-      console.log("added insys callback");
-      if (this.Bodies) {
-	  this.Bodies.sort(function(a, b) {
+    wspgmsg.push(this.onMsg);
+    console.log("added insys callback");
+    if (this.Bodies) {
+	    this.Bodies.sort(function(a, b) {
 	      return a.Dist - b.Dist;
-	  });
-      }
+	    });
+    }
   }
 });
       </script>

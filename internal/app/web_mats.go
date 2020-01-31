@@ -26,7 +26,7 @@ func (s *matsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 		return
 	}
 	var bt goxic.BounT
-	var h Head
+	var h WuiHdr
 	s.init(&bt, &h, matsTab)
 	bt.BindGen(s.MatNeed, jsonContent(&cmdr.Mats))
 	bt.BindGen(s.RcpNeed, jsonContent(&cmdr.Rcps))

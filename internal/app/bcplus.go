@@ -67,6 +67,7 @@ type BCpApp struct {
 	dataDir    string
 	assetDir   string
 	LastEvent  time.Time
+	GoOffline  bool
 	ApiKey     string
 	WebPort    uint16
 	WebAddr    string
@@ -109,7 +110,6 @@ func (app *BCpApp) load() {
 }
 
 func (app *BCpApp) save() {
-	cmdr.close()
 	fnm := app.dataBCpApp()
 	tmp := fnm + "~"
 	wr, err := os.Create(tmp)
@@ -215,12 +215,12 @@ func (app *BCpApp) Run(signals <-chan os.Signal) {
 	go runWebUI()
 	<-signals
 	log.Infof("BC+ %s interrupted; shutting down...", common.VersionLong)
+	cmdr.close()
+	app.save()
 	close(EventQ)
 	close(webUiUpd)
 	if toSpeak != nil {
 		close(toSpeak)
 	}
 	close(quitWatch)
-	app.save()
-	os.Exit(0)
 }

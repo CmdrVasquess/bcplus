@@ -1,4 +1,4 @@
-package app
+package galaxy
 
 import (
 	"bytes"
@@ -43,7 +43,7 @@ func (g *Galaxy) Close() error {
 
 func (g *Galaxy) PutSystem(system *System) (err error) {
 	var edid [binary.MaxVarintLen64]byte
-	idlen := binary.PutUvarint(edid[:], system.EdId)
+	idlen := binary.PutUvarint(edid[:], system.Addr)
 	nm := []byte(strings.ToUpper(system.Name))
 	var sys bytes.Buffer
 	enc := gob.NewEncoder(&sys)
@@ -84,9 +84,16 @@ func init() {
 	gob.Register(SysSattelite{})
 }
 
+type SysCoos [3]float32
+
+type SysDesc struct {
+	Addr uint64
+	Name string
+	Coos SysCoos
+}
+
 type System struct {
-	EdId   uint64
-	Name   string
+	SysDesc
 	Center SystemObject
 }
 

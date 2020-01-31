@@ -1,6 +1,7 @@
 :root {
   --colBkg: white;
-  --colBkgDim: #CCC;
+  --colBkgDim: #EEE;
+  --colBkgTh: #CCC;
   --colFgr: black;
   --colFgrDim: grey;
   --colFgrAlt: #ddd;

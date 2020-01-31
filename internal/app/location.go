@@ -1,5 +1,9 @@
 package app
 
+import (
+	"github.com/CmdrVasquess/bcplus/internal/galaxy"
+)
+
 type PosRef int
 
 const (
@@ -62,21 +66,25 @@ func (p *SurfPos) SetAlt(a float64) (chg Change) {
 }
 
 type Location struct {
-	SysId uint64   `json:"si"`
-	SysNm string   `json:"sn"`
-	Ref   PosRef   `json:"r"`
-	RefNm string   `json:"rn"`
-	Vhcl  Vehicle  `json:"v"`
-	Mode  Mode     `json:"m"`
-	Surf  *SurfPos `json:"sc,omitempty"`
+	Sys   galaxy.SysDesc
+	Ref   PosRef
+	RefNm string
+	Vhcl  Vehicle
+	Mode  Mode
+	Surf  *SurfPos `json:",omitempty"`
 }
 
-func (l *Location) SetSys(id uint64, nm string) (chg Change) {
-	if l.SysId == id {
+func (l *Location) SetSys(id uint64, nm string, coos []float32) (chg Change) {
+	if l.Sys.Addr == id {
 		return 0
 	}
-	l.SysId = id
-	l.SysNm = nm
+	l.Sys.Addr = id
+	l.Sys.Name = nm
+	if coos == nil {
+		l.Sys.Coos = galaxy.SysCoos{0, 0, 0}
+	} else {
+		l.Sys.Coos = galaxy.SysCoos{coos[0], coos[1], coos[2]}
+	}
 	return ChgLoc
 }
 

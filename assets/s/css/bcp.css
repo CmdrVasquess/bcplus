@@ -91,3 +91,8 @@ main {
 	transform: translateX(-2em);
 	opacity: 0;
 }
+main th {
+	background-color: #713200;
+	color: var(--colGud);
+	padding: .2em .5em;
+}

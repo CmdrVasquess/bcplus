@@ -44,7 +44,7 @@ func (s *shipsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 		return
 	}
 	var bt goxic.BounT
-	var h Head
+	var h WuiHdr
 	s.init(&bt, &h, shipsTab)
 	ships := wuiLoadShips(cmdr.Ship.Ship)
 	bt.BindGen(s.Data, jsonContent(ships))
