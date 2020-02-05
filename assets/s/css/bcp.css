@@ -1,3 +1,5 @@
+.right { text-align: right; }
+.center { text-align: center; }
 body {
 	font-family: sans-serif;
 	background-color: var(--colBkg);
@@ -45,6 +47,7 @@ nav a:any-link {
 }
 nav > div:hover {
 	cursor: pointer;
+	color: var(--colGud);
 	background-color: var(--colBkgDim);
 }
 #mbtn {
@@ -59,6 +62,7 @@ nav > div:hover {
     background-color: var(--colFgrDim);
 }
 nav > div.current {
+	color: var(--colGud);
 	background-color: var(--colBkg);
 	cursor: auto;
 }
@@ -92,7 +96,7 @@ main {
 	opacity: 0;
 }
 main th {
-	background-color: #713200;
+	background-color: var(--colBkgTh);
 	color: var(--colGud);
 	padding: .2em .5em;
 }

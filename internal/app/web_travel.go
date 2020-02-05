@@ -21,7 +21,7 @@ func (s *travelScreen) loadTmpl(page *WebPage) {
 const travelTab = "travel"
 
 type travelData struct {
-	Jumps []FsdJump
+	JumpHist []FsdJump
 }
 
 func (s *travelScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
@@ -33,7 +33,7 @@ func (s *travelScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	s.init(&bt, &h, travelTab)
 	readState(noErr(func() {
 		data := travelData{
-			Jumps: cmdr.Jumps,
+			JumpHist: cmdr.JumpHist,
 		}
 		bt.BindGen(s.Data, jsonContent(data))
 		bt.Emit(wr)

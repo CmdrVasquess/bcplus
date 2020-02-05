@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel</title>
+    <link rel="shortcut icon" type="image/x-icon" href="s/img/logo.ico">
+    <link rel="stylesheet" type="text/css" href="s/css/th-bright.css">
+    <link rel="stylesheet" type="text/css" href="s/css/bcp.css">
+    <script src="s/js/vue.js"></script>
+    <style>
+      svg {
+	  font-size: 18px;
+	  border: 1px dashed red;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg :width="width" :height="size" :viewbox="vbox">
+	<rect x="509" y="0" width="61" height="510" fill="gray"/>
+	<image id="mway" y="0" x="0" width="510" height="510"
+	       xlink:href="../assets/s/img/mway.jpg"
+	       preserveAspectRatio="none"/>
+	<text x="512" y="20" fill="white">-3500</text>
+      </svg>
+    </main>
+    <script>
+var mapApp = new Vue({
+    el: "svg",
+    data: {
+	size: 300,
+	vbox: "0 0 1060 510"
+    },
+    computed: {
+	width: function() { return 2*this.size + 60; },
+    }
+});
+    </script>
+  </body>
+</html>

@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"os/exec"
 	"regexp"
+	"time"
 )
 
 const ChanJEvt = "jevt"
@@ -11,6 +12,7 @@ const ChanJEvt = "jevt"
 type SpeakCfg struct {
 	Cmd     string
 	Flags   []string
+	Old     time.Duration
 	ChanCfg map[string]*ChanConfig
 }
 

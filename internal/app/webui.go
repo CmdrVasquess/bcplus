@@ -280,8 +280,11 @@ func wuiUpdate() {
 				hdr.set(cmdr)
 				updMsg.Hdr = &hdr
 			}
-			if upd&WuiUpInSys == WuiUpInSys {
+			switch {
+			case upd&WuiUpInSys == WuiUpInSys:
 				updMsg.P = &inSysInfo
+			case upd&WuiUpTrvl == WuiUpTrvl:
+				updMsg.P = cmdr.LastJump()
 			}
 			err = enc.Encode(&updMsg)
 		}))

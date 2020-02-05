@@ -30,9 +30,18 @@ Travel
 	box-shadow: 0 0 5px var(--colFgr) inset;
 }
 #jumps>div:hover { color: var(--colFgrAlt); }
+#tmap-info {
+	display: inline-block;
+  vertical-align: top;
+}
+#tmap-info td {
+  font-size: 90%;
+  padding: 0 .4em;
+}
 #tmap {
-	display: block;
-	margin: 0 auto;
+	display: inline-block;
+	vertical-align: top;
+	/*margin: 0 auto;*/
 	border: 2px solid var(--colFgrDim);
 	background-image: url("/s/img/mway.jpg");
 	background-size: 300px 300px;
@@ -43,6 +52,18 @@ Travel
   font-size: 150%;
   margin: 0;
   margin-top: .3em;
+}
+#speed-tbl {
+  margin-top: .7em;
+  width: 75%;
+}
+#speed-tbl td.tavg {
+  text-align: center;
+}
+#speed-tbl td.tmima {
+  text-align: center;
+  font-size: 90%;
+  color: var(--colTxtDim);
 }
 	</style>
 <!-- <<< style <<< -->
@@ -68,12 +89,11 @@ Travel
 	  <span v-else><a :href="tab.url">{{tab.title}}</a></span>
 	</div>
       </nav>
-      <transition name="menuhttps://localhost:1337/travel">
+      <transition name="menu">
 	<aside v-show="ctrl.showMenu">
 	  <div>Settings…</div>
-	  <div><a href="/s/debug/log.html"
-			  target="bcplog"
-			  v-on:click="ctrl.showMenu=false">Show log…</a></div>
+	  <div><a href="/s/debug/log.html" target="bcplog"
+                  v-on:click="ctrl.showMenu=false">Show log…</a></div>
 	  <div>Quit</div>
 	</aside>
       </transition>
@@ -149,14 +169,111 @@ var scrnApp = new Vue({
 	</script>
 <!-- >>> main >>> -->
 	  <main>
-      <div id="jumps" @mouseleave="drawLoc()">
-        <div v-for="(jmp, i) in Jumps" :key="i"
-             @mouseover="draw(jmp.Coos[0],jmp.Coos[1],jmp.Coos[2])">
+      <div id="jumps" @mouseleave="reLoc()">
+        <div v-for="(jmp, i) in jhist" :key="i"
+             @mouseover="tmpLoc(jmp)">
           {{jmp.Name}}<br/>
           {{(new Date(jmp.Time)).toLocaleString()}}
         </div>
       </div>
-		  <trvlmap ref="tmap" :size="300" :hbar="40"></trvlmap>
+		  <trvlmap id="tmap" ref="tmap" :size="300" :hbar="40" :data="tmap"></trvlmap>
+      <table id="tmap-info">
+        <tr><td>System:</td><td colspan="3">{{tmap.loc.Name}}</td></tr>
+        <tr><td>• Coordinates:</td>
+          <td class="right">{{tmap.loc.Coos[0]|f2}}</td>
+          <td class="right">{{tmap.loc.Coos[1]|f2}}</td>
+          <td class="right">{{tmap.loc.Coos[2]|f2}}</td>
+        </td></tr>
+        <tr><td>Destination:</td><td colspan="3">{{tmap.dest.Name}}</td></tr>
+        <tr><td>• Coordinates:</td>
+          <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[0]|f2}}</td>
+          <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[1]|f2}}</td>
+          <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[2]|f2}}</td>
+          <td v-if="!tmap.dest">–</td>
+        </tr>
+        <tr><td>Distance to Dest.:</td>
+          <td class="right" colspan="2">{{sysDist(tmap.loc.Coos, tmap.dest.Coos)|f2}}</td>
+          <td>Ly</td>
+        </tr>
+        <tr><td>Max. Speed:</td>
+          <td class="right" colspan="2">{{tmap.speed|f2}}</td>
+          <td>Ly/h</td>
+        </tr>
+        <tr><td>Min. Travel Time:</td>
+          <td class="right" colspan="2">{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/tmap.speed|f2}}</td>
+          <td>h</td>
+        </tr>
+      </table>
+      <table id="speed-tbl">
+        <thead>
+          <tr><th>Last Jump</th>
+            <th v-for="(b, i) in cfg.jblocks" :key="i">{{b}} Jumps</th>
+            <th>All</th>
+          </tr>
+        </thead>
+        <tbody v-if="jumps">
+          <tr>
+            <td class="center" style="color:var(--colGud)">Length [Ly]</td>
+            <td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
+              <span v-if="ammBlk[i]">{{ammBlk[i].jMin|f2}}</span>
+              <span v-else>–</span>
+              /
+              <span v-if="ammBlk[i]">{{ammBlk[i].jMax|f2}}</span>
+              <span v-else>–</span>
+            </td>          
+            <td class="tmima">
+              <span v-if="ammAll">{{ammAll.jMin|f2}}</span>
+              <span v-else>–</span>
+              /
+              <span v-if="ammAll">{{ammAll.jMax|f2}}</span>
+              <span v-else>–</span>
+            </td>  
+          </tr>
+          <tr>
+            <td class="tavg">{{jumps[0].jl|f2}}</td>
+            <td v-for="(b, i) in cfg.jblocks" :key="i" class="tavg">
+              <span v-if="ammBlk[i]">{{ammBlk[i].jAvg|f2}}</span>
+              <span v-else>–</span>
+            </td>
+            <td class="tavg">
+              <span v-if="ammAll">{{ammAll.jAvg|f2}}</span>
+              <span v-else>–</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="center" style="color:var(--colGud)">Speed [Ly/h]</td>
+            <td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
+              <span v-if="ammBlk[i]">{{ammBlk[i].sMin|f2}}</span>
+              <span v-else>–</span>
+              /
+              <span v-if="ammBlk[i]">{{ammBlk[i].sMax|f2}}</span>
+              <span v-else>–</span>
+            </td>          
+            <td class="tmima">
+              <span v-if="ammAll">{{ammAll.sMin|f2}}</span>
+              <span v-else>–</span>
+              /
+              <span v-if="ammAll">{{ammAll.sMax|f2}}</span>
+              <span v-else>–</span>
+            </td>              
+          </tr>
+          <tr>
+            <td class="tavg">{{(3600/jumps[0].dt*jumps[0].jl)|f2}}</td>
+            <td v-for="(b, i) in cfg.jblocks" :key="i" class="tavg">
+              <span v-if="ammBlk[i]">{{ammBlk[i].sAvg|f2}}</span>
+              <span v-else>–</span>
+            </td>
+            <td class="tavg">
+              <span v-if="ammAll">{{ammAll.sAvg|f2}}</span>
+              <span v-else>–</span>
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr><td :colspan="2+cfg.jblocks.length"
+                  style="text-align:center;color:var(--colBad)">Empty Jump History</td></tr>
+        </tbody>
+      </table>
       <div id="bms">
         <h1>Bookmarks</h1>
         <table>
@@ -170,110 +287,10 @@ var scrnApp = new Vue({
         </table>
       </div>
 	  </main>
-	  <script>
-function screenZ(ly, sd2) { return sd2-2*sd2*Math.atan(ly/800)/Math.PI; }
-Vue.component('trvlmap', {
-	props: {
-		size: Number,
-		hbar: Number
-	},
-	template: '<canvas id="tmap" :width="(2*size)+hbar" :height="size"></canvas>',
-	computed: {
-		g2: function() {
-			var canvas = this.$el;
-			return canvas.getContext("2d");
-		}
-	},
-	methods: {
-		draw: function(lx, ly, lz) {
-			const sd2 = this.size/2;
-			const scale = this.size/94000;
-			var sx = sd2+scale*lx;
-			var sy = .765*this.size-scale*lz;
-      var sz = screenZ(ly, sd2);
-			var g2 = this.g2;
-			g2.shadowBlur = 0;
-      g2.clearRect(0, 0, 2*this.size+this.hbar, this.size);
-			g2.font="14px Arial";
-			g2.fillStyle="#713200";
-			g2.fillRect(this.size, 0, this.hbar, this.size);
-      g2.fillStyle="#BE5400";
-      g2.fillRect(this.size, sd2, this.hbar, sz-sd2);
-      g2.lineWidth = 1;
-      g2.strokeStyle = "black";
-      for (let y = -4000; y <= 4000; y += 1000) {
-        let z = screenZ(y, sd2);
-        g2.beginPath();
-        g2.moveTo(this.size, z);
-        g2.lineTo(this.size + this.hbar, z);
-        g2.stroke();
-      }
-      for (let y = -1500; y <= 1500; y += 1000) {
-        let z = screenZ(y, sd2);
-        g2.beginPath();
-        g2.moveTo(this.size, z);
-        g2.lineTo(this.size + .5*this.hbar, z);
-        g2.stroke();
-      }
-			g2.beginPath();
-      g2.lineWidth = 1.3;
-			g2.strokeStyle = "#00A6EA";
-			g2.shadowColor = "black";
-			g2.shadowBlur = 8;
-			g2.moveTo(sx, sy);
-			g2.lineTo(this.size, sz);
-			g2.lineTo(this.size+this.hbar, sz);
-			g2.moveTo(0, sy);
-			g2.lineTo(sx, sy);
-			g2.lineTo(sx, this.size);
-			g2.stroke();
-			g2.beginPath();
-      g2.arc(sx, sy, 10, 0, 2*Math.PI);
-			g2.stroke();
-			g2.fillStyle = "white";
-      var lb = Math.round(ly);
-      var tw = g2.measureText(lb).width;
-      if (sz < sd2) {
-        g2.fillText(lb, this.size+this.hbar/2-tw/2, sz+13);        
-      } else {
-        g2.fillText(lb, this.size+this.hbar/2-tw/2, sz-3);        
-      }
-			if (sx > sd2) {
-        lb = Math.round(lx)
-				tw = g2.measureText(lb).width;
-				g2.fillText(lb, sx-tw-3, this.size-3);
-			} else {
-				g2.fillText(Math.round(lx), sx+5, this.size-3);
-			}
-			if (sy > sd2) {
-				g2.fillText(Math.round(lz), 5, sy-4);
-			} else {
-				g2.fillText(Math.round(lz), 5, sy+15);
-			}
-		}
-	},
-});
-var trvlApp = new Vue({
-	el: "main",
-  data: `data`,
-  methods: {
-    draw: function(x,y,z) { this.$refs.tmap.draw(x,y,z); },
-    drawLoc: function() {
-      let coo = hdrData.Loc.Sys.Coos;
-		  this.$refs.tmap.draw(coo[0], coo[1], coo[2]);      
-		  //this.$refs.tmap.draw(0,3000,0);      
-    },
-    onMsg: function(evt) {
-      if (evt.Cmd != "upd") return;
-      this.drawLoc(); }
-  },
-	mounted: function() {
-    wspgmsg.push(this.onMsg);
-    console.log("added travel callback");
-    this.drawLoc();
-  }
-});
-	  </script>
+    <script>
+const theData = `data`;
+    </script>
+    <script src="/s/js/travel.js"></script>
 <!-- <<< main <<< -->
   </body>
 </html>

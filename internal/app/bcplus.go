@@ -37,8 +37,13 @@ var (
 	nmRawMat, nmManMat, nmEncMat *namemap.NameMap
 )
 
-func dispatchVoice(channel string, prio int, text string) {
+func dispatchVoice(t time.Time, channel string, prio int, text string) {
 	if text == "" {
+		log.Debugs("drop empty voice message")
+		return
+	}
+	if App.Speak.Old > 0 || time.Now().Sub(t) > App.Speak.Old {
+		log.Debugs("drop old voice message")
 		return
 	}
 	select {
