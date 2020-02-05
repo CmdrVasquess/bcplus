@@ -37,7 +37,7 @@ type Commander struct {
 	OnScreenShot ggja.GenArr
 	Mats         map[string]MatState `json:"MatNeed"`
 	Rcps         map[string]int      `json:"RcpNeed"`
-	Jumps        []FsdJump
+	JumpHist     []FsdJump
 	JumpW        int
 	statFlags    uint32
 	surfLoc      SurfPos
@@ -56,8 +56,8 @@ func NewCommander(fid, name string) *Commander {
 func (cdmr *Commander) isVoid() bool { return len(cmdr.Fid) == 0 }
 
 func (cmdr *Commander) AddJump(t time.Time, addr uint64, sys string, coos galaxy.SysCoos) {
-	if len(cmdr.Jumps) < JumpMax {
-		cmdr.Jumps = append(cmdr.Jumps, FsdJump{
+	if len(cmdr.JumpHist) < JumpMax {
+		cmdr.JumpHist = append(cmdr.JumpHist, FsdJump{
 			Time: t,
 			SysDesc: galaxy.SysDesc{
 				Addr: addr,
@@ -66,13 +66,27 @@ func (cmdr *Commander) AddJump(t time.Time, addr uint64, sys string, coos galaxy
 			},
 		})
 	} else {
-		jump := &cmdr.Jumps[cmdr.JumpW]
+		jump := &cmdr.JumpHist[cmdr.JumpW]
 		jump.Time = t
 		jump.Addr = addr
 		jump.Name = sys
 		jump.Coos = coos
 		cmdr.JumpW++
 	}
+}
+
+func (cmdr *Commander) LastJump() *FsdJump {
+	if len(cmdr.JumpHist) == 0 {
+		return nil
+	}
+	if len(cmdr.JumpHist) < JumpMax {
+		return &cmdr.JumpHist[len(cmdr.JumpHist)-1]
+	}
+	idx := cmdr.JumpW - 1
+	if idx < 0 {
+		idx = len(cmdr.JumpHist) - 1
+	}
+	return &cmdr.JumpHist[idx]
 }
 
 func (cmdr *Commander) close() {

@@ -26,6 +26,7 @@ const (
 	ChgPos
 	ChgLoc
 	WuiUpInSys
+	WuiUpTrvl
 )
 
 var (

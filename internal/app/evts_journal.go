@@ -158,9 +158,9 @@ func jeReceiveText(t time.Time, evt ggja.Obj) Change {
 		msg = "From " + from + ": " + msg
 		chn := evt.MStr("Channel")
 		if chn == "squadron" {
-			dispatchVoice(chn, 1, msg)
+			dispatchVoice(t, chn, 1, msg)
 		} else {
-			dispatchVoice(chn, 0, msg)
+			dispatchVoice(t, chn, 0, msg)
 		}
 	}
 	return 0
@@ -184,7 +184,7 @@ func jeSAASignalsFound(t time.Time, evt ggja.Obj) Change {
 				sig.MStr("Type_Localised"))
 		}
 		fmt.Fprintf(&sb, " on %s.", evt.MStr("BodyName"))
-		dispatchVoice(ChanJEvt, 0, sb.String())
+		dispatchVoice(t, ChanJEvt, 0, sb.String())
 	}
 	return 0
 }
@@ -222,7 +222,7 @@ func jeScan(t time.Time, evt ggja.Obj) Change {
 		} else {
 			msg = fmt.Sprintf("%s: not discovered!", bdynm)
 		}
-		dispatchVoice(ChanJEvt, 0, msg)
+		dispatchVoice(t, ChanJEvt, 0, msg)
 	}
 	return WuiUpInSys
 }
@@ -397,7 +397,7 @@ func jeFsdJump(t time.Time, evt ggja.Obj) Change {
 		chg |= cmdr.Loc.SetMode(Cruise)
 		inSysInfo.reset()
 	}))
-	return chg | WuiUpInSys
+	return chg | WuiUpInSys | WuiUpTrvl
 }
 
 func jeFSSAllBodiesFound(t time.Time, evt ggja.Obj) Change {
@@ -423,9 +423,9 @@ func jeFSSDiscoveryScan(t time.Time, evt ggja.Obj) Change {
 		} else if inSysInfo.MiscNum > 0 {
 			msg = fmt.Sprintf("Discovered %d signals", inSysInfo.MiscNum)
 		}
-		dispatchVoice(ChanJEvt, 0, msg)
+		dispatchVoice(t, ChanJEvt, 0, msg)
 	}
-	return WuiUpInSys
+	return WuiUpInSys | WuiUpTrvl
 }
 
 func jeFSSSignalDiscovered(t time.Time, evt ggja.Obj) Change {
@@ -438,7 +438,7 @@ func jeFSSSignalDiscovered(t time.Time, evt ggja.Obj) Change {
 		}
 	}))
 	if strings.Index(strings.ToLower(nm), "notable") >= 0 {
-		dispatchVoice(ChanJEvt, 1, nm)
+		dispatchVoice(t, ChanJEvt, 1, nm)
 	}
 	return WuiUpInSys
 }

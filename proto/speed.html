@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Measures</title>
+    <script src="s/js/vue.js"></script>
+	<style>
+table {
+	background-color: gray;
+}
+td { background-color: white; padding: 0; margin: 0; }
+	</style>
+  </head>
+  <body>
+  	<main>
+	  <table>
+		<tr>
+		  <th colspan="2">3</th>
+		  <th colspan="2">5</th>
+		  <th colspan="2">10</th>
+		</tr>
+		<tr><td>{{minmax.dtMax}}</td><td>{{minmax.lMax|f2}}</td>
+		</tr>
+		<tr>
+		  <td colspan="2">
+  			<gauge :width="75" :height="300"
+				   :minmax="minmax" :jumps="jumps.slice(0,3)"></gauge>
+		  </td>
+		  <td colspan="2">
+  			<gauge :width="75" :height="300"
+				   :minmax="minmax" :jumps="jumps.slice(0,5)"></gauge>
+		  </td>
+		  <td colspan="2">
+  			<gauge :width="75" :height="300"
+				   :minmax="minmax" :jumps="jumps.slice(0,10)"></gauge>
+		  </td>
+		</tr>
+		<tr><td>{{minmax.dtMin}}</td><td>{{minmax.lMin|f2}}</td></tr>
+	  </table>
+	</main>
+	<script>
+var jumpLs = [];
+for (let i=0; i < 50; i++) {
+	jumpLs.push({
+		dt: Math.round(44 + 120 * Math.random()),
+		l: 5 + 60 * Math.random()
+	});
+}
+Vue.filter('f2', function(x) {
+    return x.toLocaleString('en',{
+      useGrouping: true,
+      minimumIntegerDigits: 1,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+});
+Vue.component('gauge', {
+	props: {
+		width: Number, height: Number,
+		minmax: Object,
+		jumps: Array
+	},
+	template: '<canvas :width="width" :height="height"></canvas>',
+	computed: {
+		mymm: function() { return speedMinMax(this.jumps); },
+		avgs: function() {
+			if (this.jumps.length == 0) { return null; }
+			let res = {
+				dt: this.jumps[0].dt,
+				l: this.jumps[0].l
+			};
+			for (let j of this.jumps) {
+				res.dt += j.dt;
+				res.l += j.l;
+			}
+			res.dt /= this.jumps.length;
+			res.l /= this.jumps.length;
+			return res;
+		},
+	},
+	methods: {
+		paint: function() {
+			var g2 = this.$el.getContext("2d");
+			g2.save();
+			g2.clearRect(0, 0, this.width, this.height);
+			g2.lineWidth = 2/this.width;
+			g2.scale(this.width/2,
+					 -this.height/(this.minmax.dtMax-this.minmax.dtMin));
+			g2.translate(0, -this.minmax.dtMax);
+			g2.fillStyle = "#eeee88";
+			g2.fillRect(0, this.minmax.dtMin,
+						1, this.mymm.dtMin-this.minmax.dtMin);
+			g2.fillRect(0, this.mymm.dtMax,
+						1, this.minmax.dtMax-this.mymm.dtMax);
+			g2.beginPath();
+			g2.strokeStyle = "#aaaa00";
+			g2.moveTo(0, this.avgs.dt);
+			g2.lineTo(1, this.avgs.dt);
+			g2.stroke();
+			g2.restore();
+		}
+	},
+	mounted: function() { this.paint(); }
+});
+var app = new Vue({
+	el: "main",
+	data: {
+		jumps: jumpLs
+	},
+	computed: {
+		minmax: function () { return speedMinMax(this.jumps); }
+	}
+});
+function speedMinMax(jumps) {
+	if (jumps.length == 0) {	return null; }
+	let res = {
+		dtMin: jumps[0].dt, dtMax: jumps[0].dt,
+		lMin: jumps[0].l, lMax: jumps[0].l
+	};
+	for (let i = 1; i < jumps.length; i++) {
+		let v = jumps[i].dt;
+		if (v < res.dtMin) { res.dtMin = v; }
+		else if (v > res.dtMax) { res.dtMax = v; }
+		v = jumps[i].l;
+		if (v < res.lMin) { res.lMin = v; }
+		else if (v > res.lMax) { res.lMax = v; }
+	}
+	return res;	
+}
+	</script>
+  </body>
+</html>
