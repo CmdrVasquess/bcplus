@@ -42,9 +42,12 @@ func dispatchVoice(t time.Time, channel string, prio int, text string) {
 		log.Debugs("drop empty voice message")
 		return
 	}
-	if App.Speak.Old > 0 || time.Now().Sub(t) > App.Speak.Old {
-		log.Debugs("drop old voice message")
-		return
+	if App.Speak.OldChat > 0 {
+		dt := time.Now().Sub(t)
+		if dt > time.Duration(App.Speak.OldChat) {
+			log.Debuga("drop `old` voice message", dt)
+			return
+		}
 	}
 	select {
 	case toSpeak <- VoiceMsg{Txt: text, Prio: prio, Chan: channel}:

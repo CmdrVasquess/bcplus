@@ -2,17 +2,38 @@ package app
 
 import (
 	"container/heap"
+	"encoding/json"
 	"os/exec"
 	"regexp"
 	"time"
 )
+
+type Dujason time.Duration
+
+func (d Dujason) MarshalJSON() ([]byte, error) {
+	s := time.Duration(d).String()
+	return json.Marshal(s)
+}
+
+func (d *Dujason) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	td, err := time.ParseDuration(s)
+	if err != nil {
+		return err
+	}
+	*d = Dujason(td)
+	return nil
+}
 
 const ChanJEvt = "jevt"
 
 type SpeakCfg struct {
 	Cmd     string
 	Flags   []string
-	Old     time.Duration
+	OldChat Dujason
 	ChanCfg map[string]*ChanConfig
 }
 
