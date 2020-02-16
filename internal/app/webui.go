@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"git.fractalqb.de/fractalqb/goxic"
@@ -136,8 +135,9 @@ func (page *WebPage) from(scrnFile, scrnLang string) map[string]*goxic.Template 
 }
 
 var (
-	webUiUpd chan Change
-	GxName   = nmconv.Conversion{
+	webUiUpd      chan Change
+	theCurrentTab Change
+	GxName        = nmconv.Conversion{
 		Norm:   nmconv.Uncamel,
 		Xform:  nmconv.PerSegment(strings.ToLower),
 		Denorm: nmconv.Sep(nmconv.Lisp),
@@ -166,7 +166,6 @@ func webAuth(h http.HandlerFunc) http.HandlerFunc {
 			// ConstTimeComp still varies with length
 			time.Sleep(time.Duration(300+rand.Intn(300)) * time.Millisecond)
 			log.Warna("wrong web-pin from `remote`", rq.RemoteAddr)
-			suspectRq(rq)
 		}
 		if !ok {
 			wr.Header().Set("WWW-Authenticate", `Basic realm="Password: BC+ Web PIN"`)
@@ -258,6 +257,13 @@ type WuiUpdate struct {
 
 const wuiChgHdr = ChgCmdr | ChgShip | ChgLoc | ChgPos
 
+func wuiUpdates(chg, anyTab Change) bool {
+	if anyTab&theCurrentTab == 0 {
+		return false
+	}
+	return chg&theCurrentTab == theCurrentTab
+}
+
 func wuiUpdate() {
 	log.Infos("running web UI updater")
 	defer func() {
@@ -275,61 +281,37 @@ func wuiUpdate() {
 			continue
 		}
 		updMsg := WuiUpdate{WuiMsg: WuiMsg{Cmd: "upd"}}
-		readState(noErr(func() {
+		doSend := false
+		err = readState(func() error {
 			if upd&wuiChgHdr != 0 {
 				hdr.set(cmdr)
 				updMsg.Hdr = &hdr
+				doSend = true
 			}
 			switch {
-			case upd&WuiUpInSys == WuiUpInSys:
+			case wuiUpdates(upd, WuiUpInSys):
 				updMsg.P = &inSysInfo
-			case upd&WuiUpTrvl == WuiUpTrvl:
+				doSend = true
+			case wuiUpdates(upd, WuiUpTrvl):
 				updMsg.P = cmdr.LastJump()
+				doSend = true
 			}
-			err = enc.Encode(&updMsg)
-		}))
+			if doSend {
+				return enc.Encode(&updMsg)
+			}
+			return nil
+		})
 		if err != nil {
 			log.Errora("encoding ui update `err`", err)
-		} else {
+		} else if doSend {
 			log.Debuga("send web UI update for `parts`", upd)
 			_, err = webApp.Write(buf.Bytes())
 			buf.Reset()
 			if err != nil {
 				log.Errora("send ui update `err`", err)
 			}
-		}
-	}
-}
-
-const suspHistLen = 8
-
-type SuspHist struct {
-	ts [suspHistLen]int64
-	wp int
-}
-
-var (
-	wuiSuspects = make(map[string]*SuspHist)
-	wuiSuspLock sync.RWMutex
-)
-
-func suspectRq(rq *http.Request) {
-	suspicion(rq.RemoteAddr, time.Now().Unix())
-}
-
-func suspicion(key string, uxt int64) {
-	wuiSuspLock.Lock()
-	defer wuiSuspLock.Unlock()
-	hist := wuiSuspects[key]
-	if hist == nil {
-		hist = &SuspHist{wp: 1}
-		hist.ts[0] = uxt
-		wuiSuspects[key] = hist
-	} else {
-		hist.ts[hist.wp] = uxt
-		hist.wp++
-		if hist.wp >= suspHistLen {
-			hist.wp = 0
+		} else {
+			log.Traces("avoid sending pointless UI update")
 		}
 	}
 }
