@@ -264,6 +264,7 @@ var trvlApp = new Vue({
 				this.jhist.shift();
 				this.jhist.unshift(jump);
 			}
+			this.tmap.loc = hdrData.Loc.Sys;
 			this.$refs.tmap.paint();
 		},
 		tmpLoc: function(dl) {
@@ -272,9 +273,11 @@ var trvlApp = new Vue({
 			this.$refs.tmap.paint();
 		},
 		reLoc: function() {
-			this.tmap.loc = this.keepLoc;
-			this.keepLoc = null;
-			this.$refs.tmap.paint();			
+			if (this.keepLoc) {
+				this.tmap.loc = this.keepLoc;
+				this.keepLoc = null;
+				this.$refs.tmap.paint();
+			}			
 		},
 		sysDist: (l1, l2) => {
 			let dx = l1[0]-l2[0], dy = l1[1]-l2[1], dz = l1[2]-l2[2];
@@ -284,6 +287,9 @@ var trvlApp = new Vue({
 	mounted: function() {
 	    wspgmsg.push(this.onMsg);
 	    console.log("added travel callback");
-	    this.jhist.sort((l, r) => { return (new Date(l.Time)) > (new Date(r.Time)); });
+	    this.jhist.sort((l, r) => {
+			var ld = new Date(l.Time), rd = new Date(r.Time);
+			return rd.valueOf() - ld.valueOf();
+		});
   	}
 });

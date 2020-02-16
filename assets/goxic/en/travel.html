@@ -44,7 +44,7 @@ Travel
 	/*margin: 0 auto;*/
 	border: 2px solid var(--colFgrDim);
 	background-image: url("/s/img/mway.jpg");
-	background-size: 300px 300px;
+	background-size: 250px 250px;
 	background-repeat: no-repeat;
 	background-color: black;
 }
@@ -176,14 +176,14 @@ var scrnApp = new Vue({
           {{(new Date(jmp.Time)).toLocaleString()}}
         </div>
       </div>
-		  <trvlmap id="tmap" ref="tmap" :size="300" :hbar="40" :data="tmap"></trvlmap>
+		  <trvlmap id="tmap" ref="tmap" :size="250" :hbar="40" :data="tmap"></trvlmap>
       <table id="tmap-info">
         <tr><td>System:</td><td colspan="3">{{tmap.loc.Name}}</td></tr>
         <tr><td>• Coordinates:</td>
           <td class="right">{{tmap.loc.Coos[0]|f2}}</td>
           <td class="right">{{tmap.loc.Coos[1]|f2}}</td>
           <td class="right">{{tmap.loc.Coos[2]|f2}}</td>
-        </td></tr>
+        </tr>
         <tr><td>Destination:</td><td colspan="3">{{tmap.dest.Name}}</td></tr>
         <tr><td>• Coordinates:</td>
           <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[0]|f2}}</td>

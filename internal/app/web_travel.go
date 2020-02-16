@@ -25,6 +25,7 @@ type travelData struct {
 }
 
 func (s *travelScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
+	theCurrentTab = WuiUpTrvl
 	if offline.isOffline(travelTab, wr, rq) {
 		return
 	}

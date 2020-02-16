@@ -22,6 +22,7 @@ func (s *matsScreen) loadTmpl(page *WebPage) {
 const matsTab = "mats"
 
 func (s *matsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
+	theCurrentTab = 0
 	if offline.isOffline(matsTab, wr, rq) {
 		return
 	}

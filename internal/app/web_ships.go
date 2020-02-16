@@ -40,6 +40,7 @@ func wuiLoadShips(currentShip *ship.Ship) (res []*ship.Ship) {
 const shipsTab = "ships"
 
 func (s *shipsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
+	theCurrentTab = 0
 	if offline.isOffline(shipsTab, wr, rq) {
 		return
 	}

@@ -58,6 +58,7 @@ func (s *insysScreen) loadTmpl(page *WebPage) {
 const insysTab = "insys"
 
 func (s *insysScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
+	theCurrentTab = WuiUpInSys
 	if offline.isOffline(insysTab, wr, rq) {
 		return
 	}
