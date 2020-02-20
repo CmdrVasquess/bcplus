@@ -65,6 +65,7 @@ Vue.filter('int', function(x) {
     });
 });
 Vue.filter('f4', function(x) {
+	if (!x) { return "–"; }
     return x.toLocaleString('`lang\jsStr`',{
       useGrouping: true,
       minimumIntegerDigits: 1,
@@ -73,12 +74,25 @@ Vue.filter('f4', function(x) {
     });
 });
 Vue.filter('f2', function(x) {
+	if (!x) { return "–"; }
     return x.toLocaleString('`lang\jsStr`',{
       useGrouping: true,
       minimumIntegerDigits: 1,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+});
+Vue.filter('dur', function(d) {
+	if (!d) { return "–"; }
+	let m = Math.round(60*d);
+	let h = Math.floor(m/60);
+	m = m % 60;
+	d = Math.floor(h/24);
+	h = h % 24;
+	if (d > 0) {
+		return d+"d "+h+":"+m;
+	}
+	return h+":"+m;
 });
 const hdrData = `init-hdr`;
 var scrnApp = new Vue({

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"git.fractalqb.de/fractalqb/ggja"
@@ -167,6 +168,28 @@ func (cmdr *Commander) switchTo(fid, name string) {
 		if cmdr.Rcps == nil {
 			cmdr.Rcps = newRcps
 		}
+		cmdr.sanitizeJumpHist()
 	}
 	cmdr.db = openDB(fid)
+}
+
+func (cmdr *Commander) sanitizeJumpHist() {
+	sort.Slice(cmdr.JumpHist, func(i, j int) bool {
+		ji, jj := &cmdr.JumpHist[i], &cmdr.JumpHist[j]
+		return ji.Time.Before(jj.Time)
+	})
+	last := 0
+	for i := range cmdr.JumpHist {
+		if i == last {
+			continue
+		}
+		lj, cj := &cmdr.JumpHist[last], &cmdr.JumpHist[i]
+		if lj.Addr != cj.Addr {
+			last++
+			if last != i {
+				cmdr.JumpHist[last] = cmdr.JumpHist[i]
+			}
+		}
+	}
+	cmdr.JumpHist = cmdr.JumpHist[:last+1]
 }

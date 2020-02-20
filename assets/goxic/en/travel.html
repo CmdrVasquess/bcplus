@@ -65,6 +65,9 @@ Travel
   font-size: 90%;
   color: var(--colTxtDim);
 }
+#tmap-info td.tmima {
+  color: var(--colTxtDim);
+}
 	</style>
 <!-- <<< style <<< -->
   </head>
@@ -176,9 +179,9 @@ var scrnApp = new Vue({
           {{(new Date(jmp.Time)).toLocaleString()}}
         </div>
       </div>
-		  <trvlmap id="tmap" ref="tmap" :size="250" :hbar="40" :data="tmap"></trvlmap>
+	  <trvlmap id="tmap" ref="tmap" :size="250" :hbar="40" :data="tmap"></trvlmap>
       <table id="tmap-info">
-        <tr><td>System:</td><td colspan="3">{{tmap.loc.Name}}</td></tr>
+        <tr><td>System:</td><td colspan="3">{{tmapLoc.Name}}</td></tr>
         <tr><td>• Coordinates:</td>
           <td class="right">{{tmap.loc.Coos[0]|f2}}</td>
           <td class="right">{{tmap.loc.Coos[1]|f2}}</td>
@@ -195,20 +198,35 @@ var scrnApp = new Vue({
           <td class="right" colspan="2">{{sysDist(tmap.loc.Coos, tmap.dest.Coos)|f2}}</td>
           <td>Ly</td>
         </tr>
-        <tr><td>Max. Speed:</td>
-          <td class="right" colspan="2">{{tmap.speed|f2}}</td>
-          <td>Ly/h</td>
+        <tr><td>Speed [Ly/h]:</td>
+          <td class="right tmima">{{speeds[0]|f2}}</td>
+          <td class="right">{{speeds[1]|f2}}</td>
+          <td class="right tmima">{{speeds[2]|f2}}</td>
         </tr>
-        <tr><td>Min. Travel Time:</td>
-          <td class="right" colspan="2">{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/tmap.speed|f2}}</td>
-          <td>h</td>
+        <tr><td>Travel Time [h]:</td>
+          <td class="right tmima">
+			{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[0]|dur}}
+		  </td>
+          <td class="right">
+			{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[1]|dur}}
+		  </td>
+          <td class="right tmima">
+			{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[2]|dur}}
+		  </td>
         </tr>
       </table>
       <table id="speed-tbl">
         <thead>
           <tr><th>Last Jump</th>
-            <th v-for="(b, i) in cfg.jblocks" :key="i">{{b}} Jumps</th>
-            <th>All</th>
+            <th v-for="(b, i) in cfg.jblocks" :key="i">
+			  <input v-if="ammBlk[i]" type="radio" :value="i"
+					 v-model.number="statsBlock">
+			  {{b}} Jumps
+			</th>
+            <th>
+			  <input type="radio" value="-1"
+					 v-model.number="statsBlock">
+			  All</th>
           </tr>
         </thead>
         <tbody v-if="jumps">
@@ -268,6 +286,17 @@ var scrnApp = new Vue({
               <span v-else>–</span>
             </td>
           </tr>
+		  <tr>
+			<td class="center" style="color:var(--colGud)">Dist [Ly]</td>
+			<td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
+			  <span v-if="ammBlk[i]">
+				{{100*jumps[b].tl/(b*ammBlk[i].jAvg)|f2}} %
+			  </span>
+			</td>
+			<td class="tmima"><span v-if="ammAll">
+				{{100*jumps[jumps.length-1].tl/(jumps.length*ammAll.jAvg)|f2}} %
+			</span></td>
+	  </tr>
         </tbody>
         <tbody v-else>
           <tr><td :colspan="2+cfg.jblocks.length"
