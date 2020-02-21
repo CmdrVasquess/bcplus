@@ -1,6 +1,6 @@
 Goal reached: Know Go language and have an overview of what pure 
 HTML/CSS/JS can do! Web frontend definitley needs better structure.
-Reworking the thing is currently not in progress…
+Reworking the thing is currently in rather slow progress…
 
 --------------------
 
@@ -18,16 +18,17 @@ BC+ evaluates the player's journal and serves web pages with useful
 informaton. I.e. one can easily access BC+ from any computer, tablet
 or smartphone without ATL-TAB'ing away from E:D.
 
-Currnetly information for long distance tarvel is supported - I'm on
-the way to Beagle Point. It displays estimations based on the recent
-jump history:
+Currnetly information for long distance tarvel is supported - I was on
+the way to Beagle Point when I startet working on this. It displays
+estimations based on the recent jump history along with your galactic
+position:
 
-![Materials Screen](docs/imgs/screen-travel.jpg?raw=true)
+![Travel Screen](docs/imgs/screen-travel.jpg?raw=true)
 
 As well as the availability of raw materials on scanned bodies in the
 current system:
 
-![Travel Screen](docs/imgs/screen-mats.jpg?raw=true)
+![Materials Screen](docs/imgs/screen-mats.jpg?raw=true)
 
 ## Installation
 
