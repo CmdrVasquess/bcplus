@@ -174,6 +174,9 @@ func (cmdr *Commander) switchTo(fid, name string) {
 }
 
 func (cmdr *Commander) sanitizeJumpHist() {
+	if len(cmdr.JumpHist) < 2 {
+		return
+	}
 	sort.Slice(cmdr.JumpHist, func(i, j int) bool {
 		ji, jj := &cmdr.JumpHist[i], &cmdr.JumpHist[j]
 		return ji.Time.Before(jj.Time)
