@@ -192,7 +192,10 @@
 		<td class="right">{{tmap.loc.Coos[1]|f2}}</td>
 		<td class="right">{{tmap.loc.Coos[2]|f2}}</td>
               </tr>
-              <tr><th>Destination:</th><td colspan="3">{{tmap.dest.Name}}</td></tr>
+              <tr><th>Destination:</th>
+		<td v-if="tmap.dest" colspan="3">{{tmap.dest.Name}}</td>
+		<td>–</td>
+	      </tr>
               <tr><th>• Coordinates:</th>
 		<td v-if="tmap.dest" class="right">{{tmap.dest.Coos[0]|f2}}</td>
 		<td v-if="tmap.dest" class="right">{{tmap.dest.Coos[1]|f2}}</td>
@@ -200,7 +203,10 @@
 		<td v-if="!tmap.dest">–</td>
               </tr>
               <tr><th>Distance to Dest.:</th>
-		<td class="right" colspan="2">{{sysDist(tmap.loc.Coos, tmap.dest.Coos)|f2}}</td>
+		<td v-if="tmap.dest" class="right" colspan="2">
+		  {{sysDist(tmap.loc.Coos, tmap.dest.Coos)|f2}}
+		</td>
+		<td v-else>–</td>
 		<td>Ly</td>
               </tr>
               <tr><th>Speed [Ly/h]:</th>
@@ -209,15 +215,16 @@
 		<td class="right tmima">{{speeds[2]|f2}}</td>
               </tr>
               <tr><th>Travel Time [h]:</th>
-		<td class="right tmima">
+		<td v-if="tmap.dest" class="right tmima">
 		  {{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[0]|dur}}
 		</td>
-		<td class="right">
+		<td v-if="tmap.dest" class="right">
 		  {{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[1]|dur}}
 		</td>
-		<td class="right tmima">
+		<td v-if="tmap.dest" class="right tmima">
 		  {{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[2]|dur}}
 		</td>
+		<td v-if="!tmap.dest">–</td>
               </tr>
 	    </table>
 	    <table id="speed-tbl">
@@ -314,10 +321,17 @@
               <table>
 		<tr>
 		  <th>Dest.</th>
-		  <th>Mark</th>
 		  <th>System</th>
 		  <th>Distance</th>
 		  <th>Coos</th>
+		</tr>
+		<tr v-for="(b, i) in bookms" :key="i">
+		  <td><input type="radio" :value="i" v-model.number="destbm"></td>
+		  <td>{{b.Name}}</td>
+		  <td class="right">{{sysDist(tmapLoc.Coos, b.Coos)|f2}} Ly</td>
+		  <td>
+		    {{b.Coos[0]|f2}} / {{b.Coos[1]|f2}} / {{b.Coos[2]|f2}}
+		  </td>
 		</tr>
               </table>
 	    </div>

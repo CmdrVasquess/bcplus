@@ -3,6 +3,8 @@ package app
 import (
 	"net/http"
 
+	"github.com/CmdrVasquess/bcplus/internal/galaxy"
+
 	"git.fractalqb.de/fractalqb/goxic"
 )
 
@@ -22,6 +24,8 @@ const travelTab = "travel"
 
 type travelData struct {
 	JumpHist []FsdJump
+	Bookms   []galaxy.SysDesc
+	DestBm   int
 }
 
 func (s *travelScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
@@ -35,6 +39,8 @@ func (s *travelScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	readState(noErr(func() {
 		data := travelData{
 			JumpHist: cmdr.JumpHist,
+			Bookms:   cmdr.Bookmarks,
+			DestBm:   cmdr.DestBM,
 		}
 		bt.BindGen(s.Data, jsonContent(data))
 		bt.Emit(wr)

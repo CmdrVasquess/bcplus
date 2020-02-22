@@ -38,6 +38,8 @@ type Commander struct {
 	OnScreenShot ggja.GenArr
 	Mats         map[string]MatState `json:"MatNeed"`
 	Rcps         map[string]int      `json:"RcpNeed"`
+	Bookmarks    []galaxy.SysDesc
+	DestBM       int
 	JumpHist     []FsdJump
 	JumpW        int
 	statFlags    uint32

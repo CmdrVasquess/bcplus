@@ -288,10 +288,18 @@ var trvlApp = new Vue({
 	    jblocks: [5,10,15,30]
 	},
 	jhist: theData.JumpHist,
+	bookms: theData.Bookms,
+	destbm: theData.DestBm,
 	statsBlock: -1,
 	tmapLoc: hdrData.Loc.Sys
     },
     computed: {
+	dest: function() {
+	    if (this.bookms && this.destbm >= 0) {
+		return this.bookms[this.destbm];
+	    }
+	    return null
+	},
 	speeds: function() {
 	    var block;
 	    if (this.statsBlock >= 0) {
@@ -310,10 +318,7 @@ var trvlApp = new Vue({
 		loc: this.tmapLoc,
 		speeds: this.speeds,
 		selSpd: 1,
-		dest: {
-		    Name: "Colonia",
-		    Coos: [-9530.5, -910.28125, 19808.125]
-		},
+		dest: this.dest,
 		statsBlock: this.statsBlock,
 		jhist: this.jhist.slice(0, this.trailLen)
 	    };
