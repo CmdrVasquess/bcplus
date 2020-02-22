@@ -23,12 +23,12 @@ Vue.component('trvlmap', {
 		"data.speeds": function() { this.paint(); }
 	},
     methods: {
-		paint: function() {
-			this.clear();
-			this.drawDest();
-			this.drawLoc();
-			this.drawTrail();
-		},
+	paint: function() {
+	    this.clear();
+	    this.drawLoc();
+	    this.drawDest();
+	    this.drawTrail();
+	},
 		lyColor: (ly, sat, a) => {
 			let f = 4*Math.atan(ly/800)/Math.PI, r = 0, g = 0, b = 0;
 			if (f > 1) { r = 1; g = 2 - f; }
@@ -155,6 +155,7 @@ Vue.component('trvlmap', {
 			g2.shadowColor = "black";
 			g2.shadowBlur = 5;
 			g2.beginPath();
+			g2.fillStyle = "#00A6EA66";
 			let h1r = this.data.speeds[2] * this.gxyScale;
 			g2.arc(scr[0], scr[1], h1r, 0, 2*Math.PI);
 			g2.fill();
@@ -284,7 +285,7 @@ var trvlApp = new Vue({
     el: "main",
     data: {
 		cfg: {
-			jblocks: [3,5,10,20,50]
+			jblocks: [5,10,15,30]
 		},
 		jhist: theData.JumpHist,
 		statsBlock: -1,
@@ -310,8 +311,8 @@ var trvlApp = new Vue({
 				speeds: [420, 3000, 6400],
 				selSpd: 1,
 				dest: {
-					Name: "Beagle Point",
-					Coos: [-1111.5625, -134.21875, 65269.75]
+				    Name: "Colonia",
+				    Coos: [-9530.5, -910.28125, 19808.125]
 				},
 				statsBlock: this.statsBlock,
 				jhist: this.jhist.slice(0, this.trailLen)

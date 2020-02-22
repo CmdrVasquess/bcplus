@@ -28,7 +28,7 @@ type FsdJump struct {
 	Time time.Time
 }
 
-const JumpMax = 100
+const JumpMax = 51
 
 type Commander struct {
 	Fid          string
@@ -192,4 +192,8 @@ func (cmdr *Commander) sanitizeJumpHist() {
 		}
 	}
 	cmdr.JumpHist = cmdr.JumpHist[:last+1]
+	if len(cmdr.JumpHist) > JumpMax {
+		cmdr.JumpHist = cmdr.JumpHist[:JumpMax]
+	}
+	cmdr.JumpW = 0
 }

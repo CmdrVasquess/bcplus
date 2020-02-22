@@ -224,9 +224,9 @@ var scrnApp = new Vue({
 			  {{b}} Jumps
 			</th>
             <th>
-			  <input type="radio" value="-1"
-					 v-model.number="statsBlock">
-			  All</th>
+	      <input type="radio" value="-1"
+		     v-model.number="statsBlock">
+	      {{jhist.length}} Jumps</th>
           </tr>
         </thead>
         <tbody v-if="jumps">
