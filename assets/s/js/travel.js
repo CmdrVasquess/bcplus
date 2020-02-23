@@ -371,8 +371,14 @@ var trvlApp = new Vue({
 	    if (evt.Cmd != "upd") return;
 	    let jump = evt.P
 	    if (jump) {
-		this.jhist.shift();
-		this.jhist.unshift(jump);
+		if (this.jhist.length == 0) {
+		    this.jhist.push(jump);
+		} else if (this.jhist[0].Addr != jump.Addr) {
+		    this.jhist.unshift(jump);
+		    if (this.jhist.length > 51) {
+			this.jhist.splice(51);
+		    }
+		}
 	    }
 	    this.tmap.loc = hdrData.Loc.Sys;
 	    this.$refs.tmap.paint();

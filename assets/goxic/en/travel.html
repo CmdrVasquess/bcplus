@@ -37,11 +37,15 @@
 	  #tmap-info th {
 	      font-size: 90%;
 	      padding: 0 .3em;
+	      background-color: var(--colBkg);
 	      text-align: left;
 	  }
 	  #tmap-info td {
 	      font-size: 90%;
 	      padding: 0 .4em;
+	  }
+	  #tmap-info td.tmima {
+	      color: var(--colTxtDim);
 	  }
 	  #tmap {
 	      display: inline-block;
@@ -52,11 +56,6 @@
 	      background-size: 250px 250px;
 	      background-repeat: no-repeat;
 	      background-color: black;
-	  }
-	  #bms h1 {
-	      font-size: 150%;
-	      margin: 0;
-	      margin-top: .3em;
 	  }
 	  #speed-tbl {
 	      margin-top: .7em;
@@ -70,9 +69,13 @@
 	      font-size: 90%;
 	      color: var(--colTxtDim);
 	  }
-	  #tmap-info td.tmima {
-	      color: var(--colTxtDim);
+	  #bms h1 {
+	      font-size: 150%;
+	      margin: 0;
+	      margin-top: .3em;
 	  }
+	  #bms td { padding: 0 .3em; }
+	  #bms td:first-child { text-align: center; }
 	</style>
 	<!-- <<< style <<< -->
   </head>

@@ -413,19 +413,19 @@ func jeFSSDiscoveryScan(t time.Time, evt ggja.Obj) Change {
 		if inSysInfo.BodyNum > 0 {
 			if inSysInfo.MiscNum > 0 {
 				msg = fmt.Sprintf(
-					"Discovered %d bodies and %d signals",
+					"Scan shows %d bodies and %d signals",
 					inSysInfo.BodyNum,
 					inSysInfo.MiscNum,
 				)
 			} else {
-				msg = fmt.Sprintf("Discovered %d bodies", inSysInfo.BodyNum)
+				msg = fmt.Sprintf("Scan shows %d bodies", inSysInfo.BodyNum)
 			}
 		} else if inSysInfo.MiscNum > 0 {
-			msg = fmt.Sprintf("Discovered %d signals", inSysInfo.MiscNum)
+			msg = fmt.Sprintf("Scan shows %d signals", inSysInfo.MiscNum)
 		}
 		dispatchVoice(t, ChanJEvt, 0, msg)
 	}
-	return WuiUpInSys | WuiUpTrvl
+	return WuiUpInSys
 }
 
 func jeFSSSignalDiscovered(t time.Time, evt ggja.Obj) Change {
