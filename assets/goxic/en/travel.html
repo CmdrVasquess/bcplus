@@ -197,7 +197,7 @@
               </tr>
               <tr><th>Destination:</th>
 		<td v-if="tmap.dest" colspan="3">{{tmap.dest.Name}}</td>
-		<td>–</td>
+		<td v-else>–</td>
 	      </tr>
               <tr><th>• Coordinates:</th>
 		<td v-if="tmap.dest" class="right">{{tmap.dest.Coos[0]|f2}}</td>

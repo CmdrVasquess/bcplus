@@ -26,6 +26,7 @@ Vue.component('trvlmap', {
 	paint: function() {
 	    this.clear();
 	    this.drawLoc();
+	    this.drawVic();
 	    this.drawDest();
 	    this.drawTrail();
 	},
@@ -70,15 +71,19 @@ Vue.component('trvlmap', {
 	    hbarfill.addColorStop(1, "#0000ff");
 	    g2.fillStyle = hbarfill;
 	    g2.fillRect(this.size, 0, this.hbar, this.size);
-	    if (this.data.vic) {
-		let vc = this.gxyXYZ(this.data.vic.cx, this.data.vic.cz, 0);
-		let vs = this.data.vic.r * this.gxyScale;
-		g2.strokeStyle = "#FF7000";
-		g2.lineWidth = .8;
-		g2.shadowColor = "black";
-		g2.shadowBlur = 5;
-		g2.strokeRect(vc[0]-vs, vc[1]-vs, 2*vs, 2*vs);
-	    }
+	    g2.restore();
+	},
+	drawVic: function() {
+	    if (!this.data.vic) return;
+	    const g2 = this.g2;
+	    g2.save();
+	    let vc = this.gxyXYZ(this.data.vic.cx, 0, this.data.vic.cz);
+	    let vs = this.data.vic.r * this.gxyScale;
+	    g2.strokeStyle = "#FF7000DD";
+	    g2.lineWidth =1.6;
+	    g2.shadowColor = "black";
+	    g2.shadowBlur = 5;
+	    g2.strokeRect(vc[0]-vs, vc[1]-vs, 2*vs, 2*vs);
 	    g2.restore();
 	},
 	drawScale: function() {
@@ -161,6 +166,7 @@ Vue.component('trvlmap', {
 	    g2.fill();
 	    g2.save();
 	    g2.globalCompositeOperation = 'destination-out';
+	    g2.fillStyle = "white";
 	    g2.shadowBlur = 0;
 	    g2.beginPath();
 	    h1r = this.data.speeds[0] * this.gxyScale;
@@ -168,7 +174,7 @@ Vue.component('trvlmap', {
 	    g2.fill();
 	    g2.restore();
 	    g2.beginPath();
-	    g2.lineWidth = 1;
+	    g2.lineWidth = .9;
 	    h1r = this.data.speeds[1] * this.gxyScale;
 	    g2.arc(scr[0], scr[1], h1r, 0, 2*Math.PI);
 	    g2.stroke();
@@ -409,7 +415,7 @@ var trvlApp = new Vue({
 		else if (a.Coos[2] > zM) { zM = a.Coos[2]; }
 	    }
 	    let dx = xM-xm, dz = zM-zm;
-	    let res = {cx: (xm+xM)/2, cz: (zm+zM)/2, r: dx < dz ? dz/2 : dx / 2};
+	    let res = {cx: (xm+xM)/2, cz: (zm+zM)/2, r: dx < dz ? dz/2 : dx/2 };
 	    res.r *= 1.2;
 	    return res;
 	}
