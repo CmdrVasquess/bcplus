@@ -30,6 +30,7 @@ func usage() {
 var fBrowse bool
 
 func main() {
+	runtime.LockOSThread() // Fix(?) problems with ^C on Win
 	flag.Usage = usage
 	app.App.Flags()
 	{
