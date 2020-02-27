@@ -15,42 +15,42 @@ Ships
     <style>
 main table {
 	width: 100%;
-  padding: 0 1em;
+	padding: .5em 1em;
 }
 main th {
 	text-align: left;
 	padding-top: .2em;
 }
 main tbody th {
-  color: var(--colFgr);
+	color: var(--colFgr);
 	background-color: var(--colBkg);
 	cursor: pointer;
 }
 main tbody td {
-  background-color: var(--colBkgDim);
-  padding: .3em .7em;
-  padding-top: 0;
+	background-color: var(--colBkgDim);
+	padding: .3em .7em;
+	padding-top: 0;
 }
 main tbody tr.open th {
-  background-color: var(--colBkgDim)
+	background-color: var(--colBkgDim)
 }
 div.details {
-  display: flex;
-  flex-wrap: wrap;
+	display: flex;
+	flex-wrap: wrap;
 }
 .details > div {
-  background-color: var(--colBkg);
-  margin-right: .5em;
-  margin-bottom: .5em;
-  padding: 0.3em 0.8em;
+	background-color: var(--colBkg);
+	margin-right: .5em;
+	margin-bottom: .5em;
+	padding: 0.3em 0.8em;
 }
 .details > div:last-child { margin-right: 0; }
 .details h1 { margin: 0; font-size: 100%; }
 table.modules td {
-  background-color: var(--colBkg);
-  margin: 0;
-  padding: 0 .2em;
-  vertical-align: top;
+	background-color: var(--colBkg);
+	margin: 0;
+	padding: 0 .2em;
+	vertical-align: top;
 }
 table.modules td:last-child {
     color: var(--colGud);
@@ -118,7 +118,7 @@ table.modules div.engy {
 					  </td>
 					  <td><span v-if="m.Blueprint">⬡</span>
 						<div v-if="m.EngyLevel" class="engy">{{m.EngyLevel}}</div>
-					  </td>	      
+					  </td>
 					</tr>
 				  </table>
 				</div>
