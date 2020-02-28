@@ -3,7 +3,10 @@ package app
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"math"
+	"time"
 
 	"github.com/CmdrVasquess/watched"
 
@@ -27,6 +30,28 @@ func readStats(file string) (res ggja.GenObj) {
 		log.Panice(err)
 	}
 	return res
+}
+
+var lastSurfaceHint time.Time
+
+func speakSurfaceHint(stats ggja.Obj) {
+	if len(cmdr.SurfDest) < 2 {
+		return
+	}
+	now := time.Now()
+	if !lastSurfaceHint.IsZero() && now.Sub(lastSurfaceHint) < 10*time.Second {
+		return
+	}
+	bear := BearingDeg(
+		cmdr.surfLoc.LatLon[0], cmdr.surfLoc.LatLon[1],
+		cmdr.SurfDest[0], cmdr.SurfDest[1],
+	)
+	hdng := stats.MF64("Heading")
+	if math.Abs(hdng-bear) > 3 {
+		lastSurfaceHint = now
+		dispatchVoice(now, ChanSurf, 0,
+			fmt.Sprintf("Hold bearing: %d°", int(bear)))
+	}
 }
 
 func statusEvent(statFile string) (chg Change) {
@@ -64,6 +89,7 @@ func statusEvent(statFile string) (chg Change) {
 				chg |= cmdr.Loc.SetSurf(nil)
 			} else {
 				chg |= cmdr.Loc.SetSurf(&cmdr.surfLoc)
+				speakSurfaceHint(stats)
 			}
 		} else {
 			chg |= cmdr.Loc.SetSurf(nil)

@@ -29,6 +29,7 @@ func (d *Dujason) UnmarshalJSON(data []byte) error {
 }
 
 const ChanJEvt = "jevt"
+const ChanSurf = "surf"
 
 type SpeakCfg struct {
 	Cmd     string

@@ -4,9 +4,6 @@ Reworking the thing is currently in rather slow progress…
 
 --------------------
 
-![Logo](res/s/img/Logo.png)
-[![Build Status](https://travis-ci.org/CmdrVasquess/BCplus.svg)](https://travis-ci.org/CmdrVasquess/BCplus)… on Linux, but at least!
-
 # BoardComputer+ for E:D
 
 [Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases) –

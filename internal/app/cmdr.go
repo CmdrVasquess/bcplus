@@ -25,7 +25,8 @@ type MatState struct {
 
 type FsdJump struct {
 	galaxy.SysDesc
-	Time time.Time
+	Time  time.Time
+	First bool
 }
 
 const JumpMax = 51
@@ -40,10 +41,12 @@ type Commander struct {
 	Rcps         map[string]int      `json:"RcpNeed"`
 	Bookmarks    []galaxy.SysDesc
 	DestBM       int
+	SurfDest     []float64
 	JumpHist     []FsdJump
 	JumpW        int
 	statFlags    uint32
 	surfLoc      SurfPos
+	firstJump    bool
 	db           *gorm.DB
 }
 
@@ -61,7 +64,8 @@ func (cdmr *Commander) isVoid() bool { return len(cmdr.Fid) == 0 }
 func (cmdr *Commander) AddJump(t time.Time, addr uint64, sys string, coos galaxy.SysCoos) {
 	if len(cmdr.JumpHist) < JumpMax {
 		cmdr.JumpHist = append(cmdr.JumpHist, FsdJump{
-			Time: t,
+			Time:  t,
+			First: cmdr.firstJump,
 			SysDesc: galaxy.SysDesc{
 				Addr: addr,
 				Name: sys,
@@ -71,11 +75,13 @@ func (cmdr *Commander) AddJump(t time.Time, addr uint64, sys string, coos galaxy
 	} else {
 		jump := &cmdr.JumpHist[cmdr.JumpW]
 		jump.Time = t
+		jump.First = cmdr.firstJump
 		jump.Addr = addr
 		jump.Name = sys
 		jump.Coos = coos
 		cmdr.JumpW++
 	}
+	cmdr.firstJump = false
 }
 
 func (cmdr *Commander) LastJump() *FsdJump {

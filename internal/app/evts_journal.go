@@ -37,7 +37,7 @@ var jHdlrs = map[string]journalHandler{
 	"FSSSignalDiscovered": jeFSSSignalDiscovered,
 	"JoinACrew":           jeJoinACrew,
 	"LeaveBody":           jeLeaveBody,
-	"LoadGHame":           jeLoadGame,
+	"LoadGame":            jeLoadGame,
 	"Loadout":             jeLoadout,
 	"Location":            jeLocation,
 	"Materials":           jeMaterials,
@@ -483,6 +483,7 @@ func jeLoadGame(t time.Time, evt ggja.Obj) Change {
 			cmdr.switchTo(fid, nm)
 		}
 		cmdr.Ship.Ship = ship.TheShips.Load(evt.MInt("ShipID"), evt.MStr("Ship"))
+		cmdr.firstJump = true
 	}))
 	return ChgCmdr | ChgShip
 }

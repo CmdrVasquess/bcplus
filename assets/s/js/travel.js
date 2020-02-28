@@ -293,7 +293,7 @@ var trvlApp = new Vue({
 	cfg: {
 	    jblocks: [5,10,15,30]
 	},
-	jhist: theData.JumpHist,
+	jhist: theData.JumpHist ? theData.JumpHist : [],
 	bookms: theData.Bookms,
 	destbm: theData.DestBm,
 	statsBlock: -1,
@@ -335,7 +335,9 @@ var trvlApp = new Vue({
 	    if (this.jhist.length < 2) { return res; }
 	    let loc = this.jhist[0].Coos;
 	    for (let i=1; i < this.jhist.length; i++) {
-	    	let a0 = this.jhist[i-1], a1 = this.jhist[i];
+	    	let a0 = this.jhist[i-1];
+			if (a0.First) continue;
+			let a1 = this.jhist[i];
 	    	let t0 = new Date(a0.Time), t1 = new Date(a1.Time);
 	    	let jump = {
 	    	    dt: (t0-t1) / 1000.0,
@@ -421,10 +423,12 @@ var trvlApp = new Vue({
 	}
     },
     beforeCreate: () => {
-	theData.JumpHist.sort((l, r) => {
-	    var ld = new Date(l.Time), rd = new Date(r.Time);
-	    return rd.valueOf() - ld.valueOf();
-	});
+	if (theData.JumpHist) {
+		theData.JumpHist.sort((l, r) => {
+			var ld = new Date(l.Time), rd = new Date(r.Time);
+			return rd.valueOf() - ld.valueOf();
+		});
+	}
     },
     mounted: function() {
 	wspgmsg.push(this.onMsg);

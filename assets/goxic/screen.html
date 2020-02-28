@@ -16,7 +16,7 @@
 		<img id="hdrLgo" src="/s/img/Logo.png" alt="logo">
 		<div id="hdrCmd">CMDR {{hdr.Name}}</div>
 		<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
-		<div id="hdrLoc"><span v-if="hdr.Loc.RefNm">{{hdr.Loc.RefNm}}
+		<div id="hdrLoc" v-if="hdr.Loc"><span v-if="hdr.Loc.RefNm">{{hdr.Loc.RefNm}}
 		/ </span>{{hdr.Loc.Sys.Name}}</div>
       </header>
       <nav>

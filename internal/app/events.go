@@ -66,6 +66,8 @@ func eventLoop() {
 			chg, useTs = journalEvent(data, useTs)
 		case ESRC_JSTATUS:
 			chg = statusEvent(e.Data.(string))
+		case ESRC_WEBUI:
+			webuiEvent(e.Data.([]byte))
 		default:
 			log.Debuga("drop event from `source`", string(e.Src))
 		}
