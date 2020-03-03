@@ -179,10 +179,10 @@ func webAuth(h http.HandlerFunc) http.HandlerFunc {
 
 var (
 	tabs = []Tab{
-		Tab{insysTab, "Current System", "/insys"},
-		Tab{shipsTab, "Fleet", "/ships"},
-		Tab{matsTab, "Materials", "/mats"},
 		Tab{travelTab, "Travel", "/travel"},
+		Tab{insysTab, "System", "/insys"},
+		Tab{matsTab, "Materials", "/mats"},
+		Tab{shipsTab, "Fleet", "/ships"},
 	}
 	tabHdlr = map[string]http.HandlerFunc{
 		insysTab:  scrnInSys.ServeHTTP,

@@ -147,6 +147,9 @@ func (app *BCpApp) save() {
 func (app *BCpApp) init() {
 	app.Speak.ChanCfg = make(map[string]*ChanConfig)
 	showHideCon()
+	if dir, ok := os.LookupEnv("BCPLUS_DATA"); ok && app.dataDir == stdDataDir() {
+		app.dataDir = dir
+	}
 	log.Infoa("BC+ data in `dir`", app.dataDir)
 	if !setup(app) {
 		app.load()

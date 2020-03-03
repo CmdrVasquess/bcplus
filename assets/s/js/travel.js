@@ -1,3 +1,19 @@
+function sysDist2(l1, l2) {
+    let dx = l1[0]-l2[0], dy = l1[1]-l2[1], dz = l1[2]-l2[2];
+    return dx*dx + dy*dy + dz*dz;
+}
+
+function rot2d(w) {
+    let s = Math.sin(w), c = Math.cos(w);
+    return [c, -s,
+	    s,  c];
+}
+function rotate2d(R, p0, p1) {
+    let r0 = R[0]*p0 + R[1]*p1;
+    let r1 = R[2]*p0 + R[3]*p1;
+    return [r0, r1];
+}
+
 Vue.component('trvlmap', {
     props: {
 	size: Number,
@@ -26,9 +42,8 @@ Vue.component('trvlmap', {
 	paint: function() {
 	    this.clear();
 	    this.drawLoc();
-	    this.drawVic();
 	    this.drawDest();
-	    this.drawTrail();
+	    this.drawTrail(0);
 	},
 	lyColor: (ly, sat, a) => {
 	    let f = 4*Math.atan(ly/800)/Math.PI, r = 0, g = 0, b = 0;
@@ -42,11 +57,13 @@ Vue.component('trvlmap', {
 	screenZ: function(ly) {
 	    return this.sd2 - this.size * Math.atan(ly/800) / Math.PI;
 	},
-	localXY: function(lx, lz) {
-	    let vic = this.data.vic;
-	    let x = this.size+this.hbar+this.sd2 + (lx-vic.cx) * this.localScale;
-	    let y = this.sd2 - (lz-vic.cz) * this.localScale;
-	    return [x, y];
+	localXY: function(R, p) {
+	    const vic = this.data.vic
+	    let y = p[1] - vic.c[1];
+	    let r = rotate2d(R, p[0] - vic.c[0], p[2] - vic.c[2]);
+	    let z = 1 + r[1] * this.localScale / this.size;
+	    return [this.size+this.hbar+this.sd2 + r[0] * this.localScale,
+		    this.sd2 - y/z  * this.localScale];
 	},
 	gxyXYZ: function(lx, ly, lz) {
 	    let res = [
@@ -58,11 +75,9 @@ Vue.component('trvlmap', {
 	},
 	clear: function() {
 	    const g2 = this.g2;
-     	    g2.clearRect(0, 0, this.width, this.size);
+     	    g2.clearRect(0, 0, this.size+this.hbar, this.size);
 	    g2.font = "14px Arial";
 	    g2.save();
-	    g2.fillStyle = this.lyColor(this.data.loc.Coos[1], 71, 1);
-	    g2.fillRect(this.size+this.hbar, 0, this.size, this.size);
 	    let hbarfill = g2.createLinearGradient(0, 0, 0, this.size);
 	    hbarfill.addColorStop(0, "#ff0000");
 	    hbarfill.addColorStop(.25, "#ffff00");
@@ -71,19 +86,6 @@ Vue.component('trvlmap', {
 	    hbarfill.addColorStop(1, "#0000ff");
 	    g2.fillStyle = hbarfill;
 	    g2.fillRect(this.size, 0, this.hbar, this.size);
-	    g2.restore();
-	},
-	drawVic: function() {
-	    if (!this.data.vic) return;
-	    const g2 = this.g2;
-	    g2.save();
-	    let vc = this.gxyXYZ(this.data.vic.cx, 0, this.data.vic.cz);
-	    let vs = this.data.vic.r * this.gxyScale;
-	    g2.strokeStyle = "#FF7000DD";
-	    g2.lineWidth =1.6;
-	    g2.shadowColor = "black";
-	    g2.shadowBlur = 5;
-	    g2.strokeRect(vc[0]-vs, vc[1]-vs, 2*vs, 2*vs);
 	    g2.restore();
 	},
 	drawScale: function() {
@@ -211,49 +213,50 @@ Vue.component('trvlmap', {
 	    } else {
 		g2.fillText(lb, this.size+(this.hbar-txm.width)/2, scr[2]-3);
 	    }
-	    let lxy = this.localXY(this.data.loc.Coos[0], this.data.loc.Coos[2]);
-	    g2.beginPath();
-	    g2.shadowBlur = 0;
-	    g2.moveTo(this.size+this.hbar, scr[2]);
-	    g2.lineTo(lxy[0], lxy[1]);
-	    g2.lineTo(this.width, lxy[1]);
-	    g2.moveTo(lxy[0], 0);
-	    g2.lineTo(lxy[0], this.size);
-	    g2.stroke();
 	    g2.restore();
 	},
-	drawTrail: function() {
+	drawTrail: function(t) {
 	    const jumps = this.data.jhist;
 	    if (jumps.length == 0) { return; }
-	    const pi2 = 2*Math.PI;
+	    const w = t/2000, R = rot2d(-w);
 	    const g2 = this.g2;
-	    g2.save();
-	    g2.shadowColor = "black";
-	    g2.shadowBlur = 3;
-	    g2.strokeStyle = "#aaaaaa";
-	    g2.lineWidth = 1.8;
-	    let a0 = jumps[jumps.length-1];
-	    let xy0 = this.localXY(a0.Coos[0], a0.Coos[2]);
-	    for (let i=jumps.length-2; i >= 0; i--) {
-		g2.fillStyle = this.lyColor(a0.Coos[1], 255, 1);
-		g2.beginPath();
-		g2.arc(xy0[0], xy0[1], 4, 0, pi2);
-		g2.fill();
-		let a1 = jumps[i];
-		xy1 = this.localXY(a1.Coos[0], a1.Coos[2]);
-		g2.fillStyle = this.lyColor(a1.Coos[1], 255, 1);
-		g2.beginPath();
-		g2.moveTo(xy0[0], xy0[1]);
-		g2.lineTo(xy1[0], xy1[1]);
-		g2.stroke();
-		a0 = a1;
-		xy0 = xy1;
-	    }
-	    g2.fillStyle = this.lyColor(a0.Coos[1], 255, 1);
+   	    g2.save();
+  	    g2.clearRect(this.size+this.hbar, 0, this.size, this.size);
+	    g2.lineWidth = 3;
+	    g2.lineCap = 'round';
+	    g2.lineJoin = 'round';
+	    const sin = Math.sin(w), cos = Math.cos(w);
+	    const cx = 1.5*this.size+this.hbar, cy = this.size/2;
 	    g2.beginPath();
-	    g2.arc(xy0[0], xy0[1], 5.5, 0, pi2);
+	    g2.strokeStyle = "white";
+	    g2.moveTo(cx+this.size/2.1*sin, cy+this.size/2.1*cos);
+	    g2.lineTo(cx+this.size/2.2*sin, cy+this.size/2.2*cos);
+	    g2.stroke();
+	    g2.beginPath();
+	    g2.strokeStyle = "#ff7000";
+	    let lxy = this.localXY(R, jumps[0].Coos);
+	    g2.moveTo(lxy[0], lxy[1]);
+	    for (let i=1; i < jumps.length; i++) {
+		lxy = this.localXY(R, jumps[i].Coos);
+		g2.lineTo(lxy[0], lxy[1]);
+	    }
+	    g2.stroke();
+	    lxy = this.localXY(R, this.data.loc.Coos);
+	    let scr = this.gxyXYZ(this.data.loc.Coos[0],
+				  this.data.loc.Coos[1],
+				  this.data.loc.Coos[2]);
+	    g2.beginPath();
+	    g2.lineWidth = 1.5;
+	    g2.strokeStyle = "#00A6EA";
+	    g2.fillStyle = "#00A6EA";
+	    g2.moveTo(this.size+this.hbar, scr[2]);
+	    g2.lineTo(lxy[0], lxy[1]);
+	    g2.stroke();
+	    g2.beginPath();
+	    g2.arc(lxy[0], lxy[1], 4, 0, 2*Math.PI);
 	    g2.fill();
 	    g2.restore();
+	    window.requestAnimationFrame(this.drawTrail);
 	}
     }
 });
@@ -336,8 +339,8 @@ var trvlApp = new Vue({
 	    let loc = this.jhist[0].Coos;
 	    for (let i=1; i < this.jhist.length; i++) {
 	    	let a0 = this.jhist[i-1];
-			if (a0.First) continue;
-			let a1 = this.jhist[i];
+		if (a0.First) continue;
+		let a1 = this.jhist[i];
 	    	let t0 = new Date(a0.Time), t1 = new Date(a1.Time);
 	    	let jump = {
 	    	    dt: (t0-t1) / 1000.0,
@@ -391,6 +394,9 @@ var trvlApp = new Vue({
 	    this.tmap.loc = hdrData.Loc.Sys;
 	    this.$refs.tmap.paint();
 	},
+	sysDist: (l1, l2) => {
+	    return Math.sqrt(sysDist2(l1, l2));
+	},
 	tmpLoc: function(dl) {
 	    this.tmapLoc = dl;
 	    this.$refs.tmap.paint();
@@ -399,35 +405,37 @@ var trvlApp = new Vue({
 	    this.tmapLoc = hdrData.Loc.Sys;
 	    this.$refs.tmap.paint();
 	},
-	sysDist: (l1, l2) => {
-	    let dx = l1[0]-l2[0], dy = l1[1]-l2[1], dz = l1[2]-l2[2];
-	    return Math.sqrt(dx*dx + dy*dy + dz*dz);
-	},
 	computeVic: function() {
-	    if (this.trailLen == 0) {
-		return {cx: 0, cz: 0, r: 400};
+	    switch (this.trailLen) {
+	    case 0:
+		return {c: [0, 0, 0], r: 400};
+	    case 1:
+		return {c: this.jhist[0].Coos, r: 400};
 	    }
-	    let a = this.jhist[0];
-	    let xm = a.Coos[0], xM = xm, zm = a.Coos[2], zM = zm;
-	    for (let i = 1; i < this.trailLen; i++) {
-		a = this.jhist[i];
-		if (a.Coos[0] < xm) { xm = a.Coos[0]; }
-		else if (a.Coos[0] > xM) { xM = a.Coos[0]; }
-		if (a.Coos[2] < zm) { zm = a.Coos[2]; }
-		else if (a.Coos[2] > zM) { zM = a.Coos[2]; }
+	    let dmax = 0, i0, i1;
+	    for (let i=0; i+1 < this.trailLen; i++) {
+		let p = this.jhist[i].Coos;
+		for (let j=i+1; j < this.trailLen; j++) {
+		    let d = sysDist2(p, this.jhist[j].Coos);
+		    if (d > dmax) {
+			i0 = i; i1 = j; dmax = d;
+		    }
+		}
 	    }
-	    let dx = xM-xm, dz = zM-zm;
-	    let res = {cx: (xm+xM)/2, cz: (zm+zM)/2, r: dx < dz ? dz/2 : dx/2 };
-	    res.r *= 1.2;
+	    let p0 = this.jhist[i0].Coos, p1 = this.jhist[i1].Coos;
+	    let res = {
+		c: [(p0[0]+p1[0])/2, (p0[1]+p1[1])/2, (p0[2]+p1[2])/2],
+		r: Math.sqrt(dmax) / 1.7
+	    };
 	    return res;
 	}
     },
     beforeCreate: () => {
 	if (theData.JumpHist) {
-		theData.JumpHist.sort((l, r) => {
-			var ld = new Date(l.Time), rd = new Date(r.Time);
-			return rd.valueOf() - ld.valueOf();
-		});
+	    theData.JumpHist.sort((l, r) => {
+		var ld = new Date(l.Time), rd = new Date(r.Time);
+		return rd.valueOf() - ld.valueOf();
+	    });
 	}
     },
     mounted: function() {
