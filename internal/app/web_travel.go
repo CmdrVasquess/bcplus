@@ -3,8 +3,6 @@ package app
 import (
 	"net/http"
 
-	"github.com/CmdrVasquess/bcplus/internal/galaxy"
-
 	"git.fractalqb.de/fractalqb/goxic"
 )
 
@@ -24,7 +22,7 @@ const travelTab = "travel"
 
 type travelData struct {
 	JumpHist []FsdJump
-	Bookms   []galaxy.SysDesc
+	Bookms   []Bookmark
 	DestBm   int
 }
 

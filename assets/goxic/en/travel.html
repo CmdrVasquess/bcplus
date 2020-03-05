@@ -194,159 +194,165 @@ main {
 		{{(new Date(jmp.Time)).toLocaleString()}}
               </div>
 	    </div>
-		<div id="travel">
+	    <div id="travel">
 	      <trvlmap id="tmap" ref="tmap" :size="250" :hbar="40" :data="tmap"></trvlmap>
 	      <table id="tmap-info">
-            <tr><th>System:</th><td colspan="3">{{tmapLoc.Name}}</td></tr>
-            <tr><th>• Coordinates:</th>
-			  <td class="right">{{tmap.loc.Coos[0]|f2}}</td>
-			  <td class="right">{{tmap.loc.Coos[1]|f2}}</td>
-			  <td class="right">{{tmap.loc.Coos[2]|f2}}</td>
-            </tr>
-            <tr><th>Destination:</th>
-			  <td v-if="tmap.dest" colspan="3">{{tmap.dest.Name}}</td>
-			  <td v-else>–</td>
-			</tr>
-            <tr><th>• Coordinates:</th>
-			  <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[0]|f2}}</td>
-			  <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[1]|f2}}</td>
-			  <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[2]|f2}}</td>
-			  <td v-if="!tmap.dest">–</td>
-            </tr>
-            <tr><th>Distance to Dest.:</th>
-			  <td v-if="tmap.dest" class="right" colspan="2">
-				{{sysDist(tmap.loc.Coos, tmap.dest.Coos)|f2}}
-			  </td>
-			  <td v-else>–</td>
-			  <td>Ly</td>
-            </tr>
-            <tr><th>Speed [Ly/h]:</th>
-			  <td class="right tmima">{{speeds[0]|f2}}</td>
-			  <td class="right">{{speeds[1]|f2}}</td>
-			  <td class="right tmima">{{speeds[2]|f2}}</td>
-            </tr>
-            <tr><th>Travel Time [h]:</th>
-			  <td v-if="tmap.dest" class="right tmima">
-				{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[0]|dur}}
-			  </td>
-			  <td v-if="tmap.dest" class="right">
-				{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[1]|dur}}
-			  </td>
-			  <td v-if="tmap.dest" class="right tmima">
-				{{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[2]|dur}}
-			  </td>
-			  <td v-if="!tmap.dest">–</td>
-            </tr>
+		<tr><th>System:</th><td colspan="3">{{tmapLoc.Name}}</td></tr>
+		<tr><th>• Coordinates:</th>
+		  <td class="right">{{tmap.loc.Coos[0]|f2}}</td>
+		  <td class="right">{{tmap.loc.Coos[1]|f2}}</td>
+		  <td class="right">{{tmap.loc.Coos[2]|f2}}</td>
+		</tr>
+		<tr><th>Destination:</th>
+		  <td v-if="tmap.dest" colspan="3">{{tmap.dest.Name}}</td>
+		  <td v-else>–</td>
+		</tr>
+		<tr><th>• Coordinates:</th>
+		  <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[0]|f2}}</td>
+		  <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[1]|f2}}</td>
+		  <td v-if="tmap.dest" class="right">{{tmap.dest.Coos[2]|f2}}</td>
+		  <td v-if="!tmap.dest">–</td>
+		</tr>
+		<tr><th>Distance to Dest.:</th>
+		  <td v-if="tmap.dest" class="right" colspan="2">
+		    {{sysDist(tmap.loc.Coos, tmap.dest.Coos)|f2}}
+		  </td>
+		  <td v-else>–</td>
+		  <td>Ly</td>
+		</tr>
+		<tr><th>Speed [Ly/h]:</th>
+		  <td class="right tmima">{{speeds[0]|f2}}</td>
+		  <td class="right">{{speeds[1]|f2}}</td>
+		  <td class="right tmima">{{speeds[2]|f2}}</td>
+		</tr>
+		<tr><th>Travel Time [h]:</th>
+		  <td v-if="tmap.dest" class="right tmima">
+		    {{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[0]|dur}}
+		  </td>
+		  <td v-if="tmap.dest" class="right">
+		    {{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[1]|dur}}
+		  </td>
+		  <td v-if="tmap.dest" class="right tmima">
+		    {{sysDist(tmap.loc.Coos, tmap.dest.Coos)/speeds[2]|dur}}
+		  </td>
+		  <td v-if="!tmap.dest">–</td>
+		</tr>
 	      </table>
 	      <table id="speed-tbl">
-            <thead>
-			  <tr><th>Last Jump</th>
-				<th v-for="(b, i) in cfg.jblocks" :key="i">
-				  <input v-if="ammBlk[i]" type="radio" :value="i"
-						 v-model.number="statsBlock">
-				  {{b}} Jumps
-				</th>
-				<th>
-				  <input v-if="jumps.length > 0" type="radio" value="-1"
-						 v-model.number="statsBlock">
-				  <span v-if="jumps.length > 0">{{jhist.length-1}}</span>
-				  <span v-else>No</span> Jumps
-				</th>
-			  </tr>
-            </thead>
-            <tbody v-if="jumps.length > 0">
-			  <tr>
-				<td class="center" style="color:var(--colGud)">Length [Ly]</td>
-				<td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
-				  <span v-if="ammBlk[i]">{{ammBlk[i].jMin|f2}}</span>
-				  <span v-else>–</span>
-				  /
-				  <span v-if="ammBlk[i]">{{ammBlk[i].jMax|f2}}</span>
-				  <span v-else>–</span>
-				</td>          
-				<td class="tmima">
-				  <span v-if="ammAll">{{ammAll.jMin|f2}}</span>
-				  <span v-else>–</span>
-				  /
-				  <span v-if="ammAll">{{ammAll.jMax|f2}}</span>
-				  <span v-else>–</span>
-				</td>  
-			  </tr>
-			  <tr>
-				<td class="tavg">{{jumps[0].jl|f2}}</td>
-				<td v-for="(b, i) in cfg.jblocks" :key="i" class="tavg">
-				  <span v-if="ammBlk[i]">{{ammBlk[i].jAvg|f2}}</span>
-				  <span v-else>–</span>
-				</td>
-				<td class="tavg">
-				  <span v-if="ammAll">{{ammAll.jAvg|f2}}</span>
-				  <span v-else>–</span>
-				</td>
-			  </tr>
-			  <tr>
-				<td class="center" style="color:var(--colGud)">Speed [Ly/h]</td>
-				<td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
-				  <span v-if="ammBlk[i]">{{ammBlk[i].sMin|f2}}</span>
-				  <span v-else>–</span>
-				  /
-				  <span v-if="ammBlk[i]">{{ammBlk[i].sMax|f2}}</span>
-				  <span v-else>–</span>
-				</td>          
-				<td class="tmima">
-				  <span v-if="ammAll">{{ammAll.sMin|f2}}</span>
-				  <span v-else>–</span>
-				  /
-				  <span v-if="ammAll">{{ammAll.sMax|f2}}</span>
-				  <span v-else>–</span>
-				</td>              
-			  </tr>
-			  <tr>
-				<td class="tavg">{{(3600/jumps[0].dt*jumps[0].jl)|f2}}</td>
-				<td v-for="(b, i) in cfg.jblocks" :key="i" class="tavg">
-				  <span v-if="ammBlk[i]">{{ammBlk[i].sAvg|f2}}</span>
-				  <span v-else>–</span>
-				</td>
-				<td class="tavg">
-				  <span v-if="ammAll">{{ammAll.sAvg|f2}}</span>
-				  <span v-else>–</span>
-				</td>
-			  </tr>
-			  <tr>
-				<td class="center" style="color:var(--colGud)">Dist [Ly]</td>
-				<td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
-				  <span v-if="ammBlk[i]">{{100*jumps[b-1].tl/(b*ammBlk[i].jAvg)|f2}} %</span>
-				  <span v-else>–</span>
-				</td>
-				<td class="tmima"><span v-if="ammAll">
-					{{100*jumps[jumps.length-1].tl/(jumps.length*ammAll.jAvg)|f2}} %
-				</span></td>
-			  </tr>
-            </tbody>
-            <tbody v-else>
-			  <tr><td :colspan="2+cfg.jblocks.length"
-					  style="text-align:center;color:var(--colBad)">Empty Jump History</td></tr>
-            </tbody>
+		<thead>
+		  <tr><th>Last Jump</th>
+		    <th v-for="(b, i) in cfg.jblocks" :key="i">
+		      <input v-if="ammBlk[i]" type="radio" :value="i"
+			     v-model.number="statsBlock">
+		      {{b}} Jumps
+		    </th>
+		    <th>
+		      <input v-if="jumps.length > 0" type="radio" value="-1"
+			     v-model.number="statsBlock">
+		      <span v-if="jumps.length > 0">{{jhist.length-1}}</span>
+		      <span v-else>No</span> Jumps
+		    </th>
+		  </tr>
+		</thead>
+		<tbody v-if="jumps.length > 0">
+		  <tr>
+		    <td class="center" style="color:var(--colGud)">Length [Ly]</td>
+		    <td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
+		      <span v-if="ammBlk[i]">{{ammBlk[i].jMin|f2}}</span>
+		      <span v-else>–</span>
+		      /
+		      <span v-if="ammBlk[i]">{{ammBlk[i].jMax|f2}}</span>
+		      <span v-else>–</span>
+		    </td>          
+		    <td class="tmima">
+		      <span v-if="ammAll">{{ammAll.jMin|f2}}</span>
+		      <span v-else>–</span>
+		      /
+		      <span v-if="ammAll">{{ammAll.jMax|f2}}</span>
+		      <span v-else>–</span>
+		    </td>  
+		  </tr>
+		  <tr>
+		    <td class="tavg">{{jumps[0].jl|f2}}</td>
+		    <td v-for="(b, i) in cfg.jblocks" :key="i" class="tavg">
+		      <span v-if="ammBlk[i]">{{ammBlk[i].jAvg|f2}}</span>
+		      <span v-else>–</span>
+		    </td>
+		    <td class="tavg">
+		      <span v-if="ammAll">{{ammAll.jAvg|f2}}</span>
+		      <span v-else>–</span>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td class="center" style="color:var(--colGud)">Speed [Ly/h]</td>
+		    <td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
+		      <span v-if="ammBlk[i]">{{ammBlk[i].sMin|f2}}</span>
+		      <span v-else>–</span>
+		      /
+		      <span v-if="ammBlk[i]">{{ammBlk[i].sMax|f2}}</span>
+		      <span v-else>–</span>
+		    </td>          
+		    <td class="tmima">
+		      <span v-if="ammAll">{{ammAll.sMin|f2}}</span>
+		      <span v-else>–</span>
+		      /
+		      <span v-if="ammAll">{{ammAll.sMax|f2}}</span>
+		      <span v-else>–</span>
+		    </td>              
+		  </tr>
+		  <tr>
+		    <td class="tavg">{{(3600/jumps[0].dt*jumps[0].jl)|f2}}</td>
+		    <td v-for="(b, i) in cfg.jblocks" :key="i" class="tavg">
+		      <span v-if="ammBlk[i]">{{ammBlk[i].sAvg|f2}}</span>
+		      <span v-else>–</span>
+		    </td>
+		    <td class="tavg">
+		      <span v-if="ammAll">{{ammAll.sAvg|f2}}</span>
+		      <span v-else>–</span>
+		    </td>
+		  </tr>
+		  <tr>
+		    <td class="center" style="color:var(--colGud)">Dist [Ly]</td>
+		    <td v-for="(b, i) in cfg.jblocks" :key="i" class="tmima">
+		      <span v-if="ammBlk[i]">{{100*jumps[b-1].tl/(b*ammBlk[i].jAvg)|f2}} %</span>
+		      <span v-else>–</span>
+		    </td>
+		    <td class="tmima"><span v-if="ammAll">
+			{{100*jumps[jumps.length-1].tl/(jumps.length*ammAll.jAvg)|f2}} %
+		    </span></td>
+		  </tr>
+		</tbody>
+		<tbody v-else>
+		  <tr><td :colspan="2+cfg.jblocks.length"
+			  style="text-align:center;color:var(--colBad)">Empty Jump History</td></tr>
+		</tbody>
 	      </table>
 	      <div id="bms">
-            <h1>Bookmarks</h1>
-            <table>
-			  <tr>
-				<th>Dest.</th>
-				<th>System</th>
-				<th>Distance</th>
-				<th>Coos</th>
-			  </tr>
-			  <tr v-for="(b, i) in bookms" :key="i">
-				<td><input type="radio" :value="i" v-model.number="destbm"></td>
-				<td>{{b.Name}}</td>
-				<td class="right">{{sysDist(tmapLoc.Coos, b.Coos)|f2}} Ly</td>
-				<td>
-				  {{b.Coos[0]|f2}} / {{b.Coos[1]|f2}} / {{b.Coos[2]|f2}}
-				</td>
-			  </tr>
-            </table>
+		<h1>Bookmarks</h1>
+		<table>
+		  <tr>
+		    <th>Dest.</th>
+		    <th>System</th>
+		    <th>Distance</th>
+		    <th colspan="3">Coos</th>
+		    <th>Tags</th>
+		  </tr>
+		  <tr v-for="(b, i) in bookms" :key="i">
+		    <td><input type="radio" :value="i" v-model.number="destbm"></td>
+		    <td>{{b.Name}}</td>
+		    <td class="right">{{sysDist(tmapLoc.Coos, b.Coos)|f2}} Ly</td>
+		    <td class="right">{{Math.round(b.Coos[0])}}</td>
+		    <td class="right">{{Math.round(b.Coos[1])}}</td>
+		    <td class="right">{{Math.round(b.Coos[2])}}</td>
+		    <td v-if="b.Tags">
+		      <span v-for="tag in b.Tags" :key="tag"
+			    class="tag">{{tag}}</span>
+		    </td>
+		    <td v-else class="center">–</td>
+		  </tr>
+		</table>
 	      </div>
-		</div>
+	    </div>
 	  </main>
 	  <script>
 	    const theData = `data`;

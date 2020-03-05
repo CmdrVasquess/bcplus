@@ -31,6 +31,11 @@ type FsdJump struct {
 
 const JumpMax = 51
 
+type Bookmark struct {
+	galaxy.SysDesc
+	Tags []string `json:",omitempty"`
+}
+
 type Commander struct {
 	Fid          string
 	Name         string
@@ -39,7 +44,7 @@ type Commander struct {
 	OnScreenShot ggja.GenArr
 	Mats         map[string]MatState `json:"MatNeed"`
 	Rcps         map[string]int      `json:"RcpNeed"`
-	Bookmarks    []galaxy.SysDesc
+	Bookmarks    []Bookmark
 	DestBM       int
 	SurfDest     []float64
 	JumpHist     []FsdJump

@@ -258,22 +258,23 @@ Vue.component('trvlmap', {
 	    g2.stroke();
 	    g2.beginPath();
 	    g2.strokeStyle = "#ff7000";
-		g2.moveTo(trl.scrn[0], trl.scrn[1]);
-		for (let i=1; i < jumps.length; i++) {
-			let off = 3*i;
-			g2.lineTo(trl.scrn[off], trl.scrn[off+1]);
-		}
+	    g2.moveTo(trl.scrn[0], trl.scrn[1]);
+	    for (let i=1; i < jumps.length; i++) {
+		let off = 3*i;
+		g2.lineTo(trl.scrn[off], trl.scrn[off+1]);
+	    }
 	    g2.stroke();
-		g2.strokeStyle = "black";
+	    g2.strokeStyle = "black";
+	    g2.lineWidth = .9;
 	    g2.fillStyle = "#ff7000";
-		for (let i=0; i < jumps.length; i++) {
-			let off = 3*zord[i];
-			g2.beginPath();
-			g2.arc(trl.scrn[off], trl.scrn[off+1], 3, 0, 2*Math.PI);
-			g2.fill();
-			g2.stroke();
-		}		
-		this.localXY(R, this.data.loc.Coos, trl.sloc, 0);
+	    for (let i=0; i < jumps.length; i++) {
+		let off = 3*zord[i];
+		g2.beginPath();
+		g2.arc(trl.scrn[off], trl.scrn[off+1], 3, 0, 2*Math.PI);
+		g2.fill();
+		g2.stroke();
+	    }		
+	    this.localXY(R, this.data.loc.Coos, trl.sloc, 0);
 	    let scr = this.gxyXYZ(this.data.loc.Coos[0],
 				this.data.loc.Coos[1],
 				this.data.loc.Coos[2]);

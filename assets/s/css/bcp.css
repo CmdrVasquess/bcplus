@@ -103,7 +103,14 @@ main {
 	opacity: 0;
 }
 main th {
-	background-color: var(--colBkgTh);
-	color: var(--colGud);
-	padding: .2em .5em;
+    background-color: var(--colBkgTh);
+    color: var(--colGud);
+    padding: .2em .5em;
+}
+span.tag {
+    font-size: 80%;
+    background-color: var(--colBkgDim);
+    border-radius: .4em;
+    padding: .15em .35em;
+    box-shadow: 0 0 3px var(--colFgrDim) inset;
 }
