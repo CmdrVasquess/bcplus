@@ -14,7 +14,7 @@ BC+ Local System
 <!-- >>> style >>> -->
 	<style>
 main {
-	padding: 0 1em;
+	padding: .5em 1em;
 }
 summary { font-weight: bold; font-size: 120%; }
 #sigtab td:first-child { text-align: right; }
@@ -74,110 +74,107 @@ summary { font-weight: bold; font-size: 120%; }
       <div id="hdrHRf">Reference</div><div id="hdrRef">RefType: Reference</div>
       <div id="hdrHVc">Vehicle</div><div id="hdrVhc">Type</div>
       <div id="hdrHMd">Mode</div><div id="hdrMod">mode</div>
-	    <div id="hdrHSp" v-if="hdr.Loc.sc">Lat / Lon : Alt</div>
+	  <div id="hdrHSp" v-if="hdr.Loc.sc">Lat / Lon : Alt</div>
       <div id="hdrAlt" v-if="hdr.Loc.sc">Alt: x</div>
       <div id="hdrCoo" v-if="hdr.Loc.sc">x.yy / y.xx</div>
     </header>
 <!-- >>> main >>> -->
-      <main>
-        <h2>Local FSS results:
-        <span v-if="BodyNum>=0">Bodies: {{BodyNum}}</span>
-        <span v-if="MiscNum>=0">Signals: {{MiscNum}}</span>
-        <span v-if="BodyNum&lt;0 &amp; MiscNum&lt;0">No scans</span>
-        </h2>
-	<details open>
-	  <summary>{{MiscNum}} Signals</summary>
-          <table id="sigtab">
-            <tr v-for="(n, s) in Sigs">
-              <td>{{n}}</td><td>×</td><td>{{s}}</td>
-            </tr>
-          </table>
-	</details>
-        <h3>{{BodyNum}} Bodies – Show
-	  <input type="radio" value="c" v-model="bdyDsp"> cards
-	  <input type="radio" value="t" v-model="bdyDsp"> table
-	</h3>
-	<table id="bdytab" v-if="bdyDsp=='t'">
-	  <tr>
-	    <th colspan="5">Body</th>
-	    <th>↦</th>
-	    <th>♨</th>
-	    <th>⌀</th>
-	    <th>⟱</th>
-	  </tr>
-	  <tr v-for="(b,i) in Bodies">
-	    <td>{{b.Name}}</td>
-	    <td><span v-if="b.Land" class="tag" title="landable">⤓🛬</span></td>
-	    <td>
-	      <span v-if="b.TidalLock" class="tag"
-		    title="titally locked">◑</span>
-	      <span v-else class="tag" title="not locked">↺</span>
-	    </td>
-	    <td><span v-if="b.Volcano.length>0" class="tag">🔥</span></td>
-	    <td>
-              <span v-if="b.Mapd" class="tag" title="mapped">🌐</span>
-              <span v-else-if="b.Disco" class="tag" title="discovered">⚑</span>
-	    </td>
-	    <td>{{b.Dist|f2}} ls</td>
-	    <td><span v-if="b.Temp">{{b.Temp|f2}} K</span></td>
-	    <td><span v-if="b.R>0">{{(b.R/1000)|f2}} km</span></td>
-	    <td><span v-if="b.Grav>0">{{(b.Grav/10)|f4}} g</span></td>
-	  </tr>
-	</table>
-	<div id="bdys" v-if="bdyDsp=='c'">
-	  <div v-for="(b,i) in Bodies">
-	    <h1>{{b.Name}}
-              <span v-if="b.Mapd" class="tag" title="mapped">🌐</span>
-              <span v-else-if="b.Disco" class="tag" title="discovered">⚑</span>
-	      <span v-if="b.Volcano.length>0" class="tag">🔥</span>
-	      <span v-if="b.TidalLock" class="tag"
-		    title="titally locked">◑</span>
-	      <span v-else class="tag" title="not locked">↺</span>
-        <span v-if="b.Land" class="tag" title="landable">⤓🛬</span>
-	    </h1>
-	    <table>
-	      <tr title="Distance from center">
-		<td>↦</td><td>{{b.Dist|f2}}</td><td> ls</td></tr>
-	      <tr v-if="b.Temp" title="Surface temperature">
-		<td>♨</td><td>{{b.Temp|f2}}</td><td> K</td></tr>
-	      <tr v-if="b.R>0" title="Radius! never mind that symbol">
-		<td>⌀</td><td>{{(b.R/1000)|f2}}</td><td> km</td></tr>
-	      <tr v-if="b.Grav>0" title="Surface gravity">
-		<td>⟱</td><td>{{(b.Grav/10)|f4}}</td><td> g</td></tr>
-	    </table>
+    <main>
+	  <details open>
+		<summary v-if="MiscNum<0">Signals: –</summary>
+		<summary v-else>Signals: {{MiscNum}}</summary>
+		<table id="sigtab">
+		  <tr v-for="(n, s) in Sigs">
+			<td>{{n}}</td><td>×</td><td>{{s}}</td>
+		  </tr>
+		</table>
+	  </details>
+	  <h3>Bodies: <span v-if="BodyNum<0">–</span><span v-else>{{BodyNum}}</span>
+		• Show as
+		<input type="radio" value="c" v-model="bdyDsp"> cards
+		<input type="radio" value="t" v-model="bdyDsp"> table
+	  </h3>
+	  <table id="bdytab" v-if="bdyDsp=='t'">
+		<tr>
+		  <th colspan="5">Body</th>
+		  <th>↦</th>
+		  <th>♨</th>
+		  <th>⌀</th>
+		  <th>⟱</th>
+		</tr>
+		<tr v-for="(b,i) in Bodies">
+		  <td>{{b.Name}}</td>
+		  <td><span v-if="b.Land" class="tag" title="landable">🛬</span></td>
+		  <td>
+			<span v-if="b.TidalLock" class="tag"
+				  title="titally locked">◑</span>
+			<span v-else class="tag" title="not locked">↺</span>
+		  </td>
+		  <td><span v-if="b.Volcano.length>0" class="tag">🔥</span></td>
+		  <td>
+			<span v-if="b.Mapd" class="tag" title="mapped">🌐</span>
+			<span v-else-if="b.Disco" class="tag" title="discovered">⚑</span>
+		  </td>
+		  <td>{{b.Dist|f2}} ls</td>
+		  <td><span v-if="b.Temp">{{b.Temp|f2}} K</span></td>
+		  <td><span v-if="b.R>0">{{(b.R/1000)|f2}} km</span></td>
+		  <td><span v-if="b.Grav>0">{{(b.Grav/10)|f4}} g</span></td>
+		</tr>
+	  </table>
+	  <div id="bdys" v-if="bdyDsp=='c'">
+		<div v-for="(b,i) in Bodies">
+		  <h1>{{b.Name}}
+			<span v-if="b.Mapd" class="tag" title="mapped">🌐</span>
+			<span v-else-if="b.Disco" class="tag" title="discovered">⚑</span>
+			<span v-if="b.Volcano.length>0" class="tag">🔥</span>
+			<span v-if="b.TidalLock" class="tag"
+				  title="titally locked">◑</span>
+			<span v-else class="tag" title="not locked">↺</span>
+			<span v-if="b.Land" class="tag" title="landable">⤓🛬</span>
+		  </h1>
+		  <table>
+			<tr title="Distance from center">
+			  <td>↦</td><td>{{b.Dist|f2}}</td><td> ls</td></tr>
+			<tr v-if="b.Temp" title="Surface temperature">
+			  <td>♨</td><td>{{b.Temp|f2}}</td><td> K</td></tr>
+			<tr v-if="b.R>0" title="Radius! never mind that symbol">
+			  <td>⌀</td><td>{{(b.R/1000)|f2}}</td><td> km</td></tr>
+			<tr v-if="b.Grav>0" title="Surface gravity">
+			  <td>⟱</td><td>{{(b.Grav/10)|f4}}</td><td> g</td></tr>
+		  </table>
+		</div>
 	  </div>
-	</div>
-      </main>
-      <script>
-var insysApp = new Vue({
-  el: "main",
-  data: `data`,
-  methods: {
-    onMsg: function(evt) {
-	    if (evt.Cmd != "upd") return;
-	    if (!evt.P) return;
-	    this.BodyNum = evt.P.BodyNum;
-	    this.MiscNum = evt.P.MiscNum;
-	    this.Sigs = evt.P.Sigs;
-	    this.Bodies = evt.P.Bodies;
-	    if (this.Bodies) {
-	      this.Bodies.sort(function(a, b) {
-		      return a.Dist - b.Dist;
-	      });
-	    }
-    }
-  },
-  mounted: function () {
-    wspgmsg.push(this.onMsg);
-    console.log("added insys callback");
-    if (this.Bodies) {
-	    this.Bodies.sort(function(a, b) {
-	      return a.Dist - b.Dist;
-	    });
-    }
-  }
-});
-      </script>
+	</main>
+	<script>
+	  var insysApp = new Vue({
+		  el: "main",
+		  data: `data`,
+		  methods: {
+			  onMsg: function(evt) {
+				  if (evt.Cmd != "upd") return;
+				  if (!evt.P) return;
+				  this.BodyNum = evt.P.BodyNum;
+				  this.MiscNum = evt.P.MiscNum;
+				  this.Sigs = evt.P.Sigs;
+				  this.Bodies = evt.P.Bodies;
+				  if (this.Bodies) {
+					  this.Bodies.sort(function(a, b) {
+						  return a.Dist - b.Dist;
+					  });
+				  }
+			  }
+		  },
+		  mounted: function () {
+			  wspgmsg.push(this.onMsg);
+			  console.log("added insys callback");
+			  if (this.Bodies) {
+				  this.Bodies.sort(function(a, b) {
+					  return a.Dist - b.Dist;
+				  });
+			  }
+		  }
+	  });
+	</script>
 <!-- <<< main <<< -->
   </body>
 </html>

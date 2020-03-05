@@ -1,3 +1,21 @@
+const trl = {
+	rot: [0, 0, 0, 0],
+	sloc: [0, 0, 0], // screen x, y, z
+	scrn: null,
+	zord: null
+};
+function trlMem(n) {
+	trl.scrn = new Array(3*n);
+	trl.zord = new Int32Array(n);
+}
+trlMem(theData.JumpHist.length);
+function trlZSort(n) {
+	zord = new Int32Array(n);
+	for (let i=0; i < n; i++) zord[i] = i;
+	zord.sort((a, b) => { return trl.scrn[3*b+2] - trl.scrn[3*a+2];	});
+	return zord;
+}
+
 function sysDist2(l1, l2) {
     let dx = l1[0]-l2[0], dy = l1[1]-l2[1], dz = l1[2]-l2[2];
     return dx*dx + dy*dy + dz*dz;
@@ -5,8 +23,9 @@ function sysDist2(l1, l2) {
 
 function rot2d(w) {
     let s = Math.sin(w), c = Math.cos(w);
-    return [c, -s,
-	    s,  c];
+	trl.rot[0] = c; trl.rot[1] = -s;
+	trl.rot[2] = s; trl.rot[3] = c;
+    return trl.rot;
 }
 function rotate2d(R, p0, p1) {
     let r0 = R[0]*p0 + R[1]*p1;
@@ -57,13 +76,14 @@ Vue.component('trvlmap', {
 	screenZ: function(ly) {
 	    return this.sd2 - this.size * Math.atan(ly/800) / Math.PI;
 	},
-	localXY: function(R, p) {
+	localXY: function(R, p, res, off) {
 	    const vic = this.data.vic
 	    let y = p[1] - vic.c[1];
 	    let r = rotate2d(R, p[0] - vic.c[0], p[2] - vic.c[2]);
 	    let z = 1 + r[1] * this.localScale / this.size;
-	    return [this.size+this.hbar+this.sd2 + r[0] * this.localScale,
-		    this.sd2 - y/z  * this.localScale];
+		res[off] = this.size+this.hbar+this.sd2 + r[0] * this.localScale;
+		res[++off] = this.sd2 - y/z  * this.localScale;
+		res[++off] = z;
 	},
 	gxyXYZ: function(lx, ly, lz) {
 	    let res = [
@@ -219,10 +239,14 @@ Vue.component('trvlmap', {
 	    const jumps = this.data.jhist;
 	    if (jumps.length == 0) { return; }
 	    const w = t/2000, R = rot2d(-w);
+	    for (let i=0; i < jumps.length; i++) {
+		this.localXY(R, jumps[i].Coos, trl.scrn, 3*i);
+	    }
+	    const zord = trlZSort(jumps.length);
 	    const g2 = this.g2;
    	    g2.save();
   	    g2.clearRect(this.size+this.hbar, 0, this.size, this.size);
-	    g2.lineWidth = 3;
+	    g2.lineWidth = 1.2;
 	    g2.lineCap = 'round';
 	    g2.lineJoin = 'round';
 	    const sin = Math.sin(w), cos = Math.cos(w);
@@ -234,26 +258,34 @@ Vue.component('trvlmap', {
 	    g2.stroke();
 	    g2.beginPath();
 	    g2.strokeStyle = "#ff7000";
-	    let lxy = this.localXY(R, jumps[0].Coos);
-	    g2.moveTo(lxy[0], lxy[1]);
-	    for (let i=1; i < jumps.length; i++) {
-		lxy = this.localXY(R, jumps[i].Coos);
-		g2.lineTo(lxy[0], lxy[1]);
-	    }
+		g2.moveTo(trl.scrn[0], trl.scrn[1]);
+		for (let i=1; i < jumps.length; i++) {
+			let off = 3*i;
+			g2.lineTo(trl.scrn[off], trl.scrn[off+1]);
+		}
 	    g2.stroke();
-	    lxy = this.localXY(R, this.data.loc.Coos);
+		g2.strokeStyle = "black";
+	    g2.fillStyle = "#ff7000";
+		for (let i=0; i < jumps.length; i++) {
+			let off = 3*zord[i];
+			g2.beginPath();
+			g2.arc(trl.scrn[off], trl.scrn[off+1], 3, 0, 2*Math.PI);
+			g2.fill();
+			g2.stroke();
+		}		
+		this.localXY(R, this.data.loc.Coos, trl.sloc, 0);
 	    let scr = this.gxyXYZ(this.data.loc.Coos[0],
-				  this.data.loc.Coos[1],
-				  this.data.loc.Coos[2]);
+				this.data.loc.Coos[1],
+				this.data.loc.Coos[2]);
 	    g2.beginPath();
 	    g2.lineWidth = 1.5;
 	    g2.strokeStyle = "#00A6EA";
 	    g2.fillStyle = "#00A6EA";
 	    g2.moveTo(this.size+this.hbar, scr[2]);
-	    g2.lineTo(lxy[0], lxy[1]);
+	    g2.lineTo(trl.sloc[0], trl.sloc[1]);
 	    g2.stroke();
 	    g2.beginPath();
-	    g2.arc(lxy[0], lxy[1], 4, 0, 2*Math.PI);
+	    g2.arc(trl.sloc[0], trl.sloc[1], 4, 0, 2*Math.PI);
 	    g2.fill();
 	    g2.restore();
 	    window.requestAnimationFrame(this.drawTrail);
@@ -382,14 +414,15 @@ var trvlApp = new Vue({
 	    if (evt.Cmd != "upd") return;
 	    let jump = evt.P
 	    if (jump) {
-		if (this.jhist.length == 0) {
-		    this.jhist.push(jump);
-		} else if (this.jhist[0].Addr != jump.Addr) {
-		    this.jhist.unshift(jump);
-		    if (this.jhist.length > 51) {
-			this.jhist.splice(51);
-		    }
-		}
+			if (this.jhist.length == 0) {
+				this.jhist.push(jump);
+			} else if (this.jhist[0].Addr != jump.Addr) {
+				this.jhist.unshift(jump);
+				if (this.jhist.length > 51) {
+					this.jhist.splice(51);
+				}
+			}
+			trlMem(this.jhist.length);
 	    }
 	    this.tmap.loc = hdrData.Loc.Sys;
 	    this.$refs.tmap.paint();
