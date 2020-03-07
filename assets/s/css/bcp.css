@@ -109,6 +109,7 @@ main th {
 }
 span.tag {
     font-size: 80%;
+    margin-right: .2em;
     background-color: var(--colBkgDim);
     border-radius: .4em;
     padding: .15em .35em;

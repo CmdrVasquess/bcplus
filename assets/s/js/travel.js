@@ -10,10 +10,12 @@ function trlMem(n) {
 }
 trlMem(theData.JumpHist.length);
 function trlZSort(n) {
-	zord = new Int32Array(n);
-	for (let i=0; i < n; i++) zord[i] = i;
-	zord.sort((a, b) => { return trl.scrn[3*b+2] - trl.scrn[3*a+2];	});
-	return zord;
+    if (!trl.zord || trl.zord.length != n) {
+	trl.zord = new Int32Array(n);
+    }
+    for (let i=0; i < n; i++) trl.zord[i] = i;
+    trl.zord.sort((a, b) => { return trl.scrn[3*b+2] - trl.scrn[3*a+2];	});
+    return trl.zord;
 }
 
 function sysDist2(l1, l2) {
@@ -39,7 +41,11 @@ Vue.component('trvlmap', {
 	hbar: Number,
 	data: Object
     },
-    template: '<canvas :width="(2*size)+hbar" :height="size"></canvas>',
+    data: function() { return {
+	anim: true
+    }},
+    template: '<canvas :width="(2*size)+hbar" :height="size" \
+               v-on:click="anim=!anim;drawTrail(0)"></canvas>',
     computed: {
 	width: function() { return 2 * this.size + this.hbar; },
 	sd2: function() { return this.size / 2; },
@@ -269,6 +275,7 @@ Vue.component('trvlmap', {
 	    g2.fillStyle = "#ff7000";
 	    for (let i=0; i < jumps.length; i++) {
 		let off = 3*zord[i];
+		g2.fillStyle = this.lyColor(jumps[zord[i]].Coos[1], 255, 1);
 		g2.beginPath();
 		g2.arc(trl.scrn[off], trl.scrn[off+1], 3, 0, 2*Math.PI);
 		g2.fill();
@@ -286,10 +293,9 @@ Vue.component('trvlmap', {
 	    g2.lineTo(trl.sloc[0], trl.sloc[1]);
 	    g2.stroke();
 	    g2.beginPath();
-	    g2.arc(trl.sloc[0], trl.sloc[1], 4, 0, 2*Math.PI);
-	    g2.fill();
 	    g2.restore();
-	    window.requestAnimationFrame(this.drawTrail);
+	    if (this.anim)
+		window.requestAnimationFrame(this.drawTrail);
 	}
     }
 });
