@@ -10,21 +10,22 @@ import (
 	"time"
 
 	"git.fractalqb.de/fractalqb/namemap"
-
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/common"
+	"github.com/CmdrVasquess/bcplus/internal/edpc"
 	"github.com/CmdrVasquess/bcplus/internal/ship"
 	"github.com/CmdrVasquess/watched"
 )
 
 var (
-	version = "BC+ " + common.VersionAll
-	App     BCpApp
-	cmdr    = NewCommander("", "")
-	LogWrs  = []io.Writer{os.Stderr, &webLog}
-	toSpeak chan<- VoiceMsg
-	log     = qbsllm.New(qbsllm.Lnormal, "BC+", nil, nil)
-	LogCfg  = qbsllm.Config(log, elogCfg, ship.LogCfg, watched.LogCfg)
+	version  = "BC+ " + common.VersionAll
+	App      BCpApp
+	cmdr     = NewCommander("", "")
+	edpcStub edpc.Stub
+	LogWrs   = []io.Writer{os.Stderr, &webLog}
+	toSpeak  chan<- VoiceMsg
+	log      = qbsllm.New(qbsllm.Lnormal, "BC+", nil, nil)
+	LogCfg   = qbsllm.Config(log, elogCfg, ship.LogCfg, watched.LogCfg, edpc.LogCfg)
 	// TODO what to put into BCpApp struct
 	flagJournalDir string
 	flagWebPort    int
@@ -81,6 +82,7 @@ type BCpApp struct {
 	WebAddr    string
 	WebPin     string
 	WebTheme   string
+	WebTabs    []string
 	Speak      SpeakCfg
 	debugMode  bool
 	Lang       string
@@ -154,15 +156,12 @@ func (app *BCpApp) init() {
 	if !setup(app) {
 		app.load()
 	}
-	ship.TheTypes = ship.TypeRepo(app.dataDir)
+	ship.TheTypes = ship.TypeRepo(filepath.Join(app.dataDir, shipsDir))
 	if len(flagJournalDir) > 0 {
 		app.JournalDir = flagJournalDir
 	} else if len(app.JournalDir) == 0 {
 		app.JournalDir = stdJournalDir()
 	}
-	nmRawMat = app.loadNameMap("raw-mats.xsx")
-	nmManMat = app.loadNameMap("man-mats.xsx")
-	nmEncMat = app.loadNameMap("enc-mats.xsx")
 	log.Infoa("journals in `dir`", app.JournalDir)
 	if flagWebPort != 0 {
 		app.WebPort = uint16(flagWebPort)
@@ -189,6 +188,12 @@ func (app *BCpApp) init() {
 	app.tmpLd = NewTmplLoader(filepath.Join(app.assetDir, "goxic"))
 	if flagCmdr != "" {
 		cmdr.switchTo(flagCmdr, "")
+	}
+	nmRawMat = app.loadNameMap("raw-mats.xsx")
+	nmManMat = app.loadNameMap("man-mats.xsx")
+	nmEncMat = app.loadNameMap("enc-mats.xsx")
+	if err = edpcStub.Init(); err != nil {
+		log.Fatale(err)
 	}
 }
 
@@ -223,7 +228,7 @@ func (app *BCpApp) Run(signals <-chan os.Signal) {
 	go eventLoop()
 	quitWatch := watchJournalDir(App.JournalDir)
 	toSpeak = App.Speak.run()
-	go runWebUI()
+	go runWebUI(App.WebTabs)
 	<-signals
 	log.Infof("BC+ %s interrupted; shutting down...", common.VersionLong)
 	cmdr.close()

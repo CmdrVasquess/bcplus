@@ -10,12 +10,14 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/CmdrVasquess/bcplus/internal/galaxy"
-
 	"git.fractalqb.de/fractalqb/ggja"
 	"git.fractalqb.de/fractalqb/namemap"
 	"git.fractalqb.de/fractalqb/qbsllm"
+
+	"github.com/CmdrVasquess/bcplus/internal/common"
+	"github.com/CmdrVasquess/bcplus/internal/galaxy"
 	"github.com/CmdrVasquess/bcplus/internal/ship"
+	"github.com/CmdrVasquess/bcplus/itf"
 	"github.com/CmdrVasquess/watched"
 )
 
@@ -30,12 +32,10 @@ var jHdlrs = map[string]journalHandler{
 	"ApproachBody":        jeApproachBody,
 	"ApproachSettlement":  jeApproachSettlement,
 	"Commander":           jeCommander,
-	"EndCrewSession":      jeEndCrewSession,
 	"FSDJump":             jeFsdJump,
 	"FSSAllBodiesFound":   jeFSSAllBodiesFound,
 	"FSSDiscoveryScan":    jeFSSDiscoveryScan,
 	"FSSSignalDiscovered": jeFSSSignalDiscovered,
-	"JoinACrew":           jeJoinACrew,
 	"LeaveBody":           jeLeaveBody,
 	"LoadGame":            jeLoadGame,
 	"Loadout":             jeLoadout,
@@ -242,12 +242,11 @@ func jsShutdown(t time.Time, evt ggja.Obj) Change {
 func jeTouchdown(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Loc.SetMode(Parked)
+		chg |= cmdr.setLocMode(itf.Docked)
 		if nd := evt.Str("NearestDestination_Localised", ""); nd == "" {
-			chg |= cmdr.Loc.SetRef(Planet)
+			chg |= cmdr.setLocRef(itf.Planet, "")
 		} else {
-			chg |= cmdr.Loc.SetRef(RefUndef)
-			chg |= cmdr.Loc.SetRefNm(nd)
+			chg |= cmdr.setLocRef(itf.NoRefType, nd)
 		}
 	}))
 	return chg
@@ -313,7 +312,7 @@ func jeLoadout(t time.Time, evt ggja.Obj) (chg Change) {
 	}))
 	shipsDir := filepath.Join(cmdrDir(cmdr.Fid), "ships")
 	if _, err := os.Stat(shipsDir); os.IsNotExist(err) {
-		err = os.MkdirAll(shipsDir, 0777)
+		err = os.MkdirAll(shipsDir, common.DirFileMode)
 		if err != nil {
 			log.Panice(err)
 		}
@@ -338,33 +337,26 @@ func jeLocation(t time.Time, evt ggja.Obj) Change {
 	writeState(noErr(func() {
 		inSysInfo.reset()
 		spos := evt.MArr("StarPos")
-		chg |= cmdr.Loc.SetSys(
+		chg |= cmdr.setLocSys(
 			evt.MUint64("SystemAddress"),
 			evt.MStr("StarSystem"),
 			[]float32{spos.MF32(0), spos.MF32(1), spos.MF32(2)},
 		)
 		if evt.MBool("Docked") {
-			chg |= cmdr.Loc.SetMode(Parked)
+			chg |= cmdr.setLocMode(itf.Docked)
 		} else {
-			chg |= cmdr.Loc.SetMode(Move)
+			chg |= cmdr.setLocMode(itf.Cruise) // TODO
 		}
 		if ref := evt.Str("StationName", ""); len(ref) > 0 {
-			chg |= cmdr.Loc.SetRefNm(ref)
-			rty := evt.MStr("StationType")
-			if ty := jeStnTypeMap[rty]; ty == RefUndef {
-				log.Warna("unknown `station type` in location event", rty)
-				chg |= cmdr.Loc.SetRef(RefUndef)
-			} else {
-				chg |= cmdr.Loc.SetRef(ty)
-			}
+			//rty := evt.MStr("StationType")
+			chg |= cmdr.setLocRef(itf.Station, ref)
 		} else if ref := evt.Str("Body", ""); len(ref) > 0 {
-			chg |= cmdr.Loc.SetRefNm(ref)
 			rty := evt.MStr("BodyType")
-			if ty := jeBodyTypeMap[rty]; ty == RefUndef {
+			if ty := jeBodyTypeMap[rty]; ty == itf.NoRefType {
 				log.Warna("unknown `body type` in location event", t)
-				chg |= cmdr.Loc.SetRef(RefUndef)
+				chg |= cmdr.setLocRef(itf.NoRefType, ref)
 			} else {
-				chg |= cmdr.Loc.SetRef(ty)
+				chg |= cmdr.setLocRef(ty, ref)
 			}
 		}
 	}))
@@ -374,8 +366,7 @@ func jeLocation(t time.Time, evt ggja.Obj) Change {
 func jeApproachBody(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Loc.SetRef(RefUndef)
-		chg |= cmdr.Loc.SetRefNm(evt.MStr("Body"))
+		chg |= cmdr.setLocRef(itf.NoRefType, evt.MStr("Body"))
 	}))
 	return chg
 }
@@ -391,10 +382,9 @@ func jeFsdJump(t time.Time, evt ggja.Obj) Change {
 	coos[2] = pos.MF32(2)
 	writeState(noErr(func() {
 		cmdr.AddJump(t, addr, sys, coos)
-		chg |= cmdr.Loc.SetSys(addr, sys, coos[:])
-		chg |= cmdr.Loc.SetRef(jeBodyTypeMap[evt.MStr("BodyType")])
-		chg |= cmdr.Loc.SetRefNm(evt.MStr("Body"))
-		chg |= cmdr.Loc.SetMode(Cruise)
+		chg |= cmdr.setLocSys(addr, sys, coos[:])
+		chg |= cmdr.setLocRef(jeBodyTypeMap[evt.MStr("BodyType")], evt.MStr("Body"))
+		chg |= cmdr.setLocMode(itf.Cruise)
 		inSysInfo.reset()
 	}))
 	return chg | WuiUpInSys | WuiUpTrvl
@@ -448,13 +438,12 @@ func jeStartJump(t time.Time, evt ggja.Obj) Change {
 	switch evt.MStr("JumpType") {
 	case "Hyperspace":
 		writeState(noErr(func() {
-			chg |= cmdr.Loc.SetRef(JTarget)
-			chg |= cmdr.Loc.SetRefNm(evt.MStr("StarSystem"))
-			chg |= cmdr.Loc.SetMode(Jump)
+			chg |= cmdr.setLocMode(itf.Jump)
+			chg |= cmdr.setLocRef(itf.Star, evt.MStr("StarSystem"))
 		}))
 	case "Supercruise":
 		writeState(noErr(func() {
-			chg |= cmdr.Loc.SetMode(Cruise)
+			chg |= cmdr.setLocMode(itf.Cruise)
 		}))
 	}
 	return chg
@@ -464,12 +453,10 @@ func jeSupercruiseExit(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
 		if bdy := evt.Str("Body", ""); bdy == "" {
-			chg |= cmdr.Loc.SetRef(Space)
-			chg |= cmdr.Loc.SetRefNm("?")
+			chg |= cmdr.setLocRef(itf.Planet, "")
 		} else {
 			bty := evt.MStr("BodyType")
-			chg |= cmdr.Loc.SetRef(jeBodyTypeMap[bty])
-			chg |= cmdr.Loc.SetRefNm(bdy)
+			chg |= cmdr.setLocRef(jeBodyTypeMap[bty], bdy)
 		}
 	}))
 	return chg
@@ -491,8 +478,7 @@ func jeLoadGame(t time.Time, evt ggja.Obj) Change {
 func jeLeaveBody(t time.Time, evt ggja.Obj) Change {
 	var chg Change
 	writeState(noErr(func() {
-		chg |= cmdr.Loc.SetRef(Space)
-		chg |= cmdr.Loc.SetRefNm("")
+		chg |= cmdr.setLocRef(itf.Planet, "")
 	}))
 	return chg
 }
@@ -503,24 +489,7 @@ func jeApproachSettlement(t time.Time, evt ggja.Obj) Change {
 		if watched.FlagsAny(cmdr.statFlags, watched.StatFlagSupercruise) {
 			return
 		}
-		chg |= cmdr.Loc.SetRef(Settlement)
-		chg |= cmdr.Loc.SetRefNm(evt.MStr("Name"))
-	}))
-	return chg
-}
-
-func jeJoinACrew(t time.Time, evt ggja.Obj) Change {
-	var chg Change
-	writeState(noErr(func() {
-		chg |= cmdr.Loc.SetVehicle(AsCrew)
-	}))
-	return chg
-}
-
-func jeEndCrewSession(t time.Time, evt ggja.Obj) Change {
-	var chg Change
-	writeState(noErr(func() {
-		chg |= cmdr.Loc.SetVehicle(InShip)
+		chg |= cmdr.setLocRef(itf.NoRefType, evt.MStr("Name"))
 	}))
 	return chg
 }
@@ -640,19 +609,19 @@ func jeScreenshot(t time.Time, evt ggja.Obj) Change {
 }
 
 var (
-	jeBodyTypeMap = map[string]PosRef{
-		"Star":            Star,
-		"Planet":          Planet,
-		"PlanetaryRing":   Ring,
-		"StellarRing":     Ring,
-		"Station":         Station,
-		"AsteroidCluster": Belt,
+	jeBodyTypeMap = map[string]itf.LocRefType{
+		"Star":            itf.Star,
+		"Planet":          itf.Planet,
+		"PlanetaryRing":   itf.NoRefType,
+		"StellarRing":     itf.NoRefType,
+		"Station":         itf.Station,
+		"AsteroidCluster": itf.NoRefType,
 	}
-	jeStnTypeMap = map[string]PosRef{
-		"Coriolis":      Station,
-		"Orbis":         Station,
-		"Outpost":       Outpost,
-		"CraterOutpost": Outpost,
-		"CraterPort":    Station,
-	}
+	// jeStnTypeMap = map[string]PosRef{
+	// 	"Coriolis":      Station,
+	// 	"Orbis":         Station,
+	// 	"Outpost":       Outpost,
+	// 	"CraterOutpost": Outpost,
+	// 	"CraterPort":    Station,
+	// }
 )

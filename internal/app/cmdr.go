@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"git.fractalqb.de/fractalqb/ggja"
+	"github.com/CmdrVasquess/bcplus/internal/common"
 	"github.com/CmdrVasquess/bcplus/internal/galaxy"
 	"github.com/CmdrVasquess/bcplus/internal/ship"
+	"github.com/CmdrVasquess/bcplus/itf"
 	"github.com/jinzhu/gorm"
 )
 
@@ -36,10 +38,15 @@ type Bookmark struct {
 	Tags []string `json:",omitempty"`
 }
 
+type CmdrLoc struct {
+	Sys galaxy.SysDesc
+	itf.LocInSys
+}
+
 type Commander struct {
 	Fid          string
 	Name         string
-	Loc          Location
+	Loc          CmdrLoc
 	Ship         ship.ShipRef
 	OnScreenShot ggja.GenArr
 	Mats         map[string]MatState `json:"MatNeed"`
@@ -49,8 +56,8 @@ type Commander struct {
 	SurfDest     []float64
 	JumpHist     []FsdJump
 	JumpW        int
+	EdpcStory    int
 	statFlags    uint32
-	surfLoc      SurfPos
 	firstJump    bool
 	db           *gorm.DB
 }
@@ -137,7 +144,7 @@ func cmdrDir(fid string) string {
 	res := filepath.Join(App.dataDir, fid)
 	if _, err := os.Stat(res); os.IsNotExist(err) {
 		log.Infoa("new cmdr data `dir`", res)
-		err := os.MkdirAll(res, 0777)
+		err := os.MkdirAll(res, common.DirFileMode)
 		if err != nil {
 			log.Panice(err)
 		}
@@ -184,6 +191,9 @@ func (cmdr *Commander) switchTo(fid, name string) {
 		cmdr.sanitizeJumpHist()
 	}
 	cmdr.db = openDB(fid)
+	if err = edpcStub.SetCmdr(fid, filepath.Join(cmdrDir(fid), "edpc")); err != nil {
+		log.Panice(err)
+	}
 }
 
 func (cmdr *Commander) sanitizeJumpHist() {
@@ -212,4 +222,87 @@ func (cmdr *Commander) sanitizeJumpHist() {
 		cmdr.JumpHist = cmdr.JumpHist[:JumpMax]
 	}
 	cmdr.JumpW = 0
+}
+
+func (cmdr *Commander) setLocMode(m itf.TravelMode) (chg Change) {
+	if cmdr.Loc.Mode != m {
+		cmdr.Loc.Mode = m
+		chg = ChgLoc
+	}
+	return chg
+}
+
+func (cmdr *Commander) setLocSys(addr uint64, name string, coos []float32) (chg Change) {
+	if cmdr.Loc.Sys.Addr != addr {
+		cmdr.Loc.Sys.Addr = addr
+		chg = ChgLoc
+	}
+	if cmdr.Loc.Sys.Name != name {
+		cmdr.Loc.Sys.Name = name
+		chg = ChgLoc
+	}
+	for i := range coos {
+		if cmdr.Loc.Sys.Coos[i] != coos[i] {
+			cmdr.Loc.Sys.Coos[i] = coos[i]
+			chg = ChgLoc
+		}
+	}
+	return chg
+}
+
+func (cmdr *Commander) setLocRef(t itf.LocRefType, nm string) (chg Change) {
+	if cmdr.Loc.RefType != t {
+		cmdr.Loc.RefType = t
+		chg = ChgLoc
+	}
+	if cmdr.Loc.Ref != nm {
+		cmdr.Loc.Ref = nm
+		chg = ChgLoc
+	}
+	return chg
+}
+
+func (cmdr *Commander) setLocCoos(cs ...float64) (chg Change) {
+	if len(cs) != len(cmdr.Loc.Coos) {
+		chg = ChgLoc
+	} else {
+		for i, c := range cs {
+			if c != cmdr.Loc.Coos[i] {
+				chg = ChgLoc
+			}
+		}
+	}
+	cmdr.Loc.Coos = cs
+	return chg
+}
+
+func (cmdr *Commander) setLocAlt(a float64) (cgh Change) {
+	if len(cmdr.Loc.Coos) >= 3 {
+		if cmdr.Loc.Coos[2] == a {
+			return 0
+		}
+		cmdr.Loc.Coos[2] = a
+	} else {
+		tmp := []float64{0, 0, a}
+		copy(tmp, cmdr.Loc.Coos)
+		cmdr.Loc.Coos = tmp
+	}
+	return ChgLoc
+}
+
+func (cmdr *Commander) setLocLatLon(lat, lon float64) (cgh Change) {
+	if len(cmdr.Loc.Coos) < 2 {
+		cmdr.Loc.Coos = []float64{lat, lon}
+		return ChgLoc
+	}
+	if cmdr.Loc.Coos[0] != lat {
+		cmdr.Loc.Coos[0] = lat
+		cmdr.Loc.Coos[1] = lon
+		return ChgLoc
+	}
+	if cmdr.Loc.Coos[1] != lon {
+		cmdr.Loc.Coos[1] = lon
+		return ChgLoc
+	}
+	return 0
 }

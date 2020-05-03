@@ -42,7 +42,7 @@ Vue.component('trvlmap', {
 	data: Object
     },
     data: function() { return {
-	anim: true
+	anim: false
     }},
     template: '<canvas :width="(2*size)+hbar" :height="size" \
                v-on:click="anim=!anim;drawTrail(0)"></canvas>',

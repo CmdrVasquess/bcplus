@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+<!-- >>> title >>> -->
+BC+: EDPC
+<!-- <<< title <<< -->
+	</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../s/img/logo.ico">
+    <link rel="stylesheet" type="text/css" href="../../s/css/th-light.css">
+    <link rel="stylesheet" type="text/css" href="../../s/css/bcp.css">
+    <script src="/s/js/vue.js"></script>
+<!-- >>> style >>> -->
+    <style>
+main {
+	overflow: hidden;
+	display: grid;
+	grid-template-columns: 2fr 7fr;
+	grid-template-areas: "stories hints";
+}
+#stories {
+	grid-area: stories;
+	overflow-y: auto;
+	padding: .5em;
+}
+div.story {
+	background-color: var(--colBkgDim);
+	border-radius: .4em;
+	padding: .4em .5em;
+	margin-bottom: .5em;
+	box-shadow: 0 0 5px var(--colFgr) inset;
+}
+.story { font-size: 90%; }
+.story h1 {
+	font-size: 100%;
+	margin: 0;
+	margin-bottom: .2em;
+}
+#hints {
+	grid-area: hints;
+	overflow-y: auto;
+	padding: .5em;
+}
+#hints h1 { margin: 0; }
+#hints p.author { margin-top: 0 }
+
+}
+	</style>
+<!-- <<< style <<< -->
+  </head>
+  <body>
+    <header>
+      <div id="hdrCmd">John Doe</div>
+      <div id="hdrShp">Ship Name [Ident]</div>
+      <div id="hdrHSy">System</div><div id="hdrSys">System</div>
+      <div id="hdrHRf">Reference</div><div id="hdrRef">RefType: Reference</div>
+      <div id="hdrHVc">Vehicle</div><div id="hdrVhc">Type</div>
+      <div id="hdrHMd">Mode</div><div id="hdrMod">mode</div>
+      <div id="hdrAlt" v-if="hdr.Loc.sc">Alt: x</div>
+      <div id="hdrCoo" v-if="hdr.Loc.sc">x.yy / y.xx</div>
+    </header>
+<!-- >>> main >>> -->
+	  <main>
+	    <div id="stories">
+	      <story v-for="s in stories" :key="s.Id" :value="s"></story>
+	    </div>
+	    <div id="hints">
+	      <h1>`story\xml`</h1>
+	      <p class="author">by `author\xml`</p>
+<!-- >>> hints <<< -->
+<!-- >>> hint >>> -->
+		<div class="hint">
+		  a Hint
+		</div>
+<!-- <<< hint <<< -->
+            </div>
+	  </main>
+	  <script>
+Vue.component('story', {
+	props: ['value'],
+	template: '<div class="story">\
+                 <h1>{{value.Title}}</h1>\
+                 <span v-if="value.Author">by {{value.Author}}</span>\
+                 <span v-else>unknown author</span>\
+               </div>'
+});
+const edpcApp = new Vue({
+    el: 'main',
+    data: {
+	"stories": `story-list`	}
+});
+	  </script>
+<!-- <<< main <<< -->
+  </body>
+</html>

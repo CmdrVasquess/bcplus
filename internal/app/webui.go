@@ -54,6 +54,14 @@ func (scr *Screen) init(bt *goxic.BounT, head *WuiHdr, tab string) {
 	bt.BindGen(scr.InitHdr, jsonContent(head))
 }
 
+type JsonStr string
+
+func (s JsonStr) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	json.HTMLEscape(&buf, []byte(s))
+	return buf.Bytes(), nil
+}
+
 type DateTime time.Time
 
 type Tab struct {
@@ -153,6 +161,7 @@ func webLoadTmpls() {
 	scrnInSys.loadTmpl(&gxtPage)
 	scrnMats.loadTmpl(&gxtPage)
 	scrnTravel.loadTmpl(&gxtPage)
+	scrnEdpc.loadTmpl(&gxtPage)
 }
 
 func webAuth(h http.HandlerFunc) http.HandlerFunc {
@@ -179,6 +188,7 @@ func webAuth(h http.HandlerFunc) http.HandlerFunc {
 
 var (
 	tabs = []Tab{
+		Tab{edpcTab, "EDPC", "/edpc"},
 		Tab{travelTab, "Travel", "/travel"},
 		Tab{insysTab, "System", "/insys"},
 		Tab{matsTab, "Materials", "/mats"},
@@ -189,26 +199,37 @@ var (
 		shipsTab:  scrnShips.ServeHTTP,
 		matsTab:   scrnMats.ServeHTTP,
 		travelTab: scrnTravel.ServeHTTP,
+		edpcTab:   scrnEdpc.ServeHTTP,
 	}
 )
 
-func webRoutes() {
+func webRoutes(selectTabs []string) {
 	htStatic := http.FileServer(http.Dir(filepath.Join(App.assetDir, "s")))
 	http.HandleFunc("/s/", webAuth(http.StripPrefix("/s", htStatic).ServeHTTP))
 	http.HandleFunc("/ws/app", webAuth(appWs))
 	http.HandleFunc("/ws/log", webAuth(logWs))
-	for _, tab := range tabs {
-		http.HandleFunc(tab.Url, tabHdlr[tab.Key])
+	if len(selectTabs) > 0 {
+		for _, st := range selectTabs {
+			for _, tab := range tabs {
+				if tab.Key == st {
+					http.HandleFunc(tab.Url, tabHdlr[tab.Key])
+				}
+			}
+		}
+	} else {
+		for _, tab := range tabs {
+			http.HandleFunc(tab.Url, tabHdlr[tab.Key])
+		}
 	}
 	http.HandleFunc("/", webAuth(func(wr http.ResponseWriter, rq *http.Request) {
 		http.Redirect(wr, rq, "/insys", http.StatusSeeOther)
 	}))
 }
 
-func runWebUI() {
+func runWebUI(tabs []string) {
 	webUiUpd = make(chan Change, 64)
 	webLoadTmpls()
-	webRoutes()
+	webRoutes(tabs)
 	keyf := filepath.Join(App.dataDir, keyFile)
 	crtf := filepath.Join(App.dataDir, certFile)
 	lstn := fmt.Sprintf("%s:%d", App.WebAddr, App.WebPort)
@@ -223,7 +244,7 @@ type WuiMsg struct {
 
 type WuiHdr struct {
 	Name string
-	Loc  *Location
+	Loc  *CmdrLoc
 	Ship struct {
 		Ident string
 		Name  string

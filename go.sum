@@ -4,6 +4,8 @@ git.fractalqb.de/fractalqb/c4hgol v0.10.0 h1:Vp1c60POR9NBa2DXp5bCjiUksWQwIP3aInw
 git.fractalqb.de/fractalqb/c4hgol v0.10.0/go.mod h1:WaEjUnHxxec4RshLTh6cbtbzTnaYYgsK01gjrkBmuoo=
 git.fractalqb.de/fractalqb/c4qblog v0.9.0 h1:CSStzfIwzCJu+3DolOSlm6sSqh9haZS9R7CWZeMQsh8=
 git.fractalqb.de/fractalqb/c4qblog v0.9.0/go.mod h1:xWovUEY5CD6RdCPOekyQRw/RVz8G2JBzt2m6rbbVohE=
+git.fractalqb.de/fractalqb/c4qblog v0.9.1 h1:XJvJcaWvpUS9Q3xTtw/yWRx4f+XE5GCh1Mq31k9m1v4=
+git.fractalqb.de/fractalqb/c4qblog v0.9.1/go.mod h1:xWovUEY5CD6RdCPOekyQRw/RVz8G2JBzt2m6rbbVohE=
 git.fractalqb.de/fractalqb/ggja v0.8.1 h1:AYMLafP/5PlP6Ci8mbckbe2/QmdFzUPN56xdL9bv5K4=
 git.fractalqb.de/fractalqb/ggja v0.8.1/go.mod h1:AIZ5hSqD4EkkA7UhzCeGfD7dS6rjs164qh1hx1B7LE8=
 git.fractalqb.de/fractalqb/goxic v0.8.1 h1:UKYmX/SPLYMP0es5Y/hsYuX6oTA1JfSHa2uwP86ufW8=
@@ -12,8 +14,8 @@ git.fractalqb.de/fractalqb/namemap v0.9.0 h1:XMn4MZdmi/1jUe9Sk+hfxzRcuJuTILUtCIE
 git.fractalqb.de/fractalqb/namemap v0.9.0/go.mod h1:rBF1Ar2+0lwq5A41cTfVFVpta7EU6hgipS18sIj5ZRI=
 git.fractalqb.de/fractalqb/nmconv v1.0.0 h1:0uluk8m1Yq6BVQizSMl42DckknX3lZtorNwsMXqF9Z4=
 git.fractalqb.de/fractalqb/nmconv v1.0.0/go.mod h1:W0ZWPoOv/Pr0aSrmu4Qt8IbXF/gFfyCG08OQLkltGks=
-git.fractalqb.de/fractalqb/pack v0.5.1-a.0.20190914115503-7e9a835cbedf h1:qb1WXWdwpW5p8W1XnFS79o9uYG0QQ7DVfdO9bS7tJAU=
-git.fractalqb.de/fractalqb/pack v0.5.1-a.0.20190914115503-7e9a835cbedf/go.mod h1:Kb+jKCjTtcJ7teLnqfGTKNbDjABQZpE/Dm0WAxqOtrg=
+git.fractalqb.de/fractalqb/pack v0.5.2 h1:0sQKyBVbgMcd3qVPUj01MGwGlifvTR29gwUDFR8IeEc=
+git.fractalqb.de/fractalqb/pack v0.5.2/go.mod h1:Kb+jKCjTtcJ7teLnqfGTKNbDjABQZpE/Dm0WAxqOtrg=
 git.fractalqb.de/fractalqb/qblog v0.9.0 h1:3Hbj1t79z928cw0HF5qujsfCieCXUQ60x+Baurigfj0=
 git.fractalqb.de/fractalqb/qblog v0.9.0/go.mod h1:cQS2sL/5ZzPpCG/vjuKBfSk540bnj+w2vtF5px89L8c=
 git.fractalqb.de/fractalqb/qbsllm v0.9.0 h1:OV3cAaKon7RLtPAUkhFGfRKYN0meVfBoXS+3Wazp8oI=
@@ -24,6 +26,8 @@ git.fractalqb.de/fractalqb/sllm v0.10.0 h1:qyNesnS2MlbCf73ZTROKuoqZgoXYN5DBFSRW/
 git.fractalqb.de/fractalqb/sllm v0.10.0/go.mod h1:FlGIXCoFd6kE9FExAmiZ2CPWrUG8mRdm+fa44zOgPYI=
 git.fractalqb.de/fractalqb/xsx v0.0.0-20191112200052-067f950ee236 h1:r3oyhKTn1kgq6Chg/8Y4kA3Ac8BMPRGJgrSpWzDSLIQ=
 git.fractalqb.de/fractalqb/xsx v0.0.0-20191112200052-067f950ee236/go.mod h1:COyDfUOWSzAYlD4gtqtJoVxo6daPSuDzU4+3u2SuEIM=
+git.fractalqb.de/fractalqb/xsx v0.7.0 h1:Lfs4cr5Ab8UNCDAeMfz9WpQPehr471Szb284/JIWUF8=
+git.fractalqb.de/fractalqb/xsx v0.7.0/go.mod h1:COyDfUOWSzAYlD4gtqtJoVxo6daPSuDzU4+3u2SuEIM=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/CmdrVasquess/watched v0.3.0 h1:KQGiYtWOVpUWe50EiJdlEguWwHb5D7h8brJ1XNtIaBQ=
 github.com/CmdrVasquess/watched v0.3.0/go.mod h1:OPGeC4eBS/dcs2Fj67h/LEoSgo2HeAiu2xB9Ob8BnUk=
@@ -41,6 +45,8 @@ github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 h1:Yzb9+7DP
 github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5/go.mod h1:a2zkGnVExMxdzMo3M0Hi/3sEU+cWnZpSni0O6/Yb/P0=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
+github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
+github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/go-sql-driver/mysql v1.4.1 h1:g24URVg0OFbNUTx9qqY1IRZ9D9z3iPyi5zKhQZpNwpA=
 github.com/go-sql-driver/mysql v1.4.1/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
 github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
@@ -50,8 +56,8 @@ github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe/go.mod h1:8vg3r2V
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/gonutz/w32 v1.0.0 h1:3t1z6ZfkFvirjFYBx9pHeHBuKoN/VBVk9yHb/m2Ll/k=
 github.com/gonutz/w32 v1.0.0/go.mod h1:Rc/YP5K9gv0FW4p6X9qL3E7Y56lfMflEol1fLElfMW4=
-github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvKCM=
-github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
+github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
+github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/jinzhu/gorm v1.9.12 h1:Drgk1clyWT9t9ERbzHza6Mj/8FY/CqMyVzOiHviMo6Q=
@@ -91,8 +97,8 @@ github.com/stvp/assert v0.0.0-20170616060220-4bc16443988b h1:GlTM/aMVIwU3luIuSN2
 github.com/stvp/assert v0.0.0-20170616060220-4bc16443988b/go.mod h1:CC7OXV9IjEZRA+znA6/Kz5vbSwh69QioernOHeDCatU=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
-go.etcd.io/bbolt v1.3.3 h1:MUGmc65QhB3pIlaQ5bB4LwqSj6GIonVJXpZiaKNyaKk=
-go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
+go.etcd.io/bbolt v1.3.4 h1:hi1bXHMVrlQh6WwxAy+qZCV/SYIlqo+Ushwdpa4tAKg=
+go.etcd.io/bbolt v1.3.4/go.mod h1:G5EMThwa9y8QZGBClrRx5EY+Yw9kAhnjy3bSjsnlVTQ=
 golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c h1:Vj5n4GlwjmQteupaxJ9+0FNOmBrHfq7vN4btdGoDZgI=
@@ -108,8 +114,10 @@ golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5h
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7 h1:wYqz/tQaWUgGKyx+B/rssSE6wkIKdY5Ee6ryOmzarIg=
 golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae h1:/WDfKMnPU+m5M4xB+6x4kaepxRw6jWvR5iDRdvjHgy8=
-golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20200501052902-10377860bb8e h1:hq86ru83GdWTlfQFZGO4nZJTU4Bs2wfHl8oFHRaXsfc=
+golang.org/x/sys v0.0.0-20200501052902-10377860bb8e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.2/go.mod h1:bEr9sfX3Q8Zfm5fL9x+3itogRgK3+ptLWKqgva+5dAk=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
