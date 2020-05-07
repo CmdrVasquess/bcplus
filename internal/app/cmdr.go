@@ -264,11 +264,11 @@ func (cmdr *Commander) setLocRef(t itf.LocRefType, nm string) (chg Change) {
 
 func (cmdr *Commander) setLocCoos(cs ...float64) (chg Change) {
 	if len(cs) != len(cmdr.Loc.Coos) {
-		chg = ChgLoc
+		chg = ChgCoos
 	} else {
 		for i, c := range cs {
 			if c != cmdr.Loc.Coos[i] {
-				chg = ChgLoc
+				chg = ChgCoos
 			}
 		}
 	}

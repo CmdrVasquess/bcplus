@@ -2,6 +2,7 @@ package app
 
 import (
 	"git.fractalqb.de/fractalqb/c4hgol"
+	"github.com/CmdrVasquess/bcplus/itf"
 	"github.com/CmdrVasquess/watched"
 )
 
@@ -23,7 +24,7 @@ type Change uint32
 const (
 	ChgCmdr Change = (1 << iota)
 	ChgShip
-	ChgPos
+	ChgCoos
 	ChgLoc
 	WuiUpInSys
 	WuiUpTrvl
@@ -73,6 +74,13 @@ func eventLoop() {
 		}
 		if chg != 0 {
 			webUiUpd <- chg
+			if chg&ChgLoc == ChgLoc {
+				edpcStub.LocUpdate <- itf.Location{
+					SysID:    cmdr.Loc.Sys.Addr,
+					SysName:  cmdr.Loc.Sys.Name,
+					LocInSys: cmdr.Loc.LocInSys,
+				}
+			}
 		}
 		chg = 0
 	}

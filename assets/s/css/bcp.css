@@ -45,6 +45,11 @@ nav > div {
 	padding: .5em .7em;
 	margin-right: .3em;
 }
+main a:any-link {
+    color: var(--colFgr);
+    text-decoration: none;
+/*   text-shadow: 0 0 3px var(--colFgrAlt);*/
+}
 nav a:any-link {
 	color: var(--colFgrAlt);
 	text-decoration: none;

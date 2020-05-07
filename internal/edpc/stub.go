@@ -3,8 +3,14 @@ package edpc
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
+	"time"
+
+	"github.com/CmdrVasquess/bcplus/itf"
 
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/common"
@@ -20,10 +26,13 @@ var (
 )
 
 type Stub struct {
-	dir string
+	dir       string
+	LocUpdate chan itf.Location
 }
 
 func (s *Stub) Init() error {
+	s.LocUpdate = make(chan itf.Location, 8)
+	go s.locUpdater()
 	return nil
 }
 
@@ -61,4 +70,25 @@ func (s *Stub) ListStories() (res []Story, err error) {
 		return nil, err
 	}
 	return d.Stories, nil
+}
+
+func (s *Stub) locUpdater() {
+	log.Infos("running location updater")
+	defer log.Infos("location updater terminated")
+	httpClt := http.Client{Timeout: 5 * time.Second}
+	for loc := range s.LocUpdate {
+		locpath := []string{url.PathEscape(loc.SysName)}
+		log.Tracea("update `location`", loc)
+		if loc.RefType == itf.NoRefType {
+			locpath = append(locpath, url.PathEscape(loc.Mode.String()))
+		}
+		pstr := path.Join(locpath...)
+		resp, err := httpClt.Head(pstr)
+		if err == nil {
+			log.Infoa("discovered hint `at`", pstr)
+			resp.Body.Close()
+		} else {
+			log.Debuga("no hint `at`: `req-err`", pstr, err)
+		}
+	}
 }

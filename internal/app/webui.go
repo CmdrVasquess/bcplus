@@ -276,7 +276,7 @@ type WuiUpdate struct {
 	P   interface{} `json:",omitempty"`
 }
 
-const wuiChgHdr = ChgCmdr | ChgShip | ChgLoc | ChgPos
+const wuiChgHdr = ChgCmdr | ChgShip | ChgLoc | ChgCoos
 
 func wuiUpdates(chg, anyTab Change) bool {
 	if anyTab&theCurrentTab == 0 {

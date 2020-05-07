@@ -234,6 +234,7 @@ func (app *BCpApp) Run(signals <-chan os.Signal) {
 	cmdr.close()
 	app.save()
 	close(EventQ)
+	close(edpcStub.LocUpdate)
 	close(webUiUpd)
 	if toSpeak != nil {
 		close(toSpeak)

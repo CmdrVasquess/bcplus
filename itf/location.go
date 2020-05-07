@@ -76,6 +76,7 @@ type LocInSys struct {
 }
 
 type Location struct {
-	SysID uint64
+	SysID   uint64
+	SysName string
 	LocInSys
 }
