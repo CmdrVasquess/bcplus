@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"git.fractalqb.de/fractalqb/goxic"
+	. "git.fractalqb.de/fractalqb/goxic/content"
 )
 
 type matsScreen struct {
@@ -29,9 +30,9 @@ func (s *matsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	var bt goxic.BounT
 	var h WuiHdr
 	s.init(&bt, &h, matsTab)
-	bt.BindGen(s.MatNeed, jsonContent(&cmdr.Mats))
-	bt.BindGen(s.RcpNeed, jsonContent(&cmdr.Rcps))
+	bt.Bind(s.MatNeed, Json{V: &cmdr.Mats})
+	bt.Bind(s.RcpNeed, Json{V: &cmdr.Rcps})
 	readState(noErr(func() {
-		bt.Emit(wr)
+		goxic.Must(bt.WriteTo(wr))
 	}))
 }

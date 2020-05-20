@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"git.fractalqb.de/fractalqb/goxic"
+	. "git.fractalqb.de/fractalqb/goxic/content"
 	"git.fractalqb.de/fractalqb/nmconv"
 )
 
@@ -33,7 +34,7 @@ func (s *offPage) isOffline(tab string, wr http.ResponseWriter, rq *http.Request
 	head.Ship.Name = "…offline…"
 	head.Ship.Ident = "…offline…"
 	(*Screen)(s).init(&bt, &head, tab)
-	bt.Emit(wr)
+	goxic.Must(bt.WriteTo(wr))
 	return true
 }
 
@@ -49,9 +50,9 @@ func (scr *Screen) init(bt *goxic.BounT, head *WuiHdr, tab string) {
 		head.set(cmdr)
 	}
 	scr.NewBounT(bt)
-	bt.BindP(scr.Theme, App.WebTheme)
-	bt.BindP(scr.ActiveTab, tab)
-	bt.BindGen(scr.InitHdr, jsonContent(head))
+	bt.Bind(scr.Theme, P(App.WebTheme))
+	bt.Bind(scr.ActiveTab, P(tab))
+	bt.Bind(scr.InitHdr, Json{V: head})
 }
 
 type JsonStr string
@@ -122,20 +123,24 @@ func (page *WebPage) from(scrnFile, scrnLang string) map[string]*goxic.Template 
 		return t.NewBounT(nil)
 	}
 	btPage := page.NewBounT(nil)
-	btPage.BindP(page.Lang, App.Lang)
+	btPage.Bind(page.Lang, P(App.Lang))
 	btPage.Bind(page.Title, mustBount("title"))
 	btPage.Bind(page.Style, mayBount("style"))
 	btPage.Bind(page.Main, mustBount("main"))
-	tmp := btPage.Fixate()
-	err := tmp.XformPhs(true, goxic.StripPath)
+	tmp, err := btPage.Fixate()
+	if err != nil {
+		log.Fatale(err)
+	}
+	err = tmp.XformPhs(true, goxic.StripPath)
 	if err != nil {
 		log.Fatale(err)
 	}
 	tmp.NewBounT(btPage)
-	btPage.BindGenName("tabs", jsonContent(tabs))
-	tmp = btPage.Fixate()
-	err = tmp.XformPhs(true, goxic.StripPath)
-	if err != nil {
+	btPage.BindName("tabs", Json{V: tabs})
+	if tmp, err = btPage.Fixate(); err != nil {
+		log.Fatale(err)
+	}
+	if err = tmp.XformPhs(true, goxic.StripPath); err != nil {
 		log.Fatale(err)
 	}
 	tScr[""] = tmp.Pack()

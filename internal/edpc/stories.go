@@ -6,6 +6,7 @@ import (
 
 type Data struct {
 	Stories []Story
+	Front   int
 }
 
 type Hint struct {
@@ -18,4 +19,5 @@ type Story struct {
 	Title  string
 	Author string
 	Hints  []Hint
+	URL    string
 }

@@ -1,8 +1,6 @@
 package app
 
 import (
-	"encoding/json"
-	"io"
 	"path/filepath"
 	"strings"
 	"unicode"
@@ -73,18 +71,4 @@ func (tld *TmplLoader) load(name, lang string) map[string]*goxic.Template {
 		}
 	}
 	return res
-}
-
-func jsonContent(j interface{}) func(io.Writer) int {
-	return func(wr io.Writer) int {
-		enc := json.NewEncoder(wr)
-		if App.debugMode {
-			enc.SetIndent("", "\t")
-		}
-		err := enc.Encode(j)
-		if err != nil {
-			panic(err)
-		}
-		return 1
-	}
 }

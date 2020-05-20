@@ -79,7 +79,7 @@ func (g *Galaxy) GetSystem(edid uint64) (sys *System, err error) {
 
 func init() {
 	gob.Register(SysPair{})
-	gob.Register(SysBody{})
+	gob.Register(&SysBody{})
 	gob.Register(SysRing{})
 	gob.Register(SysSattelite{})
 }
@@ -98,22 +98,22 @@ type System struct {
 }
 
 type SystemObject interface {
-	GravParent() SystemObject
+	Parent() SystemObject
 	Name() string
 	SetName(n string)
 	Visit(parent1st bool, fn func(so SystemObject) (done bool)) bool
 }
 
 type GravObject interface {
-	GravChilds() []SystemObject
+	Children() []SystemObject
 }
 
 type sysObj struct {
-	parent SystemObject
-	ObjNm  string
+	prnt  SystemObject
+	ObjNm string
 }
 
-func (so *sysObj) GravParent() SystemObject { return so.parent }
+func (so *sysObj) Parent() SystemObject { return so.prnt }
 
 func (so *sysObj) Name() string { return so.ObjNm }
 

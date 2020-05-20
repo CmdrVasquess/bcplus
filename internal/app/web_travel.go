@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"git.fractalqb.de/fractalqb/goxic"
+	. "git.fractalqb.de/fractalqb/goxic/content"
 )
 
 type travelScreen struct {
@@ -40,7 +41,7 @@ func (s *travelScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 			Bookms:   cmdr.Bookmarks,
 			DestBm:   cmdr.DestBM,
 		}
-		bt.BindGen(s.Data, jsonContent(data))
-		bt.Emit(wr)
+		bt.Bind(s.Data, Json{V: data})
+		goxic.Must(bt.WriteTo(wr))
 	}))
 }

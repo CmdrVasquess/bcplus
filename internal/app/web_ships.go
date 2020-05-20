@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"git.fractalqb.de/fractalqb/goxic"
+	. "git.fractalqb.de/fractalqb/goxic/content"
 	"github.com/CmdrVasquess/bcplus/internal/ship"
 )
 
@@ -48,8 +49,8 @@ func (s *shipsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	var h WuiHdr
 	s.init(&bt, &h, shipsTab)
 	ships := wuiLoadShips(cmdr.Ship.Ship)
-	bt.BindGen(s.Data, jsonContent(ships))
+	bt.Bind(s.Data, Json{V: ships})
 	readState(noErr(func() {
-		bt.Emit(wr)
+		goxic.Must(bt.WriteTo(wr))
 	}))
 }

@@ -56,7 +56,7 @@ type Commander struct {
 	SurfDest     []float64
 	JumpHist     []FsdJump
 	JumpW        int
-	EdpcStory    int
+	edpcStory    string
 	statFlags    uint32
 	firstJump    bool
 	db           *gorm.DB
@@ -191,7 +191,8 @@ func (cmdr *Commander) switchTo(fid, name string) {
 		cmdr.sanitizeJumpHist()
 	}
 	cmdr.db = openDB(fid)
-	if err = edpcStub.SetCmdr(fid, filepath.Join(cmdrDir(fid), "edpc")); err != nil {
+	cmdr.edpcStory, err = edpcStub.SetCmdr(fid, filepath.Join(cmdrDir(fid), "edpc"))
+	if err != nil {
 		log.Panice(err)
 	}
 }

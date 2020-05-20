@@ -1,7 +1,8 @@
 package galaxy
 
 import (
-	"fmt"
+	"encoding/json"
+	"os"
 	"testing"
 )
 
@@ -11,7 +12,12 @@ func TestGalaxy_putnget(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer g.Close()
-	sys := &System{Addr: 4711, Name: "Zeta Reticuli"}
+	sys := &System{
+		SysDesc: SysDesc{Addr: 4711, Name: "Zeta Reticuli"},
+		Center: &SysBody{
+			Type: Star,
+		},
+	}
 	err = g.PutSystem(sys)
 	if err != nil {
 		t.Fatal(err)
@@ -20,5 +26,6 @@ func TestGalaxy_putnget(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(sys)
+	enc := json.NewEncoder(os.Stdout)
+	enc.Encode(sys)
 }

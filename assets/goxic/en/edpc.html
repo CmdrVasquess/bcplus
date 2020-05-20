@@ -78,6 +78,8 @@ div.story {
 	    <div id="hints">
 	      <h1>{{story.Title}}</h1>
 	      <p class="author">by {{story.Author}}</p>
+	      <iframe src="`story-url\xml`/index" width="100%" height="200px"
+		      sandbox=""></iframe>
 	      <details v-for="(hint, idx) in hints" :key="idx">
 		<summary>{{hint.Loc}} at {{hint.Found}}
 		  <a :href="hint.Src" target="_blank">➲</a></summary>

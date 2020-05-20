@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	"git.fractalqb.de/fractalqb/goxic"
+	. "git.fractalqb.de/fractalqb/goxic/content"
 )
 
 type edpcScreen struct {
 	Screen
+	StoryUrl  goxic.PhIdxs
 	StoryList goxic.PhIdxs
 }
 
@@ -38,7 +40,8 @@ func (s *edpcScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	// 		frontStory = &sls[i]
 	// 	}
 	// }
-	bt.BindGen(scrnEdpc.StoryList, jsonContent(sls))
+	bt.Bind(scrnEdpc.StoryUrl, P(cmdr.edpcStory))
+	bt.Bind(scrnEdpc.StoryList, Json{V: sls})
 	// if frontStory == nil {
 	// 	bt.BindP(scrnEdpc.Story, "– No story selected –")
 	// 	bt.BindP(scrnEdpc.Author, "–")
@@ -47,6 +50,6 @@ func (s *edpcScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	// 	bt.BindP(scrnEdpc.Author, frontStory.Author)
 	// }
 	readState(noErr(func() {
-		bt.Emit(wr)
+		goxic.Must(bt.WriteTo(wr))
 	}))
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"git.fractalqb.de/fractalqb/goxic"
+	. "git.fractalqb.de/fractalqb/goxic/content"
 )
 
 type InSysBody struct {
@@ -65,8 +66,8 @@ func (s *insysScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	var bt goxic.BounT
 	var h WuiHdr
 	s.init(&bt, &h, insysTab)
-	bt.BindGen(s.Data, jsonContent(&inSysInfo))
+	bt.Bind(s.Data, Json{V: &inSysInfo})
 	readState(noErr(func() {
-		bt.Emit(wr)
+		goxic.Must(bt.WriteTo(wr))
 	}))
 }

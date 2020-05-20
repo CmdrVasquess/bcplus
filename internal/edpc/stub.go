@@ -28,6 +28,7 @@ var (
 type Stub struct {
 	dir       string
 	LocUpdate chan itf.Location
+	storyUrl  string
 }
 
 func (s *Stub) Init() error {
@@ -36,26 +37,40 @@ func (s *Stub) Init() error {
 	return nil
 }
 
-func (s *Stub) SetCmdr(fid string, cmdrDir string) error {
+func (s *Stub) SetCmdr(fid string, cmdrDir string) (storyUrl string, err error) {
+	var data Data
 	if stat, err := os.Stat(cmdrDir); os.IsNotExist(err) {
 		log.Infoa("init `edpc dir`", cmdrDir)
 		os.MkdirAll(cmdrDir, common.DirFileMode)
 		wr, err := os.Create(filepath.Join(cmdrDir, idxFile))
 		if err != nil {
-			return err
+			return "", err
 		}
 		defer wr.Close()
 		enc := json.NewEncoder(wr)
-		if err = enc.Encode(Data{}); err != nil {
-			return err
+		if err = enc.Encode(&data); err != nil {
+			return "", err
 		}
 	} else if err != nil {
-		return err
+		return "", err
 	} else if !stat.IsDir() {
-		return fmt.Errorf("not a directory: %s", cmdrDir)
+		return "", fmt.Errorf("not a directory: %s", cmdrDir)
+	} else if rd, err := os.Open(filepath.Join(cmdrDir, idxFile)); err != nil {
+		return "", err
+	} else {
+		defer rd.Close()
+		dec := json.NewDecoder(rd)
+		if err = dec.Decode(&data); err != nil {
+			return "", err
+		}
+		if data.Front < len(data.Stories) {
+			s.storyUrl = data.Stories[data.Front].URL
+		} else {
+			s.storyUrl = ""
+		}
 	}
 	s.dir = cmdrDir
-	return nil
+	return s.storyUrl, nil
 }
 
 func (s *Stub) ListStories() (res []Story, err error) {
@@ -77,12 +92,16 @@ func (s *Stub) locUpdater() {
 	defer log.Infos("location updater terminated")
 	httpClt := http.Client{Timeout: 5 * time.Second}
 	for loc := range s.LocUpdate {
+		if s.storyUrl == "" {
+			log.Debuga("no stroy url, ignoring update `location`", loc)
+			continue
+		}
 		locpath := []string{url.PathEscape(loc.SysName)}
 		log.Tracea("update `location`", loc)
 		if loc.RefType == itf.NoRefType {
 			locpath = append(locpath, url.PathEscape(loc.Mode.String()))
 		}
-		pstr := path.Join(locpath...)
+		pstr := s.storyUrl + path.Join(locpath...)
 		resp, err := httpClt.Head(pstr)
 		if err == nil {
 			log.Infoa("discovered hint `at`", pstr)
