@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
+
 	"github.com/CmdrVasquess/bcplus/itf"
 
 	"git.fractalqb.de/fractalqb/qbsllm"
@@ -22,7 +24,7 @@ const (
 
 var (
 	log    = qbsllm.New(qbsllm.Lnormal, "edpc", nil, nil)
-	LogCfg = qbsllm.Config(log)
+	LogCfg = c4hgol.Config(qbsllm.NewConfig(log))
 )
 
 type Stub struct {

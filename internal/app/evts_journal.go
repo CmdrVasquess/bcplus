@@ -10,6 +10,8 @@ import (
 	"text/template"
 	"time"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
+
 	"git.fractalqb.de/fractalqb/ggja"
 	"git.fractalqb.de/fractalqb/namemap"
 	"git.fractalqb.de/fractalqb/qbsllm"
@@ -23,7 +25,7 @@ import (
 
 var (
 	jelog    = qbsllm.New(qbsllm.Lnormal, "e-journal", nil, nil)
-	jelogCfg = qbsllm.Config(jelog)
+	jelogCfg = c4hgol.Config(qbsllm.NewConfig(jelog))
 )
 
 type journalHandler func(t time.Time, evt ggja.Obj) Change
@@ -359,6 +361,7 @@ func jeLocation(t time.Time, evt ggja.Obj) Change {
 				chg |= cmdr.setLocRef(ty, ref)
 			}
 		}
+		gxy.GetSystem(cmdr.Loc.Sys.Addr, cmdr.Loc.Sys.Name, true)
 	}))
 	return chg
 }
@@ -386,6 +389,7 @@ func jeFsdJump(t time.Time, evt ggja.Obj) Change {
 		chg |= cmdr.setLocRef(jeBodyTypeMap[evt.MStr("BodyType")], evt.MStr("Body"))
 		chg |= cmdr.setLocMode(itf.Cruise)
 		inSysInfo.reset()
+		gxy.GetSystem(cmdr.Loc.Sys.Addr, cmdr.Loc.Sys.Name, true)
 	}))
 	return chg | WuiUpInSys | WuiUpTrvl
 }

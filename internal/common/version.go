@@ -3,8 +3,8 @@ package common
 const (
 	BCpMajor   = 0
 	BCpMinor   = 9
-	BCpPatch   = 1
+	BCpPatch   = 2
 	BCpQuality = `dev`
-	BCpBuildNo = 81
-	BCpDate    = `2020-05-20T20:25:23+02:00`
+	BCpBuildNo = 83
+	BCpDate    = `2020-05-23T14:39:05+02:00`
 )

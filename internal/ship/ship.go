@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
+
 	"github.com/CmdrVasquess/bcplus/internal/galaxy"
 
 	"git.fractalqb.de/fractalqb/ggja"
@@ -16,7 +18,7 @@ import (
 
 var (
 	log    = qbsllm.New(qbsllm.Lnormal, "ship", nil, nil)
-	LogCfg = qbsllm.Config(log)
+	LogCfg = c4hgol.Config(qbsllm.NewConfig(log))
 )
 
 type Engineerable struct {

@@ -5,12 +5,21 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"strings"
+	"time"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
+	"git.fractalqb.de/fractalqb/qbsllm"
 	"go.etcd.io/bbolt"
 )
 
+var (
+	log    = qbsllm.New(qbsllm.Lnormal, "galaxy", nil, nil)
+	LogCfg = c4hgol.Config(qbsllm.NewConfig(log))
+)
+
 type Galaxy struct {
-	db *bbolt.DB
+	db      *bbolt.DB
+	lastSys *System
 }
 
 var (
@@ -19,6 +28,7 @@ var (
 )
 
 func OpenGalaxy(file string) (g *Galaxy, err error) {
+	log.Infoa("open `galaxy db`", file)
 	g = &Galaxy{}
 	g.db, err = bbolt.Open(file, 0666, nil)
 	if err != nil {
@@ -35,13 +45,15 @@ func OpenGalaxy(file string) (g *Galaxy, err error) {
 }
 
 func (g *Galaxy) Close() error {
-	if g.db != nil {
+	if g != nil && g.db != nil {
+		log.Infos("close galaxy db")
 		return g.db.Close()
 	}
 	return nil
 }
 
 func (g *Galaxy) PutSystem(system *System) (err error) {
+	log.Debuga("put system `addr` `name`", system.Addr, system.Name)
 	var edid [binary.MaxVarintLen64]byte
 	idlen := binary.PutUvarint(edid[:], system.Addr)
 	nm := []byte(strings.ToUpper(system.Name))
@@ -51,7 +63,7 @@ func (g *Galaxy) PutSystem(system *System) (err error) {
 	if err != nil {
 		return err
 	}
-	return g.db.Update(func(tx *bbolt.Tx) (err error) {
+	err = g.db.Update(func(tx *bbolt.Tx) (err error) {
 		syss := tx.Bucket(bucketSystems)
 		if err = syss.Put(edid[:idlen], sys.Bytes()); err != nil {
 			return err
@@ -59,11 +71,17 @@ func (g *Galaxy) PutSystem(system *System) (err error) {
 		n2id := tx.Bucket(bucketName2EdId)
 		return n2id.Put(nm, edid[:idlen])
 	})
+	g.lastSys = system
+	return err
 }
 
-func (g *Galaxy) GetSystem(edid uint64) (sys *System, err error) {
+func (g *Galaxy) FindSystem(addr uint64) (sys *System, err error) {
+	if g.lastSys != nil && g.lastSys.Addr == addr {
+		//log.Tracea("get system `addr` `name` from cache", edid, g.lastSys.Name)
+		return g.lastSys, nil
+	}
 	var id [binary.MaxVarintLen64]byte
-	idlen := binary.PutUvarint(id[:], edid)
+	idlen := binary.PutUvarint(id[:], addr)
 	err = g.db.View(func(tx *bbolt.Tx) error {
 		syss := tx.Bucket(bucketSystems)
 		raw := syss.Get(id[:idlen])
@@ -75,6 +93,36 @@ func (g *Galaxy) GetSystem(edid uint64) (sys *System, err error) {
 		return dec.Decode(sys)
 	})
 	return sys, err
+}
+
+func (g *Galaxy) GetSystem(addr uint64, name string, disco bool) (*System, error) {
+	sys, err := g.FindSystem(addr)
+	if err != nil {
+		return sys, err
+	}
+	switch {
+	case sys == nil:
+		sys := &System{
+			SysDesc: SysDesc{
+				Addr: addr,
+				Name: name,
+			},
+		}
+		if disco {
+			sys.Dicover = time.Now()
+		}
+		if err = g.PutSystem(sys); err != nil {
+			log.Errore(err)
+		}
+	case name != "" && sys.Name != name:
+		log.Infoa("name of system `addr` changed `from` `to`", addr, sys.Name, name)
+		sys.Name = name
+		if err = g.PutSystem(sys); err != nil {
+			log.Errore(err)
+		}
+	}
+	g.lastSys = sys
+	return sys, nil
 }
 
 func init() {
@@ -94,7 +142,8 @@ type SysDesc struct {
 
 type System struct {
 	SysDesc
-	Center SystemObject
+	Dicover time.Time
+	Center  SystemObject
 }
 
 type SystemObject interface {
@@ -173,7 +222,8 @@ const (
 
 type SysBody struct {
 	sysGrav
-	Type SysBodyType
+	BodyID int
+	Type   SysBodyType
 }
 
 func (so *SysBody) Visit(p1st bool, fn func(so SystemObject) (done bool)) bool {

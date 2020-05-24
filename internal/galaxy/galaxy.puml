@@ -1,0 +1,43 @@
+@startuml
+hide empty members
+
+class Galaxy
+Galaxy *-- "0..*" System
+
+class System {
+  SysDesc{Addr, Name, Coos}
+}
+System "1" -- "1\nCenter" SystemObject
+
+interface SystemObject {
+  Parent: SystemObject
+  Name
+}
+SystemObject <|-- GravObject
+SystemObject <|.. SysRing
+SystemObject <|.. SysSattelite
+
+interface GravObject {
+  Children: SystemObject[0..*]
+}
+
+class SysPair
+SysPair o-- "2\nA, B" SystemObject
+
+GravObject <|.. SysPair
+GravObject <|.. SysBody
+
+class SysBody {
+  BodyID
+  Type: SysBodyType
+}
+
+class SysRing {
+  Type: SysRingType
+}
+
+class SysSattelite {
+  Type: SysSattType
+}
+
+@enduml

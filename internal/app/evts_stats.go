@@ -8,6 +8,8 @@ import (
 	"math"
 	"time"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
+
 	"git.fractalqb.de/fractalqb/ggja"
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/itf"
@@ -16,7 +18,7 @@ import (
 
 var (
 	selog    = qbsllm.New(qbsllm.Lnormal, "e-status", nil, nil)
-	selogCfg = qbsllm.Config(selog)
+	selogCfg = c4hgol.Config(qbsllm.NewConfig(selog))
 )
 
 func readStats(file string) (res ggja.GenObj) {

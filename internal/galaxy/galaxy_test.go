@@ -22,7 +22,7 @@ func TestGalaxy_putnget(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sys, err = g.GetSystem(4711)
+	sys, err = g.FindSystem(4711)
 	if err != nil {
 		t.Fatal(err)
 	}

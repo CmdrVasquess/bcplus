@@ -9,10 +9,12 @@ import (
 	"sync"
 	"time"
 
+	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/namemap"
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/common"
 	"github.com/CmdrVasquess/bcplus/internal/edpc"
+	"github.com/CmdrVasquess/bcplus/internal/galaxy"
 	"github.com/CmdrVasquess/bcplus/internal/ship"
 	"github.com/CmdrVasquess/watched"
 )
@@ -20,12 +22,18 @@ import (
 var (
 	version  = "BC+ " + common.VersionAll
 	App      BCpApp
+	gxy      *galaxy.Galaxy
 	cmdr     = NewCommander("", "")
 	edpcStub edpc.Stub
 	LogWrs   = []io.Writer{os.Stderr, &webLog}
 	toSpeak  chan<- VoiceMsg
 	log      = qbsllm.New(qbsllm.Lnormal, "BC+", nil, nil)
-	LogCfg   = qbsllm.Config(log, elogCfg, ship.LogCfg, watched.LogCfg, edpc.LogCfg)
+	LogCfg   = c4hgol.Config(qbsllm.NewConfig(log),
+		elogCfg,
+		watched.LogCfg,
+		galaxy.LogCfg,
+		ship.LogCfg,
+		edpc.LogCfg)
 	// TODO what to put into BCpApp struct
 	flagJournalDir string
 	flagWebPort    int
@@ -156,6 +164,11 @@ func (app *BCpApp) init() {
 	if !setup(app) {
 		app.load()
 	}
+	var err error
+	gxy, err = galaxy.OpenGalaxy(filepath.Join(app.dataDir, "galaxy.bbolt"))
+	if err != nil {
+		log.Fatale(err)
+	}
 	ship.TheTypes = ship.TypeRepo(filepath.Join(app.dataDir, shipsDir))
 	if len(flagJournalDir) > 0 {
 		app.JournalDir = flagJournalDir
@@ -181,7 +194,7 @@ func (app *BCpApp) init() {
 	} else if app.WebTheme == "" {
 		app.WebTheme = "dark"
 	}
-	err := mustTLSCert(app.dataDir)
+	err = mustTLSCert(app.dataDir)
 	if err != nil {
 		log.Fatale(err)
 	}
@@ -233,6 +246,7 @@ func (app *BCpApp) Run(signals <-chan os.Signal) {
 	log.Infof("BC+ %s interrupted; shutting down...", common.VersionLong)
 	cmdr.close()
 	app.save()
+	gxy.Close()
 	close(EventQ)
 	close(edpcStub.LocUpdate)
 	close(webUiUpd)
