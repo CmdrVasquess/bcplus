@@ -41,7 +41,7 @@ func (s *travelScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 			Bookms:   cmdr.Bookmarks,
 			DestBm:   cmdr.DestBM,
 		}
-		bt.Bind(s.Data, Json{V: data})
+		bt.Bind(Json{V: data}, s.Data...)
 		goxic.Must(bt.WriteTo(wr))
 	}))
 }

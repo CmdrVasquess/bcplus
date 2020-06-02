@@ -66,7 +66,7 @@ func (s *insysScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	var bt goxic.BounT
 	var h WuiHdr
 	s.init(&bt, &h, insysTab)
-	bt.Bind(s.Data, Json{V: &inSysInfo})
+	bt.Bind(Json{V: &inSysInfo}, s.Data...)
 	readState(noErr(func() {
 		goxic.Must(bt.WriteTo(wr))
 	}))

@@ -50,9 +50,9 @@ func (scr *Screen) init(bt *goxic.BounT, head *WuiHdr, tab string) {
 		head.set(cmdr)
 	}
 	scr.NewBounT(bt)
-	bt.Bind(scr.Theme, P(App.WebTheme))
-	bt.Bind(scr.ActiveTab, P(tab))
-	bt.Bind(scr.InitHdr, Json{V: head})
+	bt.Bind(P(App.WebTheme), scr.Theme...)
+	bt.Bind(P(tab), scr.ActiveTab...)
+	bt.Bind(Json{V: head}, scr.InitHdr...)
 }
 
 type JsonStr string
@@ -123,10 +123,10 @@ func (page *WebPage) from(scrnFile, scrnLang string) map[string]*goxic.Template 
 		return t.NewBounT(nil)
 	}
 	btPage := page.NewBounT(nil)
-	btPage.Bind(page.Lang, P(App.Lang))
-	btPage.Bind(page.Title, mustBount("title"))
-	btPage.Bind(page.Style, mayBount("style"))
-	btPage.Bind(page.Main, mustBount("main"))
+	btPage.Bind(P(App.Lang), page.Lang...)
+	btPage.Bind(mustBount("title"), page.Title...)
+	btPage.Bind(mayBount("style"), page.Style...)
+	btPage.Bind(mustBount("main"), page.Main...)
 	tmp, err := btPage.Fixate()
 	if err != nil {
 		log.Fatale(err)
@@ -136,7 +136,7 @@ func (page *WebPage) from(scrnFile, scrnLang string) map[string]*goxic.Template 
 		log.Fatale(err)
 	}
 	tmp.NewBounT(btPage)
-	btPage.BindName("tabs", Json{V: tabs})
+	btPage.BindName(Json{V: tabs}, "tabs")
 	if tmp, err = btPage.Fixate(); err != nil {
 		log.Fatale(err)
 	}

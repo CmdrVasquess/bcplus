@@ -49,7 +49,7 @@ func (s *shipsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	var h WuiHdr
 	s.init(&bt, &h, shipsTab)
 	ships := wuiLoadShips(cmdr.Ship.Ship)
-	bt.Bind(s.Data, Json{V: ships})
+	bt.Bind(Json{V: ships}, s.Data...)
 	readState(noErr(func() {
 		goxic.Must(bt.WriteTo(wr))
 	}))

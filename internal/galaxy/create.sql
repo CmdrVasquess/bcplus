@@ -1,3 +1,4 @@
+--*- mode: sql; sql-product: sqlite; -*-
 CREATE TABLE info (
   key TEXT PRIMARY KEY
 , value TEXT NOT NULL
@@ -13,12 +14,29 @@ CREATE TABLE sys (
 , z    REAL
 );
 
-CREATE TABLE sysloc (
+CREATE UNIQUE INDEX IF NOT EXISTS upsysname
+ON sys (upper(name));
+
+CREATE INDEX IF NOT EXISTS sysx ON sys(x);
+CREATE INDEX IF NOT EXISTS sysx ON sys(y);
+CREATE INDEX IF NOT EXISTS sysx ON sys(z);
+
+CREATE TABLE cmdr (
   id INTEGER PRIMARY KEY
-, sys INTEGER NOT NULL REFERENCES sys(addr) 
-, body INTEGER NULL
+, name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE visit (
+  cmdr INTEGER NOT NULL REFERENCES cmdr(id)
+, sys  INTEGER NOT NULL REFERENCES sys(addr)
+, t    TEXT NOT NULL
+);
+
+CREATE TABLE sysloc (
+  sys INTEGER REFERENCES sys(addr) 
+, id INTEGER -- id >= 0 => BodyID from journal
 , name TEXT NULL
-, center INTEGER NULL REFERENCES sysloc(addr)
+, center INTEGER NULL -- id within same sys
 , type TEXT NOT NULL
-, UNIQUE (sys, body)
+, PRIMARY KEY (sys, id)
 );

@@ -30,8 +30,8 @@ func (s *matsScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	var bt goxic.BounT
 	var h WuiHdr
 	s.init(&bt, &h, matsTab)
-	bt.Bind(s.MatNeed, Json{V: &cmdr.Mats})
-	bt.Bind(s.RcpNeed, Json{V: &cmdr.Rcps})
+	bt.Bind(Json{V: &cmdr.Mats}, s.MatNeed...)
+	bt.Bind(Json{V: &cmdr.Rcps}, s.RcpNeed...)
 	readState(noErr(func() {
 		goxic.Must(bt.WriteTo(wr))
 	}))

@@ -40,8 +40,8 @@ func (s *edpcScreen) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	// 		frontStory = &sls[i]
 	// 	}
 	// }
-	bt.Bind(scrnEdpc.StoryUrl, P(cmdr.edpcStory))
-	bt.Bind(scrnEdpc.StoryList, Json{V: sls})
+	bt.Bind(P(cmdr.edpcStory), scrnEdpc.StoryUrl...)
+	bt.Bind(Json{V: sls}, scrnEdpc.StoryList...)
 	// if frontStory == nil {
 	// 	bt.BindP(scrnEdpc.Story, "– No story selected –")
 	// 	bt.BindP(scrnEdpc.Author, "–")
