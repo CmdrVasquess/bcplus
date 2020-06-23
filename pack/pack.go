@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"git.fractalqb.de/fractalqb/pack"
-	"github.com/CmdrVasquess/BCplus/internal/common"
+	"github.com/CmdrVasquess/bcplus/internal/common"
 )
 
 var (
@@ -53,7 +53,7 @@ func dist() string {
 	}
 	must(os.Mkdir(distDir, 0777))
 	must(pack.CopyToDir(distDir, pack.OsDepExe,
-		"BCplus", "util/screenshot/screenshot"))
+		"bcplus", "util/screenshot/screenshot"))
 	must(pack.CopyToDir(distDir, nil,
 		//"LICENSE",
 		//"README.md",
