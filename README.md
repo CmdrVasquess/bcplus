@@ -1,7 +1,8 @@
-Goal reached: Know Go language and have an overview of what pure 
+Personal goal reached: Know Go language and have an overview of what pure
 HTML/CSS/JS can do! Web frontend definitley needs better structure.
-Currently I'm trying to have a more modular structure of BC+ any playing
-around with it. 
+Currently I'm trying to have a more modular structure of BC+ and
+playing around with it.
+
 Reworking the thing is currently in rather slow progress…
 
 --------------------
@@ -12,6 +13,9 @@ Reworking the thing is currently in rather slow progress…
 
 [Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases) –
 [Documentation Index](https://cmdrvasquess.github.io/BCplus/)
+
+To build it from source you need [cgo](https://golang.org/cmd/cgo/).
+The main executable can be build with ```go build```.
 
 --------------------
 

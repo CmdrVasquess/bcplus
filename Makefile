@@ -1,19 +1,19 @@
 .PHONY: build deps utils clean
 
 build:
-	go generate
+	go generate ./...
 	go build
 	cd util/screenshot; go build
 
 clean:
 	rm -f BCplus BCplus.debug util/screenshot/screenshot
 
-utils:
-	cd util/screenshot; go build
-
 pack: build utils
 	cd pack; go build
 	pack/pack --pack zip --ddap BCplus
+
+utils:
+	cd util/screenshot; go build
 
 deps: depgraph.svg
 

@@ -12,7 +12,7 @@ import (
 	"github.com/CmdrVasquess/bcplus/internal/wish"
 
 	"git.fractalqb.de/fractalqb/c4hgol"
-	"github.com/CmdrVasquess/bcplus/internal/app"
+	"github.com/CmdrVasquess/bcplus/internal/bcplus"
 	"github.com/CmdrVasquess/bcplus/internal/common"
 	//"github.com/getlantern/systray"
 )
@@ -32,16 +32,17 @@ var fBrowse bool
 func main() {
 	runtime.LockOSThread() // Fix(?) problems with ^C on Win
 	flag.Usage = usage
-	app.App.Flags()
+	bcplus.App.Flags()
 	{
 		fVerb := flag.String("log", "", c4hgol.LevelCfgDoc(nil))
 		fLog := flag.String("log-to", "", "write log also to file")
+		fLogs := flag.Bool("logs", false, "list configurable loggers")
 		flag.BoolVar(&fBrowse, "web-browse", false,
 			"start local web browser")
 		flag.Parse()
-		if *fVerb == "?" {
+		if *fLogs {
 			fmt.Printf("BC+ %s loggers:\n", common.VersionAll)
-			c4hgol.ListLogs(app.LogCfg, os.Stdout, "  - ")
+			c4hgol.ListLogs(bcplus.LogCfg, os.Stdout, "  - ")
 			return
 		}
 		if len(*fLog) > 0 {
@@ -51,15 +52,15 @@ func main() {
 				return
 			}
 			defer lf.Close()
-			app.LogWrs = append(app.LogWrs, lf)
+			bcplus.LogWrs = append(bcplus.LogWrs, lf)
 		}
-		app.LogCfg.SetOutput(io.MultiWriter(app.LogWrs...))
-		c4hgol.SetLevel(app.LogCfg, *fVerb, nil)
+		bcplus.LogCfg.SetOutput(io.MultiWriter(bcplus.LogWrs...))
+		c4hgol.SetLevel(bcplus.LogCfg, *fVerb, nil)
 	}
 	if fBrowse {
 		go func() {
 			time.Sleep(time.Second)
-			url := fmt.Sprintf("https://localhost:%d", app.App.WebPort)
+			url := fmt.Sprintf("https://localhost:%d", bcplus.App.WebPort)
 			err := wish.BrowserUrl(url)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
@@ -68,7 +69,7 @@ func main() {
 	}
 	sigs := make(chan os.Signal)
 	signal.Notify(sigs, os.Interrupt)
-	app.App.Run(sigs)
+	bcplus.App.Run(sigs)
 }
 
 // var trayIcon = []byte{

@@ -1,6 +1,6 @@
 // +build !windows
 
-package app
+package bcplus
 
 import (
 	"os"

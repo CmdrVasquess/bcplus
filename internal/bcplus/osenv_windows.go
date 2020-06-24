@@ -1,14 +1,11 @@
-// +build windows
-
-package app
+package bcplus
 
 import (
 	"flag"
 	"os"
 	"os/user"
 	"path/filepath"
-
-	"github.com/gonutz/w32"
+	//"github.com/gonutz/w32"
 )
 
 var relJournalPath = []string{
@@ -42,20 +39,20 @@ func stdDataDir() string {
 	return dir
 }
 
-var flagShowCon bool
+// var flagShowCon bool
 
-func init() {
-	flag.BoolVar(&flagShowCon, "show-con", false, "show console window")
-}
+// func init() {
+// 	flag.BoolVar(&flagShowCon, "show-con", false, "show console window")
+// }
 
-func showHideCon() {
-	if !flagShowCon {
-		console := w32.GetConsoleWindow()
-		if console != 0 {
-			_, consoleProcID := w32.GetWindowThreadProcessId(console)
-			if w32.GetCurrentProcessId() == consoleProcID {
-				w32.ShowWindowAsync(console, w32.SW_HIDE)
-			}
-		}
-	}
-}
+// func showHideCon() {
+// 	if !flagShowCon {
+// 		console := w32.GetConsoleWindow()
+// 		if console != 0 {
+// 			_, consoleProcID := w32.GetWindowThreadProcessId(console)
+// 			if w32.GetCurrentProcessId() == consoleProcID {
+// 				w32.ShowWindowAsync(console, w32.SW_HIDE)
+// 			}
+// 		}
+// 	}
+// }

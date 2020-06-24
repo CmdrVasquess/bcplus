@@ -1,4 +1,4 @@
-package app
+package bcplus
 
 import (
 	"net/http"
@@ -86,7 +86,7 @@ func appWs(wr http.ResponseWriter, rq *http.Request) {
 	defer wsc.Close()
 	log.Infoa("new app `client`", webApp.wsConn.RemoteAddr().String())
 	for webApp.wsConn != nil {
-		mty, mraw, err := webApp.wsConn.ReadMessage()
+		mty /*mraw*/, _, err := webApp.wsConn.ReadMessage()
 		if err != nil {
 			log.Infoa("closed log `client` `because`",
 				webApp.wsConn.RemoteAddr().String(),
@@ -98,6 +98,7 @@ func appWs(wr http.ResponseWriter, rq *http.Request) {
 			log.Errora("ignore binary app event `from`",
 				webApp.wsConn.RemoteAddr().String())
 		}
-		EventQ <- Event{ESRC_WEBUI, mraw}
+		// TODO web client events
+		//EventQ <- Event{ESRC_WEBUI, mraw}
 	}
 }

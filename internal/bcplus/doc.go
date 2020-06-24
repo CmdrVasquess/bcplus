@@ -1,4 +1,4 @@
-package app
+package bcplus
 
 const (
 	docJournalDir = `set directory with Elite Dangerous journal files`
@@ -8,7 +8,5 @@ const (
 	docWebAddr    = `set interface to run web ui on`
 	docWebPin     = `protect web ui with basic auth via PIN`
 	docWebTheme   = `set the theme for the web ui`
-	docSrvUrl     = `set URL of BC+ web server`
-	docLang       = `choose initial language setting`
-	docDebug      = `run debug mode`
+	//docLang       = `choose initial language setting`
 )
