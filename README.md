@@ -1,7 +1,9 @@
 Personal goal reached: Know Go language and have an overview of what pure
 HTML/CSS/JS can do! Web frontend definitley needs better structure.
+
 Currently I'm trying to have a more modular structure of BC+ and
-playing around with it.
+playing around with that. **This will reset new commits of BC+ to
+unusable state** before I start with building new things up. 
 
 Reworking the thing is currently in rather slow progress…
 

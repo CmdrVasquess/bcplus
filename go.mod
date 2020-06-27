@@ -3,15 +3,13 @@ module github.com/CmdrVasquess/bcplus
 go 1.14
 
 require (
-	git.fractalqb.de/fractalqb/c4hgol v0.10.0
-	git.fractalqb.de/fractalqb/c4qblog v0.9.1 // indirect
+	git.fractalqb.de/fractalqb/c4hgol v0.10.1
 	git.fractalqb.de/fractalqb/ggja v0.8.1
 	git.fractalqb.de/fractalqb/goxic v0.9.0
 	git.fractalqb.de/fractalqb/namemap v0.9.0
 	git.fractalqb.de/fractalqb/nmconv v1.0.0
 	git.fractalqb.de/fractalqb/pack v0.5.2
-	git.fractalqb.de/fractalqb/qbsllm v0.9.0
-	git.fractalqb.de/fractalqb/sllm v0.10.0 // indirect
+	git.fractalqb.de/fractalqb/qbsllm v0.10.1
 	git.fractalqb.de/fractalqb/xsx v0.7.0 // indirect
 	github.com/CmdrVasquess/watched v0.3.0
 	github.com/anthonynsimon/bild v0.11.1

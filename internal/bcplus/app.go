@@ -29,6 +29,10 @@ var (
 	edState = goedx.NewEDState()
 )
 
+const (
+	l10nDir = "l10n"
+)
+
 type bcpApp struct {
 	goedx.Extension
 	WebPort  int
@@ -40,9 +44,29 @@ type bcpApp struct {
 	appL10n  *l10n.Locales
 }
 
+func ensureDatadir(dir string) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		log.Infoa("create `data dir`", dir)
+		if err = os.MkdirAll(dir, 0777); err != nil {
+			log.Fatale(err)
+		}
+	}
+	l10n := filepath.Join(dir, l10nDir)
+	if _, err := os.Stat(l10n); os.IsNotExist(err) {
+		log.Infoa("create `localization dir`", l10n)
+		if err = os.Mkdir(l10n, 0777); err != nil {
+			log.Fatale(err)
+		}
+	}
+}
+
 func (bcp *bcpApp) Init() {
+	ensureDatadir(bcp.dataDir)
 	var err error
-	edState.Load(bcp.stateFile())
+	if err = edState.Load(bcp.stateFile()); os.IsNotExist(err) {
+		log.Infoa("state `file` not exists", bcp.stateFile())
+	}
+	bcp.EdState = edState
 	bcp.CmdrFile = func(cmdr *goedx.Commander) string {
 		return filepath.Join(bcp.dataDir, cmdr.FID, "commander.json")
 	}
@@ -51,7 +75,7 @@ func (bcp *bcpApp) Init() {
 	if err != nil {
 		log.Fatale(err)
 	}
-	dir = filepath.Join(bcp.dataDir, "l10n")
+	dir = filepath.Join(bcp.dataDir, l10nDir)
 	bcp.appL10n = l10n.New(dir, edState)
 	bcp.AddApp("l10n", bcp.appL10n)
 }
@@ -63,7 +87,11 @@ func (bcp *bcpApp) Shutdown() {
 	if err != nil {
 		log.Errore(err)
 	}
-	edState.Save(bcp.stateFile())
+	var cmdrFile string
+	if bcp.EdState.Cmdr != nil && bcp.EdState.Cmdr.FID != "" {
+		cmdrFile = bcp.CmdrFile(bcp.EdState.Cmdr)
+	}
+	edState.Save(bcp.stateFile(), cmdrFile)
 }
 
 func (bcp *bcpApp) stateFile() string {

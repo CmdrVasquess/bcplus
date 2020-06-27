@@ -11,6 +11,9 @@ import (
 func stdJournalDir() string { return "." }
 
 func stdDataDir() string {
+	if ddir := os.Getenv("BCPLUS_DATA"); ddir != "" {
+		return ddir
+	}
 	usr, _ := user.Current()
 	if usr == nil {
 		return "."

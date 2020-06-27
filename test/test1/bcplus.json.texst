@@ -1,0 +1,15 @@
+>{
+>	"GoEDXversion": {
+>		"Major": 0,
+>		"Minor": 1,
+>		"Patch": 0
+>	},
+>	"EDVersion": "Fleet Carriers Update",
+>	"Beta": false,
+>	"Language": "English\\UK",
+>	"L10n": {
+>		"Lang": "en",
+>		"Region": "UK"
+>	},
+>	"LastJournalEvent": "2020-06-14T21:27:45Z"
+>}
