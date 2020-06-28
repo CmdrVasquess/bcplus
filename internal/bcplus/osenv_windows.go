@@ -1,7 +1,6 @@
 package bcplus
 
 import (
-	"flag"
 	"os"
 	"os/user"
 	"path/filepath"
