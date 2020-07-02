@@ -7,6 +7,13 @@ build:
 
 clean:
 	rm -f BCplus BCplus.debug util/screenshot/screenshot
+	$(MAKE) -C test clean
+
+test: build
+	go test
+	go test ./util/...
+	go test ./pack
+	$(MAKE) -C test
 
 pack: build utils
 	cd pack; go build

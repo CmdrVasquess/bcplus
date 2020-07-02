@@ -35,26 +35,28 @@ const (
 
 type bcpApp struct {
 	goedx.Extension
-	WebPort  int
-	dataDir  string
-	assetDir string
-	webAddr  string
-	webPin   string
-	webTheme string
-	appL10n  *l10n.Locales
+	WebPort   int
+	dataDir   string
+	assetDir  string
+	webAddr   string
+	webPin    string
+	webTheme  string
+	webTLS    bool
+	debugMode bool
+	appL10n   *l10n.Locales
 }
 
 func ensureDatadir(dir string) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		log.Infoa("create `data dir`", dir)
-		if err = os.MkdirAll(dir, 0777); err != nil {
+		if err = os.MkdirAll(dir, common.DirFileMode); err != nil {
 			log.Fatale(err)
 		}
 	}
 	l10n := filepath.Join(dir, l10nDir)
 	if _, err := os.Stat(l10n); os.IsNotExist(err) {
 		log.Infoa("create `localization dir`", l10n)
-		if err = os.Mkdir(l10n, 0777); err != nil {
+		if err = os.Mkdir(l10n, common.DirFileMode); err != nil {
 			log.Fatale(err)
 		}
 	}
@@ -62,6 +64,9 @@ func ensureDatadir(dir string) {
 
 func (bcp *bcpApp) Init() {
 	ensureDatadir(bcp.dataDir)
+	if bcp.webTLS {
+		mustTLSCert(bcp.dataDir)
+	}
 	var err error
 	if err = edState.Load(bcp.stateFile()); os.IsNotExist(err) {
 		log.Infoa("state `file` not exists", bcp.stateFile())
@@ -78,6 +83,7 @@ func (bcp *bcpApp) Init() {
 	dir = filepath.Join(bcp.dataDir, l10nDir)
 	bcp.appL10n = l10n.New(dir, edState)
 	bcp.AddApp("l10n", bcp.appL10n)
+	initWebUI()
 }
 
 func (bcp *bcpApp) Shutdown() {
@@ -111,10 +117,11 @@ func (bcp *bcpApp) Flags() {
 	flag.StringVar(&App.JournalDir, "j", jDir, docJournalDir)
 	flag.StringVar(&App.dataDir, "d", stdDataDir(), docDataDir)
 	flag.StringVar(&App.assetDir, "assets", stdAssetDir(), docAssetDir)
-	flag.IntVar(&App.WebPort, "web-port", 0, docWebPort)
+	flag.IntVar(&App.WebPort, "web-port", 1337, docWebPort)
 	flag.StringVar(&App.webAddr, "web-addr", "", docWebAddr)
 	flag.StringVar(&App.webPin, "web-pin", "", docWebPin)
 	flag.StringVar(&App.webTheme, "web-theme", "", docWebTheme)
+	flag.BoolVar(&App.webTLS, "web-tls", true, docWebTLS)
 }
 
 func (app *bcpApp) Run(signals <-chan os.Signal) {
@@ -122,6 +129,7 @@ func (app *bcpApp) Run(signals <-chan os.Signal) {
 	log.Infoa("data `dir`", app.dataDir)
 	log.Debuga("assert `dir`", app.assetDir)
 	go app.Extension.MustRun(true)
+	go runWebUI()
 	<-signals
 	log.Infof("BC+ %s interrupted; shutting down...", common.VersionLong)
 	app.Shutdown()

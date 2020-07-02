@@ -35,10 +35,10 @@ func main() {
 	bcplus.App.Flags()
 	{
 		fVerb := flag.String("log", "", c4hgol.LevelCfgDoc(nil))
-		fLog := flag.String("log-to", "", "write log also to file")
-		fLogs := flag.Bool("logs", false, "list configurable loggers")
+		fLog := flag.String("log-to", "", "Write log also to file")
+		fLogs := flag.Bool("logs", false, "List configurable loggers")
 		flag.BoolVar(&fBrowse, "web-browse", false,
-			"start local web browser")
+			"Start local web browser")
 		flag.Parse()
 		if *fLogs {
 			fmt.Printf("BC+ %s loggers:\n", common.VersionAll)

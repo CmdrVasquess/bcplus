@@ -5,3 +5,4 @@ all:
 
 clean:
 	rm -rf */test.*
+	rm -rf ./d/* ./j/*

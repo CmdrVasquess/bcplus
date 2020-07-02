@@ -1,12 +1,25 @@
 package bcplus
 
 import (
+	"bytes"
 	"crypto/subtle"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
+
+	"git.fractalqb.de/fractalqb/goxic"
+	gxc "git.fractalqb.de/fractalqb/goxic/content"
+	"git.fractalqb.de/fractalqb/goxic/html"
+	"git.fractalqb.de/fractalqb/goxic/js"
+	"git.fractalqb.de/fractalqb/nmconv"
+	"git.fractalqb.de/fractalqb/qbsllm"
+	"github.com/CmdrVasquess/bcplus/internal/wapp"
+	_ "github.com/CmdrVasquess/bcplus/internal/wapp/travel"
 )
 
 func webPIN(h http.HandlerFunc) http.HandlerFunc {
@@ -34,6 +47,73 @@ func webRoutes() {
 	htStatic := http.FileServer(http.Dir(filepath.Join(App.assetDir, "s")))
 	http.HandleFunc("/s/", webPIN(http.StripPrefix("/s", htStatic).ServeHTTP))
 	http.HandleFunc("/ws/log", webPIN(logWs))
+	for key := range wapp.Screens {
+		log.Infoa("TODO: web route `screen`", key)
+	}
+}
+
+func screenTemplate(tld *tmplLoader) *goxic.Template {
+	tmpls := tld.load("screen.html", "")
+	return tmpls[""]
+}
+
+var goxicName = nmconv.Conversion{
+	Norm:   nmconv.Uncamel,
+	Xform:  nmconv.PerSegment(strings.ToLower),
+	Denorm: nmconv.Sep(nmconv.Lisp),
+}
+
+func loadTemplates(lang string) {
+	tabs := make([]string, 0, len(wapp.Screens))
+	for _, scrn := range wapp.Screens {
+		tabs = append(tabs, scrn.Tab)
+	}
+	tmplLd := newTmplLoader()
+	tmpls := tmplLd.load("screen.html", "")
+	tmplScrn := tmpls[""]
+	var bount goxic.BounT
+	for key, scrn := range wapp.Screens {
+		tmpls = tmplLd.load(key+".html", lang)
+		tmplScrn.NewBounT(&bount)
+		if sty := tmpls["style"]; sty == nil {
+			bount.BindName(goxic.Empty, "style")
+		} else {
+			bount.BindName(sty.NewBounT(nil), "style")
+		}
+		main := tmpls["main"]
+		if main == nil {
+			log.Fatala("`screen` has no main template", key)
+		}
+		bount.BindName(main.NewBounT(nil), "main")
+		fixt, err := bount.Fixate()
+		if err != nil {
+			log.Fatale(err)
+		}
+		if err = fixt.FlattenPhs(true); err != nil {
+			log.Fatale(err)
+		}
+		fixt.NewBounT(&bount)
+		bount.BindName(gxc.P(lang), "lang")
+		bount.BindName(gxc.P(scrn.Title), "title")
+		bount.BindName(gxc.Json{V: tabs}, "tabs")
+		bount.BindName(gxc.P(scrn.Tab), "active-tab")
+		fixt, err = bount.Fixate()
+		if err != nil {
+			log.Fatale(err)
+
+		}
+		fixt = fixt.Pack()
+		log.Debuga("`screen` templates `placeholders`", key, fixt.Phs())
+		goxic.MustIndexMap(scrn.Template, fixt, false, goxicName.Convert)
+	}
+}
+
+func initWebUI() {
+	lang := App.EdState.L10n.Lang
+	if lang == "" {
+		lang = "en"
+	}
+	loadTemplates(lang)
 }
 
 func runWebUI() {
@@ -49,4 +129,69 @@ func runWebUI() {
 		log.Infoa("run web ui on http `addr`", lstn)
 		log.Fatale(http.ListenAndServe(lstn, nil))
 	}
+}
+
+type tmplLoader struct {
+	parser *goxic.Parser
+	dir    string
+}
+
+func newTmplLoader() *tmplLoader {
+	res := &tmplLoader{
+		parser: html.NewParser(),
+		dir:    filepath.Join(App.assetDir, "goxic"),
+	}
+	if !App.debugMode {
+		res.parser.PrepLine = func(line []byte) []byte {
+			if len(line) == 0 {
+				return line
+			}
+			spc, spcLen := utf8.DecodeRune(line)
+			spcStart := unicode.IsSpace(spc)
+			trimd := bytes.TrimSpace(line)
+			if spcStart {
+				line = append(line[:spcLen], trimd...)
+			} else {
+				line = trimd
+			}
+			return line
+		}
+	}
+	res.parser.CxfMap = map[string]goxic.CntXformer{
+		"xml":   html.EscWrap,
+		"jsStr": js.EscWrap,
+	}
+	return res
+}
+
+func (tld *tmplLoader) load(name, lang string) map[string]*goxic.Template {
+	var fname string
+	if len(lang) > 0 {
+		fname = filepath.Join(tld.dir, lang, name)
+	} else {
+		fname = filepath.Join(tld.dir, name)
+	}
+	tname := name
+	if ext := filepath.Ext(name); len(ext) > 0 {
+		tname = name[:len(name)-len(ext)]
+	}
+	log.Debuga("load `template` from `file`", tname, fname)
+	res := make(map[string]*goxic.Template)
+	err := tld.parser.ParseFile(fname, tname, res)
+	if err != nil {
+		log.Fatale(err)
+	}
+	if log.Logs(qbsllm.Ltrace) {
+		for nm, t := range res {
+			if len(t.Phs()) == 0 {
+				log.Tracea("`template` (`aka`) is static", nm, t.Name)
+			} else {
+				log.Tracea("`template` (`aka`) has `placeholders`",
+					nm,
+					t.Name,
+					strings.Join(t.Phs(), ";"))
+			}
+		}
+	}
+	return res
 }
