@@ -6,7 +6,6 @@ import (
 
 	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/goxic"
-	"git.fractalqb.de/fractalqb/goxic/content"
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/goedx"
 )
@@ -19,18 +18,17 @@ var (
 type ScreenTmpl struct {
 	*goxic.Template
 	BCpScreen *Screen
-	InitHdr   goxic.PhIdxs
 }
 
 var jsonNull = []byte("null")
 
 func (st *ScreenTmpl) PrepareScreen(bt *goxic.BounT) {
 	st.Template.NewBounT(bt)
-	if st.BCpScreen.EDState.Cmdr == nil {
-		bt.Bind(content.Data(jsonNull), st.InitHdr...)
-	} else {
-		bt.Bind(content.Json{V: st.BCpScreen.EDState.Cmdr}, st.InitHdr...)
-	}
+	// if st.BCpScreen.EDState.Cmdr == nil {
+	// 	bt.Bind(content.Data(jsonNull), st.InitHdr...)
+	// } else {
+	// 	bt.Bind(content.Json{V: st.BCpScreen.EDState.Cmdr}, st.InitHdr...)
+	// }
 }
 
 type Screen struct {

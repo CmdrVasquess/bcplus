@@ -61,6 +61,23 @@ wsock.onmessage = function(msg) {
   }
 }
 console.log("connected to "+wsurl);
+
+function apiGetJSON(url, callback) {
+    var rq = new XMLHttpRequest();
+    rq.open("GET", url);
+    rq.addEventListener('load', function(evt) {
+	if (rq.status >= 200 && rq.status < 300) {
+	    console.log("OK from "+url);
+	} else {
+	    console.warn(rq.statusText, rq.responseText);
+	    return;
+	}
+	var ppl = JSON.parse(rq.responseText);
+	callback(ppl);
+    });
+    rq.send();
+}
+
 const locRTyNm = ["?", "Deep Space", "Star", "Belt", "Planet",
 				  "Ring", "Station", "Outpost", "Port", "Settlement", "Jump Target"];
 const locModeNm = ["?", "Parked", "Travel", "Super Cruise", "FSD Jump"];
@@ -100,7 +117,18 @@ Vue.filter('dur', function(d) {
 	}
 	return h+":"+m;
 });
-const hdrData = `init-hdr`;
+const hdrData = {
+    FID: null,
+    Name: "<anonymous>",
+    Loc: {
+	Sys: {Name: "<system>", Coos: []},
+	RefNm: "<ref>"
+    },
+    Ship: {
+	Ident: "–",
+	Name: "–",
+    }
+};
 var scrnApp = new Vue({
   el: '#vue-app',
   data: {

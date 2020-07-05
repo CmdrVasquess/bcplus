@@ -479,6 +479,9 @@ var trvlApp = new Vue({
 	}
     },
     mounted: function() {
+	apiGetJSON("/travel", function(data) {
+	    this.jhist = data.JumpHist;
+	});
 	wspgmsg.push(this.onMsg);
 	console.log("added travel callback");
     }

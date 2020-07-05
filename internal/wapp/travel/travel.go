@@ -31,15 +31,26 @@ var (
 
 type template struct {
 	wapp.ScreenTmpl
-	Data goxic.PhIdxs
 }
 
 func (tmpl *template) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
-	var bt goxic.BounT
-	tmpl.PrepareScreen(&bt)
-	screen.EDState.Read(func() error {
-		bt.Bind(goxic.Empty, tmpl.Data...)
-		goxic.Must(bt.WriteTo(wr))
-		return nil
-	})
+	if rq.Header.Get("Accept") == "application/json" {
+	} else {
+		if push, ok := wr.(http.Pusher); ok {
+			opts := http.PushOptions{
+				Header: http.Header{
+					"Accept": []string{"application/json"},
+				},
+			}
+			if err := push.Push("/"+screen.Key, &opts); err != nil {
+				log.Errore(err)
+			}
+		}
+		var bt goxic.BounT
+		tmpl.PrepareScreen(&bt)
+		screen.EDState.Read(func() error {
+			goxic.Must(bt.WriteTo(wr))
+			return nil
+		})
+	}
 }

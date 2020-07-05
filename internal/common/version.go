@@ -5,6 +5,6 @@ const (
 	BCpMinor   = 10
 	BCpPatch   = 2
 	BCpQuality = `a`
-	BCpBuildNo = 100
-	BCpDate    = `2020-07-05T13:15:38+02:00`
+	BCpBuildNo = 105
+	BCpDate    = `2020-07-05T19:52:18+02:00`
 )
