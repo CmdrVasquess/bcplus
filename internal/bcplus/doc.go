@@ -9,5 +9,8 @@ const (
 	docWebPin     = `Protect web ui with basic auth via PIN`
 	docWebTheme   = `Set the theme for the web ui`
 	docWebTLS     = `Use TLS with self-signed certificate for web server`
+	docDebug      = `Set debug flags:
+- h: process also old journal events
+- t: do not prep goxic template lines`
 	//docLang       = `choose initial language setting`
 )

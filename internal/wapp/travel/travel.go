@@ -1,25 +1,45 @@
 package travel
 
 import (
+	"net/http"
+
+	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/goxic"
+	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/wapp"
 )
 
-func init() {
-	wapp.AddScreen(&screen)
-}
+var (
+	log    = qbsllm.New(qbsllm.Lnormal, "travel", nil, nil)
+	LogCfg = c4hgol.Config(qbsllm.NewConfig(log))
+)
 
-type template struct {
-	wapp.Screen
-	Data goxic.PhIdxs
+func init() {
+	wapp.AddScreen(&screen, LogCfg)
+	tmpl.BCpScreen = &screen
 }
 
 var (
 	tmpl   template
 	screen = wapp.Screen{
-		Key:      "travel",
-		Tab:      "Travel",
-		Title:    "Travel",
-		Template: &tmpl,
+		Key: "travel",
+		Tab: "Travel",
+		// Title:   "Travel", same as Tab
+		Handler: &tmpl,
 	}
 )
+
+type template struct {
+	wapp.ScreenTmpl
+	Data goxic.PhIdxs
+}
+
+func (tmpl *template) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
+	var bt goxic.BounT
+	tmpl.PrepareScreen(&bt)
+	screen.EDState.Read(func() error {
+		bt.Bind(goxic.Empty, tmpl.Data...)
+		goxic.Must(bt.WriteTo(wr))
+		return nil
+	})
+}

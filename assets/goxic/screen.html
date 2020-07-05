@@ -104,40 +104,40 @@ const hdrData = `init-hdr`;
 var scrnApp = new Vue({
   el: '#vue-app',
   data: {
-	  ctrl: { showMenu: false },
-	  activeTab: '`active-tab\jsStr`',
-	  tabs: `tabs`,
-		hdr: hdrData
+      ctrl: { showMenu: false },
+      activeTab: '`active-tab\jsStr`',
+      tabs: `tabs`,
+      hdr: hdrData
+  },
+    filters: {
+	refTy: function(v) {
+	    var res = locRTyNm[v];
+	    return res ? res : "("+v+")";
 	},
-	filters: {
-	    refTy: function(v) {
-			var res = locRTyNm[v];
-			return res ? res : "("+v+")";
-		},
-		modNm: function(v) { return locModeNm[v]; },
-		vhcNm: function(v) { return locVhclNm[v]; },
-		frac: function(v) {
-			return v.toLocaleString('`lang\jsStr`');
-		}
-	},
-	methods: {
-		onMsg: function(evt) {
-			switch (evt.Cmd) {
-			case "upd":
-				if (evt.Hdr) {
-					this.hdr.Fid = evt.Hdr.Fid;
-          this.hdr.Name = evt.Hdr.Name;
-          this.hdr.Loc = evt.Hdr.Loc;
-          this.hdr.Ship = evt.Hdr.Ship;
-				}
-				break;
-			} 
-		}
-	},
-	mounted: function () {
-		wspgmsg.push(this.onMsg);
-		console.log("added page header callback");
+	modNm: function(v) { return locModeNm[v]; },
+	vhcNm: function(v) { return locVhclNm[v]; },
+	frac: function(v) {
+	    return v.toLocaleString('`lang\jsStr`');
 	}
+    },
+    methods: {
+	onMsg: function(evt) {
+	    switch (evt.Cmd) {
+	    case "upd":
+		if (evt.Hdr) {
+		    this.hdr.Fid = evt.Hdr.Fid;
+		    this.hdr.Name = evt.Hdr.Name;
+		    this.hdr.Loc = evt.Hdr.Loc;
+		    this.hdr.Ship = evt.Hdr.Ship;
+		}
+		break;
+	    } 
+	}
+    },
+    mounted: function () {
+	wspgmsg.push(this.onMsg);
+	console.log("added page header callback");
+    }
 });
 	</script>
 	<!-- >>> main <<< \-->

@@ -19,7 +19,6 @@ import (
 	"git.fractalqb.de/fractalqb/nmconv"
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/wapp"
-	_ "github.com/CmdrVasquess/bcplus/internal/wapp/travel"
 )
 
 func webPIN(h http.HandlerFunc) http.HandlerFunc {
@@ -47,8 +46,8 @@ func webRoutes() {
 	htStatic := http.FileServer(http.Dir(filepath.Join(App.assetDir, "s")))
 	http.HandleFunc("/s/", webPIN(http.StripPrefix("/s", htStatic).ServeHTTP))
 	http.HandleFunc("/ws/log", webPIN(logWs))
-	for key := range wapp.Screens {
-		log.Infoa("TODO: web route `screen`", key)
+	for _, scrn := range wapp.Screens {
+		http.Handle("/"+scrn.Key, scrn.Handler)
 	}
 }
 
@@ -73,6 +72,7 @@ func loadTemplates(lang string) {
 	tmplScrn := tmpls[""]
 	var bount goxic.BounT
 	for key, scrn := range wapp.Screens {
+		scrn.EDState = App.EdState
 		tmpls = tmplLd.load(key+".html", lang)
 		tmplScrn.NewBounT(&bount)
 		if sty := tmpls["style"]; sty == nil {
@@ -94,7 +94,12 @@ func loadTemplates(lang string) {
 		}
 		fixt.NewBounT(&bount)
 		bount.BindName(gxc.P(lang), "lang")
-		bount.BindName(gxc.P(scrn.Title), "title")
+		if scrn.Title == "" {
+			bount.BindName(gxc.P(scrn.Tab), "title")
+		} else {
+			bount.BindName(gxc.P(scrn.Title), "title")
+		}
+		bount.BindName(gxc.P("dark"), "theme")
 		bount.BindName(gxc.Json{V: tabs}, "tabs")
 		bount.BindName(gxc.P(scrn.Tab), "active-tab")
 		fixt, err = bount.Fixate()
@@ -103,8 +108,9 @@ func loadTemplates(lang string) {
 
 		}
 		fixt = fixt.Pack()
+		fixt.Name = "screen:" + scrn.Key
 		log.Debuga("`screen` templates `placeholders`", key, fixt.Phs())
-		goxic.MustIndexMap(scrn.Template, fixt, false, goxicName.Convert)
+		goxic.MustIndexMap(scrn.Handler, fixt, false, goxicName.Convert)
 	}
 }
 
@@ -117,7 +123,6 @@ func initWebUI() {
 }
 
 func runWebUI() {
-	// webLoadTmpls()
 	webRoutes()
 	keyf := filepath.Join(App.dataDir, keyFile)
 	crtf := filepath.Join(App.dataDir, certFile)
@@ -141,7 +146,7 @@ func newTmplLoader() *tmplLoader {
 		parser: html.NewParser(),
 		dir:    filepath.Join(App.assetDir, "goxic"),
 	}
-	if !App.debugMode {
+	if strings.IndexRune(App.debugModes, 't') < 0 {
 		res.parser.PrepLine = func(line []byte) []byte {
 			if len(line) == 0 {
 				return line

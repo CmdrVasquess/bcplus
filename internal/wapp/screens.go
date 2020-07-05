@@ -6,7 +6,9 @@ import (
 
 	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/goxic"
+	"git.fractalqb.de/fractalqb/goxic/content"
 	"git.fractalqb.de/fractalqb/qbsllm"
+	"github.com/CmdrVasquess/goedx"
 )
 
 var (
@@ -15,33 +17,44 @@ var (
 )
 
 type ScreenTmpl struct {
-	http.Handler
 	*goxic.Template
-	Theme     goxic.PhIdxs
-	ActiveTab goxic.PhIdxs
+	BCpScreen *Screen
 	InitHdr   goxic.PhIdxs
 }
 
-type Screen struct {
-	Key      string
-	Tab      string
-	Title    string
-	Template interface{}
+var jsonNull = []byte("null")
+
+func (st *ScreenTmpl) PrepareScreen(bt *goxic.BounT) {
+	st.Template.NewBounT(bt)
+	if st.BCpScreen.EDState.Cmdr == nil {
+		bt.Bind(content.Data(jsonNull), st.InitHdr...)
+	} else {
+		bt.Bind(content.Json{V: st.BCpScreen.EDState.Cmdr}, st.InitHdr...)
+	}
 }
 
-func AddScreen(s *Screen) {
+type Screen struct {
+	Key     string
+	Tab     string
+	Title   string
+	Handler http.Handler
+	EDState *goedx.EDState
+}
+
+func AddScreen(s *Screen, logCfg c4hgol.Configurer) {
 	if s.Key == "" {
 		log.Fatala("empty `screen key` on `template`",
 			s.Key,
-			reflect.TypeOf(s.Template))
+			reflect.TypeOf(s.Handler))
 	}
 	if tmp := Screens[s.Key]; tmp != nil {
 		log.Fatala("duplicate `screen key` on `template 1` and `template 2`",
 			s.Key,
-			reflect.TypeOf(tmp.Template),
-			reflect.TypeOf(s.Template))
+			reflect.TypeOf(tmp.Handler),
+			reflect.TypeOf(s.Handler))
 	}
 	Screens[s.Key] = s
+	c4hgol.Config(LogCfg, logCfg)
 }
 
 var (

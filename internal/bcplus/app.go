@@ -5,14 +5,18 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-
-	"github.com/CmdrVasquess/bcplus/internal/common"
-	"github.com/CmdrVasquess/goedx"
-	"github.com/CmdrVasquess/goedx/apps/bboltgalaxy"
-	"github.com/CmdrVasquess/goedx/apps/l10n"
+	"runtime"
+	"strings"
 
 	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/qbsllm"
+	"github.com/CmdrVasquess/bcplus/internal/common"
+	"github.com/CmdrVasquess/bcplus/internal/wapp"
+	"github.com/CmdrVasquess/goedx"
+	"github.com/CmdrVasquess/goedx/apps/bboltgalaxy"
+	"github.com/CmdrVasquess/goedx/apps/l10n"
+	"github.com/CmdrVasquess/goedx/events"
+	"github.com/CmdrVasquess/goedx/journal"
 )
 
 var (
@@ -21,6 +25,7 @@ var (
 	LogCfg = c4hgol.Config(qbsllm.NewConfig(log),
 		goedx.LogCfg,
 		l10n.LogCfg,
+		wapp.LogCfg,
 	)
 )
 
@@ -35,15 +40,15 @@ const (
 
 type bcpApp struct {
 	goedx.Extension
-	WebPort   int
-	dataDir   string
-	assetDir  string
-	webAddr   string
-	webPin    string
-	webTheme  string
-	webTLS    bool
-	debugMode bool
-	appL10n   *l10n.Locales
+	WebPort    int
+	dataDir    string
+	assetDir   string
+	webAddr    string
+	webPin     string
+	webTheme   string
+	webTLS     bool
+	debugModes string
+	appL10n    *l10n.Locales
 }
 
 func ensureDatadir(dir string) {
@@ -72,6 +77,9 @@ func (bcp *bcpApp) Init() {
 		log.Infoa("state `file` not exists", bcp.stateFile())
 	}
 	bcp.EdState = edState
+	if strings.IndexRune(App.debugModes, 'h') < 0 {
+		bcp.JournalAfter = edState.LastJournalEvent
+	}
 	bcp.CmdrFile = func(cmdr *goedx.Commander) string {
 		return filepath.Join(bcp.dataDir, cmdr.FID, "commander.json")
 	}
@@ -80,10 +88,22 @@ func (bcp *bcpApp) Init() {
 	if err != nil {
 		log.Fatale(err)
 	}
+	bcp.AddApp("self", bcp)
 	dir = filepath.Join(bcp.dataDir, l10nDir)
 	bcp.appL10n = l10n.New(dir, edState)
 	bcp.AddApp("l10n", bcp.appL10n)
 	initWebUI()
+}
+
+func (bcp *bcpApp) SaveState() {
+	var cmdrFile string
+	if bcp.EdState.Cmdr != nil && bcp.EdState.Cmdr.FID != "" {
+		cmdrFile = bcp.CmdrFile(bcp.EdState.Cmdr)
+	}
+	err := edState.Save(bcp.stateFile(), cmdrFile)
+	if err != nil {
+		log.Errore(err)
+	}
 }
 
 func (bcp *bcpApp) Shutdown() {
@@ -93,11 +113,19 @@ func (bcp *bcpApp) Shutdown() {
 	if err != nil {
 		log.Errore(err)
 	}
-	var cmdrFile string
-	if bcp.EdState.Cmdr != nil && bcp.EdState.Cmdr.FID != "" {
-		cmdrFile = bcp.CmdrFile(bcp.EdState.Cmdr)
+	bcp.SaveState()
+}
+
+func (bcp *bcpApp) PrepareEDEvent(e events.Event) (token interface{}) {
+	_, ok := e.(*journal.Shutdown)
+	return ok
+}
+
+func (bcp *bcpApp) FinishEDEvent(token interface{}, e events.Event, chg goedx.Change) {
+	switch e.(type) {
+	case *journal.Shutdown:
+		bcp.EdState.Read(func() error { bcp.SaveState(); return nil })
 	}
-	edState.Save(bcp.stateFile(), cmdrFile)
 }
 
 func (bcp *bcpApp) stateFile() string {
@@ -122,9 +150,14 @@ func (bcp *bcpApp) Flags() {
 	flag.StringVar(&App.webPin, "web-pin", "", docWebPin)
 	flag.StringVar(&App.webTheme, "web-theme", "", docWebTheme)
 	flag.BoolVar(&App.webTLS, "web-tls", true, docWebTLS)
+	flag.StringVar(&App.debugModes, "debug", "", docDebug)
 }
 
 func (app *bcpApp) Run(signals <-chan os.Signal) {
+	log.Infof("Running BC+ v%d.%d.%d-%s+%d (%s)",
+		common.BCpMajor, common.BCpMinor, common.BCpPatch,
+		common.BCpQuality, common.BCpBuildNo,
+		runtime.Version())
 	app.Init()
 	log.Infoa("data `dir`", app.dataDir)
 	log.Debuga("assert `dir`", app.assetDir)
