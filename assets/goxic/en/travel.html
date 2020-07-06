@@ -39,18 +39,25 @@ main {
 	padding: .5em;
 }
 #tmap-info {
-	display: inline-block;
-	vertical-align: top;
+    display: inline-block;
+    vertical-align: top;
+    border: none;
+}
+#tmap-info tr {
+    border: none;
+    background-color: var(--colBkg);
 }
 #tmap-info th {
-	font-size: 90%;
-	padding: 0 .3em;
-	background-color: var(--colBkg);
-	text-align: left;
+    font-size: 90%;
+    padding: 0 .3em;
+    background-color: var(--colBkg);
+    text-align: left;
+    border: none;
 }
 #tmap-info td {
-	font-size: 90%;
-	padding: 0 .4em;
+    font-size: 90%;
+    padding: 0 .4em;
+    border: none;
 }
 #tmap-info td.tmima {
 	color: var(--colTxtDim);
@@ -331,26 +338,30 @@ main {
 	      <div id="bms">
 		<h1>Bookmarks</h1>
 		<table>
-		  <tr>
-		    <th>Dest.</th>
-		    <th>System</th>
-		    <th>Distance</th>
-		    <th colspan="3">Coos</th>
-		    <th>Tags</th>
-		  </tr>
-		  <tr v-for="(b, i) in bookms" :key="i">
-		    <td><input type="radio" :value="i" v-model.number="destbm"></td>
-		    <td>{{b.Name}}</td>
-		    <td class="right">{{sysDist(tmapLoc.Coos, b.Coos)|f2}} Ly</td>
-		    <td class="right">{{Math.round(b.Coos[0])}}</td>
-		    <td class="right">{{Math.round(b.Coos[1])}}</td>
-		    <td class="right">{{Math.round(b.Coos[2])}}</td>
-		    <td v-if="b.Tags">
-		      <span v-for="tag in b.Tags" :key="tag"
-			    class="tag">{{tag}}</span>
-		    </td>
-		    <td v-else class="center">–</td>
-		  </tr>
+		  <thead>
+		    <tr>
+		      <th>Dest.</th>
+		      <th>System</th>
+		      <th>Distance</th>
+		      <th colspan="3">Coos</th>
+		      <th>Tags</th>
+		    </tr>
+		  </thead>
+		  <tbody>
+		    <tr v-for="(b, i) in bookms" :key="i">
+		      <td><input type="radio" :value="i" v-model.number="destbm"></td>
+		      <td>{{b.Name}}</td>
+		      <td class="right">{{sysDist(tmapLoc.Coos, b.Coos)|f2}} Ly</td>
+		      <td class="right">{{Math.round(b.Coos[0])}}</td>
+		      <td class="right">{{Math.round(b.Coos[1])}}</td>
+		      <td class="right">{{Math.round(b.Coos[2])}}</td>
+		      <td v-if="b.Tags">
+			<span v-for="tag in b.Tags" :key="tag"
+			      class="tag">{{tag}}</span>
+		      </td>
+		      <td v-else class="center">–</td>
+		    </tr>
+		  </tbody>
 		</table>
 	      </div>
 	    </div>

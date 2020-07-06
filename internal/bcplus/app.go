@@ -15,8 +15,6 @@ import (
 	"github.com/CmdrVasquess/goedx"
 	"github.com/CmdrVasquess/goedx/apps/bboltgalaxy"
 	"github.com/CmdrVasquess/goedx/apps/l10n"
-	"github.com/CmdrVasquess/goedx/events"
-	"github.com/CmdrVasquess/goedx/journal"
 )
 
 var (
@@ -76,7 +74,7 @@ func (bcp *bcpApp) Init() {
 	if err = edState.Load(bcp.stateFile()); os.IsNotExist(err) {
 		log.Infoa("state `file` not exists", bcp.stateFile())
 	}
-	bcp.EdState = edState
+	bcp.EDState = edState
 	if strings.IndexRune(App.debugModes, 'h') < 0 {
 		bcp.JournalAfter = edState.LastJournalEvent
 	}
@@ -88,7 +86,6 @@ func (bcp *bcpApp) Init() {
 	if err != nil {
 		log.Fatale(err)
 	}
-	bcp.AddApp("self", bcp)
 	dir = filepath.Join(bcp.dataDir, l10nDir)
 	bcp.appL10n = l10n.New(dir, edState)
 	bcp.AddApp("l10n", bcp.appL10n)
@@ -97,8 +94,8 @@ func (bcp *bcpApp) Init() {
 
 func (bcp *bcpApp) SaveState() {
 	var cmdrFile string
-	if bcp.EdState.Cmdr != nil && bcp.EdState.Cmdr.FID != "" {
-		cmdrFile = bcp.CmdrFile(bcp.EdState.Cmdr)
+	if bcp.EDState.Cmdr != nil && bcp.EDState.Cmdr.FID != "" {
+		cmdrFile = bcp.CmdrFile(bcp.EDState.Cmdr)
 	}
 	err := edState.Save(bcp.stateFile(), cmdrFile)
 	if err != nil {
@@ -114,18 +111,6 @@ func (bcp *bcpApp) Shutdown() {
 		log.Errore(err)
 	}
 	bcp.SaveState()
-}
-
-func (bcp *bcpApp) PrepareEDEvent(e events.Event) (token interface{}) {
-	_, ok := e.(*journal.Shutdown)
-	return ok
-}
-
-func (bcp *bcpApp) FinishEDEvent(token interface{}, e events.Event, chg goedx.Change) {
-	switch e.(type) {
-	case *journal.Shutdown:
-		bcp.EdState.Read(func() error { bcp.SaveState(); return nil })
-	}
 }
 
 func (bcp *bcpApp) stateFile() string {

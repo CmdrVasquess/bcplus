@@ -42,13 +42,27 @@ func webPIN(h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+type staticContent struct {
+	fileSrv http.Handler
+}
+
+func (sc staticContent) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
+	const cacheCtrl = "Cache-Control"
+	wr.Header().Set(cacheCtrl, "max-age=86400")
+	//wr.Header().Add(cacheCtrl, "public")
+	sc.fileSrv.ServeHTTP(wr, rq)
+}
+
 func webRoutes() {
-	htStatic := http.FileServer(http.Dir(filepath.Join(App.assetDir, "s")))
+	htStatic := staticContent{
+		fileSrv: http.FileServer(http.Dir(filepath.Join(App.assetDir, "s"))),
+	}
 	http.HandleFunc("/s/", webPIN(http.StripPrefix("/s", htStatic).ServeHTTP))
 	http.HandleFunc("/ws/log", webPIN(logWs))
 	for _, scrn := range wapp.Screens {
 		http.Handle("/"+scrn.Key, scrn.Handler)
 	}
+	http.Handle("/", http.RedirectHandler("/travel", http.StatusSeeOther))
 }
 
 func screenTemplate(tld *tmplLoader) *goxic.Template {
@@ -72,7 +86,6 @@ func loadTemplates(lang string) {
 	tmplScrn := tmpls[""]
 	var bount goxic.BounT
 	for key, scrn := range wapp.Screens {
-		scrn.EDState = App.EdState
 		tmpls = tmplLd.load(key+".html", lang)
 		tmplScrn.NewBounT(&bount)
 		if sty := tmpls["style"]; sty == nil {
@@ -115,9 +128,12 @@ func loadTemplates(lang string) {
 }
 
 func initWebUI() {
-	lang := App.EdState.L10n.Lang
+	lang := App.EDState.L10n.Lang
 	if lang == "" {
 		lang = "en"
+	}
+	for _, scrn := range wapp.Screens {
+		scrn.Ext = &App.Extension
 	}
 	loadTemplates(lang)
 }

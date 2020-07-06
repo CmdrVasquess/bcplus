@@ -107,11 +107,6 @@ main {
 	transform: translateX(-2em);
 	opacity: 0;
 }
-main th {
-    background-color: var(--colBkgTh);
-    color: var(--colGud);
-    padding: .2em .5em;
-}
 span.tag {
     font-size: 80%;
     margin-right: .2em;
@@ -119,4 +114,45 @@ span.tag {
     border-radius: .4em;
     padding: .15em .35em;
     box-shadow: 0 0 3px var(--colFgrDim) inset;
+}
+/* Main/Table */
+main table {
+	border-collapse: collapse;
+}
+main th, td {
+	padding: .2em .4em;
+}
+main thead {
+	background-color: var(--colFgrDim);
+	color: var(--colFgrAdm);
+}
+main thead th, main thead td {
+	border: 2px solid var(--colFgr);
+}
+main tbody > tr:nth-child(even) {
+	background-color: var(--colBkgDim);
+}
+main tbody td:first-child {
+	border-left: 2px solid var(--colBkgTh);	
+}
+main tbody td:last-child {
+	border-right: 2px solid var(--colBkgTh);	
+}
+main tbody th {
+	background-color: var(--colBkgDim);
+	border-left: 2px solid var(--colBkgTh);
+	border-right: 2px solid var(--colBkgTh);
+}
+main tbody > tr:nth-child(even) > th {
+	background-color: var(--colBkgTh);
+}
+main tbody tr:last-child {
+	border-bottom: 2px solid var(--colBkgTh);
+}
+main tfoot {
+	background-color: var(--colBkgTh);
+}
+main tfoot th, main tfoot td {
+	border-left: 2px solid var(--colBkgTh);
+	border-right: 2px solid var(--colBkgTh);
 }

@@ -479,10 +479,13 @@ var trvlApp = new Vue({
 	}
     },
     mounted: function() {
-	apiGetJSON("/travel", function(data) {
-	    this.jhist = data.JumpHist;
-	});
-	wspgmsg.push(this.onMsg);
-	console.log("added travel callback");
+		apiGetJSON("/travel", function(data) {
+			hdrData.Name = data.Hdr.Cmdr;
+			hdrData.Ship = data.Hdr.Ship;
+			hdrData.Loc = data.Hdr.Loc;
+			this.jhist = data.JumpHist;
+		});
+		wspgmsg.push(this.onMsg);
+		console.log("added travel callback");
     }
 });

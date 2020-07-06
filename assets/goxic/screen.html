@@ -63,17 +63,18 @@ wsock.onmessage = function(msg) {
 console.log("connected to "+wsurl);
 
 function apiGetJSON(url, callback) {
-    var rq = new XMLHttpRequest();
-    rq.open("GET", url);
+	var rq = new XMLHttpRequest();
+	rq.open("GET", url);
+	rq.setRequestHeader("Accept", "application/json");
     rq.addEventListener('load', function(evt) {
-	if (rq.status >= 200 && rq.status < 300) {
-	    console.log("OK from "+url);
-	} else {
-	    console.warn(rq.statusText, rq.responseText);
-	    return;
-	}
-	var ppl = JSON.parse(rq.responseText);
-	callback(ppl);
+		if (rq.status >= 200 && rq.status < 300) {
+			console.log("OK from "+url);
+		} else {
+			console.warn(rq.statusText, rq.responseText);
+			return;
+		}
+		var ppl = JSON.parse(rq.responseText);
+		callback(ppl);
     });
     rq.send();
 }
@@ -118,7 +119,6 @@ Vue.filter('dur', function(d) {
 	return h+":"+m;
 });
 const hdrData = {
-    FID: null,
     Name: "<anonymous>",
     Loc: {
 	Sys: {Name: "<system>", Coos: []},
