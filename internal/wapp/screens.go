@@ -36,8 +36,8 @@ type Screen struct {
 	Key     string
 	Tab     string
 	Title   string
-	Handler http.Handler
-	Ext     *goedx.Extension
+	Handler http.Handler     `json:"-"`
+	Ext     *goedx.Extension `json:"-"`
 }
 
 func AddScreen(s *Screen, logCfg c4hgol.Configurer) {

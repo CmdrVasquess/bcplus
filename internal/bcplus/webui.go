@@ -59,6 +59,7 @@ func webRoutes() {
 	}
 	http.HandleFunc("/s/", webPIN(http.StripPrefix("/s", htStatic).ServeHTTP))
 	http.HandleFunc("/ws/log", webPIN(logWs))
+	http.HandleFunc("/ws/app", webPIN(appWs))
 	for _, scrn := range wapp.Screens {
 		http.Handle("/"+scrn.Key, scrn.Handler)
 	}
@@ -77,9 +78,9 @@ var goxicName = nmconv.Conversion{
 }
 
 func loadTemplates(lang string) {
-	tabs := make([]string, 0, len(wapp.Screens))
+	tabs := make([]*wapp.Screen, 0, len(wapp.Screens))
 	for _, scrn := range wapp.Screens {
-		tabs = append(tabs, scrn.Tab)
+		tabs = append(tabs, scrn)
 	}
 	tmplLd := newTmplLoader()
 	tmpls := tmplLd.load("screen.html", "")
@@ -112,9 +113,9 @@ func loadTemplates(lang string) {
 		} else {
 			bount.BindName(gxc.P(scrn.Title), "title")
 		}
-		bount.BindName(gxc.P("dark"), "theme")
+		bount.BindName(gxc.P(App.webTheme), "theme")
 		bount.BindName(gxc.Json{V: tabs}, "tabs")
-		bount.BindName(gxc.P(scrn.Tab), "active-tab")
+		bount.BindName(gxc.P(scrn.Key), "active-tab")
 		fixt, err = bount.Fixate()
 		if err != nil {
 			log.Fatale(err)

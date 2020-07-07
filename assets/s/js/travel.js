@@ -303,7 +303,7 @@ Vue.component('trvlmap', {
 function lyph(l, t) { return 3600 * l / t; }
 
 function avgMinMax(jumps) {
-    if (jumps.length == 0) { return null; }
+    if (!jumps || jumps.length == 0) { return null; }
     let j = jumps[0], speed = lyph(j.jl, j.dt);
     let res = {
 	tAvg: j.dt,	tMin: j.dt, tMax: j.dt,
@@ -339,14 +339,14 @@ var trvlApp = new Vue({
 	bookms: theData.Bookms,
 	destbm: theData.DestBm,
 	statsBlock: -1,
-	tmapLoc: hdrData.Loc.Sys
+	tmapSys: {Coos:[]},
     },
     computed: {
 	dest: function() {
 	    if (this.bookms && this.destbm >= 0) {
 		return this.bookms[this.destbm];
 	    }
-	    return null
+	    return null;
 	},
 	speeds: function() {
 	    var block;
@@ -363,7 +363,7 @@ var trvlApp = new Vue({
 	tmap: function() {
 	    let res = {
 		vic: this.computeVic(),
-		loc: this.tmapLoc,
+		loc: this.tmapSys,
 		speeds: this.speeds,
 		selSpd: 1,
 		dest: this.dest,
@@ -408,7 +408,7 @@ var trvlApp = new Vue({
 		: avgMinMax(this.jumps);
 	},
 	trailLen: function() {
-	    if (this.jhist.length == 0) { return 0; }
+	    if (this.jhist.length == 0) return 0;
 	    let hlen = this.statsBlock < 0
 		? this.jhist.length
 		: this.cfg.jblocks[this.statsBlock]+1;
@@ -431,18 +431,23 @@ var trvlApp = new Vue({
 			}
 			trlMem(this.jhist.length);
 	    }
-	    this.tmap.loc = hdrData.Loc.Sys;
+	    this.tmap.loc = this.hdrSystem();
 	    this.$refs.tmap.paint();
 	},
 	sysDist: (l1, l2) => {
 	    return Math.sqrt(sysDist2(l1, l2));
 	},
+	hdrSystem: function() {
+		if (!hdrData.Loc) return null;
+		if (hdrData.Loc['@type'] == 'system') return hdrData.Loc;
+		return hdrData.Loc.Sys;
+	},
 	tmpLoc: function(dl) {
-	    this.tmapLoc = dl;
+	    this.tmapSys = dl;
 	    this.$refs.tmap.paint();
 	},
 	reLoc: function() {
-	    this.tmapLoc = hdrData.Loc.Sys;
+	    this.tmapSys = this.hdrSystem();
 	    this.$refs.tmap.paint();
 	},
 	computeVic: function() {
@@ -468,24 +473,26 @@ var trvlApp = new Vue({
 		r: Math.sqrt(dmax) / 1.7
 	    };
 	    return res;
-	}
-    },
-    beforeCreate: () => {
-	if (theData.JumpHist) {
-	    theData.JumpHist.sort((l, r) => {
-		var ld = new Date(l.Time), rd = new Date(r.Time);
-		return rd.valueOf() - ld.valueOf();
-	    });
+	},
+	sortJHist: function() {
+	    if (theData.JumpHist) {
+		theData.JumpHist.sort((l, r) => {
+		    var ld = new Date(l.Time), rd = new Date(r.Time);
+		    return rd.valueOf() - ld.valueOf();
+		});
+	    }
 	}
     },
     mounted: function() {
-		apiGetJSON("/travel", function(data) {
-			hdrData.Name = data.Hdr.Cmdr;
-			hdrData.Ship = data.Hdr.Ship;
-			hdrData.Loc = data.Hdr.Loc;
-			this.jhist = data.JumpHist;
-		});
-		wspgmsg.push(this.onMsg);
-		console.log("added travel callback");
+	const app = this;
+	apiGetJSON("/travel", function(data) {
+	    hdrData.Name = data.Hdr.Cmdr;
+	    hdrData.Ship = data.Hdr.Ship;
+	    hdrData.Loc = data.Hdr.Loc;
+	    app.jhist = data.JumpHist;
+	    app.sortJHist();
+	});
+	wspgmsg.push(this.onMsg);
+	console.log("added travel callback");
     }
 });

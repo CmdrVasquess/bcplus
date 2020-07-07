@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/CmdrVasquess/goedx"
 	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/goxic"
 	"git.fractalqb.de/fractalqb/qbsllm"
 	"github.com/CmdrVasquess/bcplus/internal/wapp"
+	"github.com/CmdrVasquess/goedx"
 )
 
 var (

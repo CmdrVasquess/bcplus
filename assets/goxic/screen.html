@@ -16,8 +16,9 @@
 		<img id="hdrLgo" src="/s/img/Logo.png" alt="logo">
 		<div id="hdrCmd">CMDR {{hdr.Name}}</div>
 		<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
-		<div id="hdrLoc" v-if="hdr.Loc"><span v-if="hdr.Loc.RefNm">{{hdr.Loc.RefNm}}
-		/ </span>{{hdr.Loc.Sys.Name}}</div>
+		<div id="hdrLoc" v-if="hdr.Loc">
+		  <loc-str :loc="hdr.Loc"></loc-str>
+		</div>
       </header>
       <nav>
 	<div id="mbtn">
@@ -25,10 +26,10 @@
 		v-on:click="ctrl.showMenu=false">⨯</span>
 	  <span v-else v-on:click="ctrl.showMenu=true">☰</span>
 	</div>
-	<div v-for="tab in tabs" :key="tab.key"
-	     v-bind:class="{current: tab.key == activeTab}">
-	  <span v-if="tab.key == activeTab">{{tab.title}}</span>
-	  <span v-else><a :href="tab.url">{{tab.title}}</a></span>
+	<div v-for="tab in tabs" :key="tab.Key"
+	     v-bind:class="{current: tab.Key == activeTab}">
+	  <span v-if="tab.Key == activeTab">{{tab.Tab}}</span>
+	  <span v-else><a :href="tab.url">{{tab.Tab}}</a></span>
 	</div>
       </nav>
       <transition name="menu">
@@ -106,6 +107,9 @@ Vue.filter('f2', function(x) {
       maximumFractionDigits: 2
     });
 });
+Vue.filter('f0', function(x) {
+	return Math.round(x);
+});		  
 Vue.filter('dur', function(d) {
 	if (!d) { return "–"; }
 	let m = Math.round(60*d);
@@ -129,6 +133,17 @@ const hdrData = {
 	Name: "–",
     }
 };
+Vue.component('loc-str', {
+	props: ['loc'],
+	template: '<span v-if="loc[\'@type\']==\'system\'">\
+                 System: {{loc.Name}} [{{loc.Coos[0]|f2}} /\
+                                       {{loc.Coos[1]|f2}} /\
+                                       {{loc.Coos[2]|f2}}]\
+               </span>\
+               <span v-else>\
+                 Unknown location type: <em>{{loc[\'@type\']}}</em>\
+               </span>'
+});
 var scrnApp = new Vue({
   el: '#vue-app',
   data: {

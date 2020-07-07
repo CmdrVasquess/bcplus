@@ -101,7 +101,7 @@ main {
 	<div id="hdrCmd">CMDR {{hdr.Name}}</div>
 	<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
 	<div id="hdrLoc"><span v-if="hdr.Loc.RefNm">{{hdr.Loc.RefNm}}
-	    / </span>{{hdr.Loc.Sys.Name}}</div>
+	    / </span>{{hdr.Loc.Name}}</div>
       </header>
       <nav>
 	<div id="mbtn">
@@ -205,7 +205,7 @@ main {
 	    <div id="travel">
 	      <trvlmap id="tmap" ref="tmap" :size="250" :hbar="40" :data="tmap"></trvlmap>
 	      <table id="tmap-info">
-		<tr><th>System:</th><td colspan="3">{{tmapLoc.Name}}</td></tr>
+		<tr><th>System:</th><td colspan="3">{{tmapSys.Name}}</td></tr>
 		<tr><th>• Coordinates:</th>
 		  <td class="right">{{tmap.loc.Coos[0]|f2}}</td>
 		  <td class="right">{{tmap.loc.Coos[1]|f2}}</td>
@@ -257,7 +257,7 @@ main {
 		    <th>
 		      <input v-if="jumps.length > 0" type="radio" value="-1"
 			     v-model.number="statsBlock">
-		      <span v-if="jumps.length > 0">{{jhist.length-1}}</span>
+		      <span v-if="jumps.length > 0">{{jumps.length}}</span>
 		      <span v-else>No</span> Jumps
 		    </th>
 		  </tr>
@@ -351,7 +351,7 @@ main {
 		    <tr v-for="(b, i) in bookms" :key="i">
 		      <td><input type="radio" :value="i" v-model.number="destbm"></td>
 		      <td>{{b.Name}}</td>
-		      <td class="right">{{sysDist(tmapLoc.Coos, b.Coos)|f2}} Ly</td>
+		      <td class="right">{{sysDist(tmapSys.Coos, b.Coos)|f2}} Ly</td>
 		      <td class="right">{{Math.round(b.Coos[0])}}</td>
 		      <td class="right">{{Math.round(b.Coos[1])}}</td>
 		      <td class="right">{{Math.round(b.Coos[2])}}</td>

@@ -15,6 +15,8 @@ import (
 	"github.com/CmdrVasquess/goedx"
 	"github.com/CmdrVasquess/goedx/apps/bboltgalaxy"
 	"github.com/CmdrVasquess/goedx/apps/l10n"
+	"github.com/CmdrVasquess/goedx/events"
+	"github.com/CmdrVasquess/goedx/journal"
 )
 
 var (
@@ -86,6 +88,7 @@ func (bcp *bcpApp) Init() {
 	if err != nil {
 		log.Fatale(err)
 	}
+	bcp.AddApp("bcp", goedx.NewAppChannel(bcp, 0))
 	dir = filepath.Join(bcp.dataDir, l10nDir)
 	bcp.appL10n = l10n.New(dir, edState)
 	bcp.AddApp("l10n", bcp.appL10n)
@@ -113,6 +116,24 @@ func (bcp *bcpApp) Shutdown() {
 	bcp.SaveState()
 }
 
+func (bcp *bcpApp) PrepareEDEvent(e events.Event) (token interface{}) {
+	if _, ok := e.(*journal.Shutdown); ok {
+		return true
+	}
+	return nil
+}
+
+func (bcp *bcpApp) FinishEDEvent(_ interface{}, e events.Event, _ goedx.Change) {
+	if _, ok := e.(*journal.Shutdown); !ok {
+		log.Errora("unexpected goedx `event`", e)
+		return
+	}
+	err := edState.Save(bcp.stateFile(), "")
+	if err != nil {
+		log.Errore(err)
+	}
+}
+
 func (bcp *bcpApp) stateFile() string {
 	return filepath.Join(bcp.dataDir, "bcplus.json")
 }
@@ -133,7 +154,7 @@ func (bcp *bcpApp) Flags() {
 	flag.IntVar(&App.WebPort, "web-port", 1337, docWebPort)
 	flag.StringVar(&App.webAddr, "web-addr", "", docWebAddr)
 	flag.StringVar(&App.webPin, "web-pin", "", docWebPin)
-	flag.StringVar(&App.webTheme, "web-theme", "", docWebTheme)
+	flag.StringVar(&App.webTheme, "web-theme", "dark", docWebTheme)
 	flag.BoolVar(&App.webTLS, "web-tls", true, docWebTLS)
 	flag.StringVar(&App.debugModes, "debug", "", docDebug)
 }
