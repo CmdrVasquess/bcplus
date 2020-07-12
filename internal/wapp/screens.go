@@ -28,6 +28,11 @@ type ScreenTmpl struct {
 	ScreenTabs goxic.PhIdxs
 }
 
+type Handler interface {
+	http.Handler
+	Data() interface{}
+}
+
 func (st *ScreenTmpl) PrepareScreen(bt *goxic.BounT) {
 	st.Template.NewBounT(bt)
 	bt.Bind(content.Data(tabBar), st.ScreenTabs...)
@@ -36,7 +41,7 @@ func (st *ScreenTmpl) PrepareScreen(bt *goxic.BounT) {
 type Screen struct {
 	Key     string
 	Tab     string
-	Handler http.Handler     `json:"-"`
+	Handler Handler          `json:"-"`
 	Ext     *goedx.Extension `json:"-"`
 }
 
@@ -61,7 +66,20 @@ var Screens = make(map[string]*Screen)
 func InitTabsBar(order []string) {
 	type tab struct{ Key, Tab string }
 	bar := []tab{}
+	have := make(map[string]bool)
+	for _, t := range order {
+		scrn := Screens[t]
+		if scrn == nil {
+			log.Warna("Unkown `tab` to init tab bar", t)
+			continue
+		}
+		bar = append(bar, tab{Key: scrn.Key, Tab: template.JSEscapeString(scrn.Tab)})
+		have[t] = true
+	}
 	for _, scrn := range Screens {
+		if have[scrn.Key] {
+			continue
+		}
 		bar = append(bar, tab{Key: scrn.Key, Tab: template.JSEscapeString(scrn.Tab)})
 	}
 	data, err := json.Marshal(bar)
@@ -71,15 +89,15 @@ func InitTabsBar(order []string) {
 	tabBar = data
 }
 
-func DataRequest(rq *http.Request) bool {
-	return rq.Header.Get("Accept") == "application/json"
-}
+// func DataRequest(rq *http.Request) bool {
+// 	return rq.Header.Get("Accept") == "application/json"
+// }
 
-func DataResponse(wr http.ResponseWriter, data interface{}) error {
-	wr.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(wr)
-	return enc.Encode(&data)
-}
+// func DataResponse(wr http.ResponseWriter, data interface{}) error {
+// 	wr.Header().Set("Content-Type", "application/json")
+// 	enc := json.NewEncoder(wr)
+// 	return enc.Encode(&data)
+// }
 
 type ScreenHdr struct {
 	Cmdr string

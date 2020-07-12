@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 
@@ -49,6 +50,7 @@ type bcpApp struct {
 	webTLS     bool
 	debugModes string
 	appL10n    *l10n.Locales
+	evtq       chan interface{}
 }
 
 func ensureDatadir(dir string) {
@@ -68,6 +70,7 @@ func ensureDatadir(dir string) {
 }
 
 func (bcp *bcpApp) Init() {
+	bcp.evtq = make(chan interface{}, 32)
 	ensureDatadir(bcp.dataDir)
 	if bcp.webTLS {
 		mustTLSCert(bcp.dataDir)
@@ -107,6 +110,7 @@ func (bcp *bcpApp) SaveState() {
 }
 
 func (bcp *bcpApp) Shutdown() {
+	close(bcp.evtq)
 	bcp.Extension.Stop()
 	bcp.appL10n.Close()
 	err := bcp.Galaxy.(*bboltgalaxy.Galaxy).Close()
@@ -167,9 +171,27 @@ func (app *bcpApp) Run(signals <-chan os.Signal) {
 	app.Init()
 	log.Infoa("data `dir`", app.dataDir)
 	log.Debuga("assert `dir`", app.assetDir)
+	go app.eventLoop()
 	go app.Extension.MustRun(true)
 	go runWebUI()
 	<-signals
 	log.Infof("BC+ %s interrupted; shutting down...", common.VersionLong)
 	app.Shutdown()
+}
+
+func (app *bcpApp) eventLoop() {
+	log.Infos("run event loop")
+	for e := range app.evtq {
+		switch evt := e.(type) {
+		case *wsEvent:
+			doWsEvent(evt)
+		default:
+			et := reflect.TypeOf(evt)
+			if et.Kind() == reflect.Ptr {
+				et = et.Elem()
+			}
+			log.Warna("unknown `event type`", et.Name())
+		}
+	}
+	log.Infos("exit event loop")
 }

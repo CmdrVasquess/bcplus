@@ -40,3 +40,7 @@ func (tmpl *template) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	tmpl.PrepareScreen(&bt)
 	goxic.Must(bt.WriteTo(wr))
 }
+
+func (tmpl *template) Data() interface{} {
+	return "proto data"
+}

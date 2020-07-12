@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', function () {
     wsock.onopen = function(evt) {
 	console.log('Event Channel Open: '+evt);
 	let dataRq = JSON.stringify({
-	    to: "screen",
-	    key: "`active-tab\jsStr`",
-	    cmd: "send-data"
+	    To: "screen",
+	    Key: "`active-tab\jsStr`",
+	    Cmd: "send-data"
 	});
 	console.log("request data: "+dataRq);
 	wsock.send(dataRq);

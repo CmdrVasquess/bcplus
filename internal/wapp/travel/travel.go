@@ -62,36 +62,16 @@ func (data *Data) Set(ed *goedx.EDState) {
 }
 
 func (tmpl *template) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
-	if wapp.DataRequest(rq) {
-		var data struct {
-			Hdr wapp.ScreenHdr
-			Data
-		}
-		err := screen.Ext.EDState.Read(func() error {
-			data.Hdr.Set(screen.Ext.EDState)
-			data.Set(screen.Ext.EDState)
-			return wapp.DataResponse(wr, &data)
-		})
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		// TODO does http push work with XMLHttpRequest() ???
-		// if push, ok := wr.(http.Pusher); ok {
-		// 	opts := http.PushOptions{
-		// 		Header: http.Header{
-		// 			"Accept": []string{"application/json"},
-		// 		},
-		// 	}
-		// 	if err := push.Push("/"+screen.Key, &opts); err != nil {
-		// 		log.Errore(err)
-		// 	}
-		// }
-		var bt goxic.BounT
-		tmpl.PrepareScreen(&bt)
-		screen.Ext.EDState.Read(func() error {
-			goxic.Must(bt.WriteTo(wr))
-			return nil
-		})
-	}
+	var bt goxic.BounT
+	tmpl.PrepareScreen(&bt)
+	screen.Ext.EDState.Read(func() error {
+		goxic.Must(bt.WriteTo(wr))
+		return nil
+	})
+}
+
+func (tmpl *template) Data() interface{} {
+	data := new(Data)
+	data.Set(screen.Ext.EDState)
+	return data
 }

@@ -140,13 +140,13 @@ const trvlApp = new Vue({
     },
     mounted: function() {
 	const app = this;
-	apiGetJSON("/travel", function(data) {
-	    hdrData.Name = data.Hdr.Cmdr;
-	    hdrData.Ship = data.Hdr.Ship;
-	    hdrData.Loc = data.Hdr.Loc;
-	    app.jhist = data.JumpHist;
-	    app.sortJHist();
-	});
+	//apiGetJSON("/travel", function(data) {
+	//    hdrData.Name = data.Hdr.Cmdr;
+	//    hdrData.Ship = data.Hdr.Ship;
+	//    hdrData.Loc = data.Hdr.Loc;
+	//    app.jhist = data.JumpHist;
+	//    app.sortJHist();
+	//});
 	wsMsgCalls.push(this.onMsg);
     }
 });

@@ -1,8 +1,13 @@
 package bcplus
 
 import (
+	"encoding/json"
 	"net/http"
 	"sync"
+
+	"github.com/CmdrVasquess/bcplus/internal/wapp"
+
+	"git.fractalqb.de/fractalqb/qbsllm"
 
 	wsock "github.com/gorilla/websocket"
 )
@@ -73,6 +78,12 @@ func logWs(wr http.ResponseWriter, rq *http.Request) {
 	}
 }
 
+type wsEvent struct {
+	To  string
+	Key string
+	Cmd interface{}
+}
+
 func appWs(wr http.ResponseWriter, rq *http.Request) {
 	wsc, err := (&wsock.Upgrader{}).Upgrade(wr, rq, nil)
 	if err != nil {
@@ -96,12 +107,50 @@ func appWs(wr http.ResponseWriter, rq *http.Request) {
 		}
 		switch mty {
 		case wsock.TextMessage:
-			// TODO web client events
-			//EventQ <- Event{ESRC_WEBUI, mraw}
-			log.Infof("WS: %s", string(mraw))
+			evt := new(wsEvent)
+			err := json.Unmarshal(mraw, evt)
+			if err != nil {
+				log.Errore(err)
+			} else {
+				if log.Logs(qbsllm.Ltrace) {
+					log.Infof("WS: %s", string(mraw))
+				}
+				App.evtq <- evt
+			}
 		case wsock.BinaryMessage:
 			log.Errora("ignore binary app event `from`",
 				webApp.wsConn.RemoteAddr().String())
 		}
+	}
+}
+
+func doWsEvent(evt *wsEvent) {
+	switch evt.To {
+	case "screen":
+		scr := wapp.Screens[evt.Key]
+		if scr == nil {
+			log.Errora("unkown `screen` as WS event target", evt.Key)
+		} else {
+			var msg []byte
+			err := App.EDState.Read(func() (err error) {
+				var data struct {
+					Cmd  string
+					Hdr  wapp.ScreenHdr
+					Data interface{}
+				}
+				data.Cmd = "upd"
+				data.Hdr.Set(App.EDState)
+				data.Data = scr.Handler.Data()
+				msg, err = json.Marshal(&data)
+				return err
+			})
+			if err != nil {
+				log.Errore(err)
+			} else {
+				webApp.Write(msg)
+			}
+		}
+	default:
+		log.Errora("unkonwn WS event `target`", evt.To)
 	}
 }
