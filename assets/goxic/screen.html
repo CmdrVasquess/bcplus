@@ -13,12 +13,12 @@
   <body>
     <div id="vue-app">
       <header>
-		<img id="hdrLgo" src="/s/img/Logo.png" alt="logo">
-		<div id="hdrCmd">CMDR {{hdr.Name}}</div>
-		<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
-		<div id="hdrLoc" v-if="hdr.Loc">
-		  <loc-str :loc="hdr.Loc"></loc-str>
-		</div>
+	<img id="hdrLgo" src="/s/img/Logo.png" alt="logo">
+	<div id="hdrCmd">CMDR {{hdr.Name}}</div>
+	<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
+	<div id="hdrLoc" v-if="hdr.Loc">
+	  <loc-str :loc="hdr.Loc"></loc-str>
+	</div>
       </header>
       <nav>
 	<div id="mbtn">
@@ -29,7 +29,7 @@
 	<div v-for="tab in tabs" :key="tab.Key"
 	     v-bind:class="{current: tab.Key == activeTab}">
 	  <span v-if="tab.Key == activeTab">{{tab.Tab}}</span>
-	  <span v-else><a :href="tab.url">{{tab.Tab}}</a></span>
+	  <span v-else><a :href="'/'+tab.Key">{{tab.Tab}}</a></span>
 	</div>
       </nav>
       <transition name="menu">
@@ -47,41 +47,62 @@
 	</aside>
       </transition>
     </div>
-	<script>
-if (!window["WebSocket"]) {
+<script>
+const wsurl = "wss://"+location.hostname+":"+location.port+"/ws/app";
+let wsock = null;
+let wsMsgCalls = [];
+document.addEventListener('DOMContentLoaded', function () {
+    if (!window["WebSocket"]) {
 	console.log("browser does not support web sockets");
-}
-var wsurl = "wss://"+location.hostname+":"+location.port+"/ws/app";
-var wsock = new WebSocket(wsurl);
-var wspgmsg = [];
-wsock.onmessage = function(msg) {
-  console.log("Event:'"+msg.data+"'");
-  var evt = JSON.parse(msg.data);
-  for (var i=0; i<wspgmsg.length; i++) {
-    wspgmsg[i](evt);
-  }
-}
-console.log("connected to "+wsurl);
-
+	return;
+    }
+    wsock = new WebSocket(wsurl);
+    wsock.onopen = function(evt) {
+	console.log('Event Channel Open: '+evt);
+	let dataRq = JSON.stringify({
+	    to: "screen",
+	    key: "`active-tab\jsStr`",
+	    cmd: "send-data"
+	});
+	console.log("request data: "+dataRq);
+	wsock.send(dataRq);
+    }
+    wsock.onerror = function (err) {
+	console.log('Event Channel Error: '+err);
+    }
+    wsock.onclose = function(evt) {
+	console.log('Event Channel Closed: '+wsurl);
+    }
+    wsock.onmessage = function(msg) {
+	console.log("Event:'"+msg.data+"'");
+	var evt = JSON.parse(msg.data);
+	for (let i=0; i<wsMsgCalls.length; i++) {
+	    wsMsgCalls[i](evt);
+	}
+    }
+    console.log("web socket connected to "+wsock.url);
+});
+	  
 function apiGetJSON(url, callback) {
-	var rq = new XMLHttpRequest();
-	rq.open("GET", url);
-	rq.setRequestHeader("Accept", "application/json");
+    let rq = new XMLHttpRequest();
+    rq.open("GET", url);
+    rq.setRequestHeader("Accept", "application/json");
     rq.addEventListener('load', function(evt) {
-		if (rq.status >= 200 && rq.status < 300) {
-			console.log("OK from "+url);
+	if (rq.status >= 200 && rq.status < 300) {
+	    console.log("OK from "+url);
 		} else {
 			console.warn(rq.statusText, rq.responseText);
-			return;
+		    return;
 		}
-		var ppl = JSON.parse(rq.responseText);
-		callback(ppl);
+	var ppl = JSON.parse(rq.responseText);
+	callback(ppl);
     });
     rq.send();
 }
 
 const locRTyNm = ["?", "Deep Space", "Star", "Belt", "Planet",
-				  "Ring", "Station", "Outpost", "Port", "Settlement", "Jump Target"];
+		  "Ring", "Station", "Outpost", "Port", "Settlement",
+		  "Jump Target"];
 const locModeNm = ["?", "Parked", "Travel", "Super Cruise", "FSD Jump"];
 const locVhclNm = ["?", "Ship", "SRV", "Fighter", "Crew Member"];
 Vue.filter('int', function(x) {
@@ -144,12 +165,12 @@ Vue.component('loc-str', {
                  Unknown location type: <em>{{loc[\'@type\']}}</em>\
                </span>'
 });
-var scrnApp = new Vue({
+const scrnApp = new Vue({
   el: '#vue-app',
   data: {
       ctrl: { showMenu: false },
-      activeTab: '`active-tab\jsStr`',
-      tabs: `tabs`,
+      activeTab: '`active-tab`',
+      tabs: `screen-tabs`,
       hdr: hdrData
   },
     filters: {
@@ -178,11 +199,11 @@ var scrnApp = new Vue({
 	}
     },
     mounted: function () {
-	wspgmsg.push(this.onMsg);
+	wsMsgCalls.push(this.onMsg);
 	console.log("added page header callback");
     }
 });
-	</script>
-	<!-- >>> main <<< \-->
+</script>
+<!-- >>> main <<< \-->
   </body>
 </html>

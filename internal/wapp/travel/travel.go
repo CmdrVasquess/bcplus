@@ -11,8 +11,10 @@ import (
 	"github.com/CmdrVasquess/goedx"
 )
 
+const Key = "travel"
+
 var (
-	log    = qbsllm.New(qbsllm.Lnormal, "travel", nil, nil)
+	log    = qbsllm.New(qbsllm.Lnormal, Key, nil, nil)
 	LogCfg = c4hgol.Config(qbsllm.NewConfig(log))
 )
 
@@ -24,9 +26,7 @@ func init() {
 var (
 	tmpl   template
 	screen = wapp.Screen{
-		Key: "travel",
-		Tab: "Travel",
-		// Title:   "Travel", same as Tab
+		Key:     Key,
 		Handler: &tmpl,
 	}
 )

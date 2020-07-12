@@ -41,7 +41,7 @@ current system:
 
 BC+ currently is only provided for E:D on PC – though it compliles fine
 on Linux (my dev platform). It can be run from any directory as long as
-the directory with necessary assets `bcplus.d` is accessible in the same
+the directory with necessary `assets` is accessible in the same
 directory.
 
 If you download the binary distribution, just unpack the ZIP file. This
@@ -71,13 +71,13 @@ First, option syntax is not Windows standard – BC+ is written in
 package. So be prepared to start options with '-' not '/'.
 
 * `-j <directory>` set the path to the directory containig your journal
-  files.
+  files. (default: %HOME%\Saved Games\Frontier Developments\Elite Dangerous)
 
 * `-p <port>` set the port on which the web server is listening (default:
   1337).
 
-* `-d <directory>` set the directory where BC+ collects data about your
-  commander and the visited galaxy (BC+ can handle multiple commanders)
+* `-d <directory>` set the directory where BC+ collects its data (BC+
+  handles multiple commanders)
 
 * `-h` show help information, i.e. the complete and up-to-date list of
   options.

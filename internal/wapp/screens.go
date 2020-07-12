@@ -2,8 +2,11 @@ package wapp
 
 import (
 	"encoding/json"
+	"html/template"
 	"net/http"
 	"reflect"
+
+	"git.fractalqb.de/fractalqb/goxic/content"
 
 	"git.fractalqb.de/fractalqb/c4hgol"
 	"git.fractalqb.de/fractalqb/goxic"
@@ -14,28 +17,25 @@ import (
 var (
 	log    = qbsllm.New(qbsllm.Lnormal, "wapp", nil, nil)
 	LogCfg = c4hgol.Config(qbsllm.NewConfig(log))
+
+	jsonNull = []byte("null")
+	tabBar   []byte
 )
 
 type ScreenTmpl struct {
 	*goxic.Template
-	BCpScreen *Screen
+	BCpScreen  *Screen
+	ScreenTabs goxic.PhIdxs
 }
-
-var jsonNull = []byte("null")
 
 func (st *ScreenTmpl) PrepareScreen(bt *goxic.BounT) {
 	st.Template.NewBounT(bt)
-	// if st.BCpScreen.EDState.Cmdr == nil {
-	// 	bt.Bind(content.Data(jsonNull), st.InitHdr...)
-	// } else {
-	// 	bt.Bind(content.Json{V: st.BCpScreen.EDState.Cmdr}, st.InitHdr...)
-	// }
+	bt.Bind(content.Data(tabBar), st.ScreenTabs...)
 }
 
 type Screen struct {
 	Key     string
 	Tab     string
-	Title   string
 	Handler http.Handler     `json:"-"`
 	Ext     *goedx.Extension `json:"-"`
 }
@@ -57,6 +57,19 @@ func AddScreen(s *Screen, logCfg c4hgol.Configurer) {
 }
 
 var Screens = make(map[string]*Screen)
+
+func InitTabsBar(order []string) {
+	type tab struct{ Key, Tab string }
+	bar := []tab{}
+	for _, scrn := range Screens {
+		bar = append(bar, tab{Key: scrn.Key, Tab: template.JSEscapeString(scrn.Tab)})
+	}
+	data, err := json.Marshal(bar)
+	if err != nil {
+		log.Fatale(err)
+	}
+	tabBar = data
+}
 
 func DataRequest(rq *http.Request) bool {
 	return rq.Header.Get("Accept") == "application/json"

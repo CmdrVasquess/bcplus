@@ -2,7 +2,7 @@
 
 build:
 	go generate ./...
-	go build
+	go build -tags release
 	cd util/screenshot; go build
 
 clean:

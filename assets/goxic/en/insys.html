@@ -165,7 +165,7 @@ summary { font-weight: bold; font-size: 120%; }
 			  }
 		  },
 		  mounted: function () {
-			  wspgmsg.push(this.onMsg);
+			  wsMsgCalls.push(this.onMsg);
 			  console.log("added insys callback");
 			  if (this.Bodies) {
 				  this.Bodies.sort(function(a, b) {

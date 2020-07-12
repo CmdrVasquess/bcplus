@@ -78,10 +78,6 @@ var goxicName = nmconv.Conversion{
 }
 
 func loadTemplates(lang string) {
-	tabs := make([]*wapp.Screen, 0, len(wapp.Screens))
-	for _, scrn := range wapp.Screens {
-		tabs = append(tabs, scrn)
-	}
 	tmplLd := newTmplLoader()
 	tmpls := tmplLd.load("screen.html", "")
 	tmplScrn := tmpls[""]
@@ -108,13 +104,18 @@ func loadTemplates(lang string) {
 		}
 		fixt.NewBounT(&bount)
 		bount.BindName(gxc.P(lang), "lang")
-		if scrn.Title == "" {
-			bount.BindName(gxc.P(scrn.Tab), "title")
+		if tmp := tmpls["tab"]; tmp == nil {
+			log.Fatala("`screen` with `lang` has not tab name", key, lang)
 		} else {
-			bount.BindName(gxc.P(scrn.Title), "title")
+			scrn.Tab = string(tmp.Static())
+			bount.BindName(gxc.Data(tmp.Static()), "tab")
+		}
+		if tmp := tmpls["title"]; tmp == nil {
+			log.Fatala("`screen` with `lang` has not title", key, lang)
+		} else {
+			bount.BindName(gxc.Data(tmp.Static()), "title")
 		}
 		bount.BindName(gxc.P(App.webTheme), "theme")
-		bount.BindName(gxc.Json{V: tabs}, "tabs")
 		bount.BindName(gxc.P(scrn.Key), "active-tab")
 		fixt, err = bount.Fixate()
 		if err != nil {
@@ -137,6 +138,7 @@ func initWebUI() {
 		scrn.Ext = &App.Extension
 	}
 	loadTemplates(lang)
+	wapp.InitTabsBar(stdScreenTabOrder)
 }
 
 func runWebUI() {

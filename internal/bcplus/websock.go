@@ -86,7 +86,7 @@ func appWs(wr http.ResponseWriter, rq *http.Request) {
 	defer wsc.Close()
 	log.Infoa("new app `client`", webApp.wsConn.RemoteAddr().String())
 	for webApp.wsConn != nil {
-		mty /*mraw*/, _, err := webApp.wsConn.ReadMessage()
+		mty, mraw, err := webApp.wsConn.ReadMessage()
 		if err != nil {
 			log.Infoa("closed log `client` `because`",
 				webApp.wsConn.RemoteAddr().String(),
@@ -94,11 +94,14 @@ func appWs(wr http.ResponseWriter, rq *http.Request) {
 			webApp.Close()
 			break
 		}
-		if mty == wsock.BinaryMessage {
+		switch mty {
+		case wsock.TextMessage:
+			// TODO web client events
+			//EventQ <- Event{ESRC_WEBUI, mraw}
+			log.Infof("WS: %s", string(mraw))
+		case wsock.BinaryMessage:
 			log.Errora("ignore binary app event `from`",
 				webApp.wsConn.RemoteAddr().String())
 		}
-		// TODO web client events
-		//EventQ <- Event{ESRC_WEBUI, mraw}
 	}
 }

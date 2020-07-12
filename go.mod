@@ -4,11 +4,13 @@ go 1.14
 
 require (
 	git.fractalqb.de/fractalqb/c4hgol v0.10.2
+	git.fractalqb.de/fractalqb/c4qblog v0.9.3 // indirect
 	git.fractalqb.de/fractalqb/ggja v0.9.1
 	git.fractalqb.de/fractalqb/goxic v0.9.2
 	git.fractalqb.de/fractalqb/nmconv v1.0.1
 	git.fractalqb.de/fractalqb/pack v0.5.3
 	git.fractalqb.de/fractalqb/qbsllm v0.10.2
+	git.fractalqb.de/fractalqb/sllm v0.11.1 // indirect
 	github.com/CmdrVasquess/goedx v0.1.1
 	github.com/anthonynsimon/bild v0.11.1
 	github.com/gofrs/uuid v3.3.0+incompatible

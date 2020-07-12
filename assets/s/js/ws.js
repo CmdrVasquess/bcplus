@@ -37,8 +37,8 @@ function startWs() {
 }
 document.addEventListener('DOMContentLoaded', function () {
 	if (window["WebSocket"]) {
-		startWs()
+		startWs();
 	} else {
-		alert("Your browser does not support WebSockets.")
+		alert("Your browser does not support WebSockets.");
 	}
 });

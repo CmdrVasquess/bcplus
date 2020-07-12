@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+<!-- >>> title >>> -->
+BC+ Prototypes
+<!-- <<< title <<< -->
+<!-- >>> tab >>> -->
+Proto
+<!-- <<< tab <<< -->
+    </title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../s/img/logo.ico">
+    <link rel="stylesheet" type="text/css" href="../../s/css/th-bright.css">
+    <link rel="stylesheet" type="text/css" href="../../s/css/bcp.css">
+    <script src="../../s/js/vue.js"></script>
+<!-- #>>> style >>> -->
+<!-- #<<< style <<< -->
+  </head>
+  <body>
+    <div id="vue-app">
+      <header>
+	<img id="hdrLgo" src="/s/img/Logo.png" alt="logo">
+	<div id="hdrCmd">CMDR {{hdr.Name}}</div>
+	<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
+	<div id="hdrLoc"><span v-if="hdr.Loc.RefNm">{{hdr.Loc.RefNm}}
+	    / </span>{{hdr.Loc.Name}}</div>
+      </header>
+      <nav>
+	<div id="mbtn">
+	  <span v-if="ctrl.showMenu"
+		v-on:click="ctrl.showMenu=false">⨯</span>
+	  <span v-else v-on:click="ctrl.showMenu=true">☰</span>
+	</div>
+	<div v-for="tab in tabs" :key="tab.key"
+	     v-bind:class="{current: tab.key == activeTab}">
+	  <span v-if="tab.key == activeTab">{{tab.title}}</span>
+	  <span v-else><a :href="tab.url">{{tab.title}}</a></span>
+	</div>
+      </nav>
+      <transition name="menu">
+	<aside v-show="ctrl.showMenu">
+	  <div>Settings…</div>
+	  <div><a href="/s/debug/log.html" target="bcplog"
+                  v-on:click="ctrl.showMenu=false">Show log…</a></div>
+	  <div>Quit</div>
+	</aside>
+      </transition>
+    </div>
+<!-- >>> main >>> -->
+    <main>
+    </main>	      
+    <script src="/s/js/proto.js"></script>
+<!-- <<< main <<< -->
+</body>
+</html>
