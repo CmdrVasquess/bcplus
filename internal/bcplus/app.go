@@ -71,7 +71,9 @@ func ensureDatadir(dir string) {
 
 func (bcp *bcpApp) Init() {
 	bcp.evtq = make(chan interface{}, 32)
+	log.Infoa("data `dir`", bcp.dataDir)
 	ensureDatadir(bcp.dataDir)
+	log.Debuga("asset `dir`", bcp.assetDir)
 	if bcp.webTLS {
 		mustTLSCert(bcp.dataDir)
 	}
@@ -86,24 +88,24 @@ func (bcp *bcpApp) Init() {
 	bcp.CmdrFile = func(cmdr *goedx.Commander) string {
 		return filepath.Join(bcp.dataDir, cmdr.FID, "commander.json")
 	}
-	dir := filepath.Join(bcp.dataDir, "galaxy.bbolt")
-	bcp.Galaxy, err = bboltgalaxy.Open(dir)
+	file := filepath.Join(bcp.dataDir, "galaxy.bbolt")
+	bcp.Galaxy, err = bboltgalaxy.Open(file)
 	if err != nil {
 		log.Fatale(err)
 	}
 	bcp.AddApp("bcp", goedx.NewAppChannel(bcp, 0))
-	dir = filepath.Join(bcp.dataDir, l10nDir)
-	bcp.appL10n = l10n.New(dir, edState)
+	file = filepath.Join(bcp.dataDir, l10nDir)
+	bcp.appL10n = l10n.New(file, edState)
 	bcp.AddApp("l10n", bcp.appL10n)
 	initWebUI()
 }
 
 func (bcp *bcpApp) SaveState() {
-	var cmdrFile string
+	var file string
 	if bcp.EDState.Cmdr != nil && bcp.EDState.Cmdr.FID != "" {
-		cmdrFile = bcp.CmdrFile(bcp.EDState.Cmdr)
+		file = bcp.CmdrFile(bcp.EDState.Cmdr)
 	}
-	err := edState.Save(bcp.stateFile(), cmdrFile)
+	err := edState.Save(bcp.stateFile(), file)
 	if err != nil {
 		log.Errore(err)
 	}
@@ -169,8 +171,6 @@ func (app *bcpApp) Run(signals <-chan os.Signal) {
 		common.BCpQuality, common.BCpBuildNo,
 		runtime.Version())
 	app.Init()
-	log.Infoa("data `dir`", app.dataDir)
-	log.Debuga("assert `dir`", app.assetDir)
 	go app.eventLoop()
 	go app.Extension.MustRun(true)
 	go runWebUI()

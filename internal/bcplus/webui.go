@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -66,11 +67,6 @@ func webRoutes() {
 	http.Handle("/", http.RedirectHandler("/travel", http.StatusSeeOther))
 }
 
-func screenTemplate(tld *tmplLoader) *goxic.Template {
-	tmpls := tld.load("screen.html", "")
-	return tmpls[""]
-}
-
 var goxicName = nmconv.Conversion{
 	Norm:   nmconv.Uncamel,
 	Xform:  nmconv.PerSegment(strings.ToLower),
@@ -79,7 +75,7 @@ var goxicName = nmconv.Conversion{
 
 func loadTemplates(lang string) {
 	tmplLd := newTmplLoader()
-	tmpls := tmplLd.load("screen.html", "")
+	tmpls := tmplLd.load("screen.html", lang)
 	tmplScrn := tmpls[""]
 	var bount goxic.BounT
 	for key, scrn := range wapp.Screens {
@@ -188,18 +184,27 @@ func newTmplLoader() *tmplLoader {
 	return res
 }
 
-func (tld *tmplLoader) load(name, lang string) map[string]*goxic.Template {
-	var fname string
-	if len(lang) > 0 {
-		fname = filepath.Join(tld.dir, lang, name)
-	} else {
-		fname = filepath.Join(tld.dir, name)
+func (tld *tmplLoader) find(name, lang string) string {
+	if lang != "" {
+		fname := filepath.Join(tld.dir, lang, name)
+		if _, err := os.Stat(fname); err == nil {
+			return fname
+		}
 	}
+	fname := filepath.Join(tld.dir, name)
+	if _, err := os.Stat(fname); os.IsNotExist(err) {
+		log.Warna("no `template` for `lang`", name, lang)
+	}
+	return fname
+}
+
+func (tld *tmplLoader) load(name, lang string) map[string]*goxic.Template {
+	fname := tld.find(name, lang)
 	tname := name
 	if ext := filepath.Ext(name); len(ext) > 0 {
 		tname = name[:len(name)-len(ext)]
 	}
-	log.Debuga("load `template` from `file`", tname, fname)
+	log.Debuga("load `lang` `template` from `file`", lang, tname, fname)
 	res := make(map[string]*goxic.Template)
 	err := tld.parser.ParseFile(fname, tname, res)
 	if err != nil {

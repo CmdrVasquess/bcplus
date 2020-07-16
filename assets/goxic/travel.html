@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+<!-- >>> title >>> -->
+BC+ Travel
+<!-- <<< title <<< -->
+<!-- >>> tab >>> -->
+Travel
+<!-- <<< tab <<< -->
+    </title>
+    <link rel="shortcut icon" type="image/x-icon" href="../../s/img/logo.ico">
+    <link rel="stylesheet" type="text/css" href="../../s/css/th-bright.css">
+    <link rel="stylesheet" type="text/css" href="../../s/css/bcp.css">
+    <script src="../../s/js/vue.js"></script>
+<!-- >>> style >>> -->
+	<style>
+main {
+	overflow: hidden;
+	display: grid;
+	grid-template-columns: 2fr 7fr;
+	grid-template-areas: "jmps trvl";
+}
+#jumps {
+	grid-area: jmps;
+	overflow-y: auto;
+	padding: .5em;
+}
+#jumps>div {
+	background-color: var(--colBkgDim);
+	border-radius: .4em;
+	padding: .3em .5em;
+	margin-bottom: .5em;
+	box-shadow: 0 0 5px var(--colFgr) inset;
+}
+#jumps span.diff { font-size: 78%; }
+#jumps span.sysname {
+    color: var(--colGud);
+    font-weight: bold;
+}
+#jumps>div:hover { color: var(--colFgrAlt); }
+#jumps>div:hover span.sysname {
+    color: var(--colFgrAlt);
+}
+#travel {
+	grid-area: trvl;
+	overflow-y: auto;
+	padding: .5em;
+}
+#tmap-info {
+    display: inline-block;
+    vertical-align: top;
+    border: none;
+}
+#tmap-info tr {
+    border: none;
+    background-color: var(--colBkg);
+}
+#tmap-info th {
+    font-size: 90%;
+    padding: 0 .3em;
+    background-color: var(--colBkg);
+    text-align: left;
+    border: none;
+}
+#tmap-info td {
+    font-size: 90%;
+    padding: 0 .4em;
+    border: none;
+}
+#tmap-info td.tmima {
+	color: var(--colTxtDim);
+}
+#tmap {
+	display: inline-block;
+	vertical-align: top;
+	/*margin: 0 auto;*/
+	border: 2px solid var(--colFgrDim);
+	background-image: url("/s/img/mway.jpg");
+	background-size: 250px 250px;
+	background-repeat: no-repeat;
+	background-color: black;
+	cursor: pointer;
+}
+#speed-tbl {
+	margin-top: .7em;
+}
+#speed-tbl td.tavg {
+	text-align: center;
+}
+#speed-tbl td.tmima {
+	text-align: center;
+	font-size: 90%;
+	color: var(--colTxtDim);
+}
+#bms h1 {
+	font-size: 150%;
+	margin: 0;
+	margin-top: .3em;
+}
+#bms td { padding: 0 .3em; }
+#bms td:first-child { text-align: center; }
+	</style>
+<!-- <<< style <<< -->
+  </head>
+  <body>
+<!-- >>> main >>> -->
+    <main>
+      <div id="jumps">
+        <div v-for="(jmp, i) in jhist" :key="i">
+	  <span v-if="i>0" class="diff">↥ {{jumps[i-1].len|f2}} Ly
+	    • ΔT {{(jumps[i-1].dur/1000)|dur}}
+	    <br></span>
+	  <span class="sysname">{{jmp.Name}}</span>
+	  <br/>
+	  {{(new Date(jmp.Time)).toLocaleString()}}
+        </div>
+      </div>
+      <div id="travel">
+	<canvas width="640" height="300"></canvas>
+      </div>
+    </main>
+    <script src="/s/js/travel.js"></script>
+<!-- <<< main <<< -->
+</body>
+</html>

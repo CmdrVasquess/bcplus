@@ -134,12 +134,14 @@ func doWsEvent(evt *wsEvent) {
 			var msg []byte
 			err := App.EDState.Read(func() (err error) {
 				var data struct {
-					Cmd  string
-					Hdr  wapp.ScreenHdr
-					Data interface{}
+					Cmd    string
+					Hdr    wapp.ScreenHdr
+					Screen string
+					Data   interface{}
 				}
 				data.Cmd = "upd"
 				data.Hdr.Set(App.EDState)
+				data.Screen = evt.Key
 				data.Data = scr.Handler.Data()
 				msg, err = json.Marshal(&data)
 				return err

@@ -105,6 +105,9 @@ type ScreenHdr struct {
 		Type  string
 		Ident string
 		Name  string
+		Jump  float32
+		Range float32
+		Cargo int
 	}
 	Loc goedx.JSONLocation
 }
@@ -120,8 +123,11 @@ func (hdr *ScreenHdr) Set(ed *goedx.EDState) {
 		hdr.Cmdr = cmdr.Name
 		ship := cmdr.GetShip(cmdr.ShipID)
 		hdr.Ship.Type = ship.Type
-		hdr.Ship.Ident = ship.Ident
-		hdr.Ship.Name = ship.Name
+		hdr.Ship.Ident = string(ship.Ident)
+		hdr.Ship.Name = string(ship.Name)
+		hdr.Ship.Jump = float32(ship.MaxJump)
+		hdr.Ship.Range = float32(ship.MaxRange)
+		hdr.Ship.Cargo = int(ship.Cargo)
 		hdr.Loc = cmdr.At
 	}
 }

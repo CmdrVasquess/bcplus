@@ -14,10 +14,7 @@ Reworking the thing is currently in rather slow progress…
 # BoardComputer+ for E:D
 
 [Binary Downloads](https://github.com/CmdrVasquess/BCplus/releases) –
-[Documentation Index](https://cmdrvasquess.github.io/BCplus/)
-
-To build it from source you need [cgo](https://golang.org/cmd/cgo/).
-The main executable can be build with ```go build```.
+[Documentation Index](https://cmdrvasquess.github.io/bcplus/)
 
 --------------------
 
@@ -70,7 +67,7 @@ First, option syntax is not Windows standard – BC+ is written in
 [Go](https://golang.org) and uses Go's standard command line parsing
 package. So be prepared to start options with '-' not '/'.
 
-* `-j <directory>` set the path to the directory containig your journal
+* `-j <directory>` set the path to the directory containing your journal
   files. (default: %HOME%\Saved Games\Frontier Developments\Elite Dangerous)
 
 * `-p <port>` set the port on which the web server is listening (default:
@@ -81,6 +78,26 @@ package. So be prepared to start options with '-' not '/'.
 
 * `-h` show help information, i.e. the complete and up-to-date list of
   options.
+
+## Building from Source
+
+To build it BC+ source you need
+
+1. A proper installation of the [Go SDK](https://golang.org). The download
+   will take you directly to the installation instructions. On Windows the 
+   installer should do the necessary things for you.
+
+2. BC+ has/had/ will have dependencies that use [`cgo`](https://golang.org/cmd/cgo/).
+   For `cgo` to work one needs a working C compiler. Details can be found on
+   the `cgo` doc pages. I use [MinGW-w64](https://sourceforge.net/projects/mingw-w64/) 
+   to build BC+. More details can be found on the
+   [MinGW-w64 project page](http://mingw-w64.org/).
+
+If you have things set up correctly ```go get github.com/CmdrVasquess/bcplus```
+should build the executable without errors. However this does not create a
+setup where `bcplus.exe` finds necessary resources. So, clone the repository,
+`cd` into the directory and use `go build`. Now you can run directly from the
+repo.
 
 ## Credits
 
@@ -93,7 +110,14 @@ package. So be prepared to start options with '-' not '/'.
 3. [Elite Dangerous Assets](http://edassets.org/) site for providing useful
    visual stuff.
 
-4. Many others I not yet mentioned…
+4. The creators of [Vue.js](https://vuejs.org/) as it became an important part
+   of the Web UI.
+
+6. All the people who are giving us incredible technology stacks like the
+   [Web](https://www.w3.org/), [OS'es](https://www.debian.org/) and
+   [Tools](https://www.gnu.org/) and many many more without the ulterior
+   motive of spying on us for their own profit. – Being it payed or free
+   software, this addresses all who respect their users.
 
 ## Disclaimer
 

@@ -14,8 +14,12 @@
     <div id="vue-app">
       <header>
 	<img id="hdrLgo" src="/s/img/Logo.png" alt="logo">
-	<div id="hdrCmd">CMDR {{hdr.Name}}</div>
+	<div id="hdrCmd">CMDR {{hdr.Cmdr}}</div>
 	<div id="hdrShp">{{hdr.Ship.Name}} [{{hdr.Ship.Ident}}]</div>
+	<div id="hdrShpStat">
+	  Jump: best {{hdr.Ship.Jump|f2}} Ly / max {{hdr.Ship.Range|f2}} Ly
+	  • Cargo Capacity: {{hdr.Ship.Cargo}} t
+	</div>
 	<div id="hdrLoc" v-if="hdr.Loc">
 	  <loc-str :loc="hdr.Loc"></loc-str>
 	</div>
@@ -130,18 +134,19 @@ Vue.filter('f2', function(x) {
 });
 Vue.filter('f0', function(x) {
 	return Math.round(x);
-});		  
-Vue.filter('dur', function(d) {
-	if (!d) { return "–"; }
-	let m = Math.round(60*d);
-	let h = Math.floor(m/60);
-	m = m % 60;
-	d = Math.floor(h/24);
-	h = h % 24;
-	if (d > 0) {
-		return d+"d "+h+":"+m;
-	}
-	return h+":"+m;
+});
+Vue.filter('dur', function(sec) {
+    if (!sec) { return "–"; }
+    let min = Math.floor(sec/60);
+    if (min == 0) return sec+"s";
+    sec -= 60*min;
+    let h = Math.floor(min/60);
+    if (h == 0) return min+"m "+sec+"s";
+    min -= 60*h;
+    let d = Math.floor(h/24);
+    if (d == 0) return h+"h "+min+"m "+sec+"s";
+    h -= 24*d;
+    return d+"d "+h+"h "+min+"m "+sec+"s";
 });
 const hdrData = {
     Name: "<anonymous>",
@@ -189,8 +194,7 @@ const scrnApp = new Vue({
 	    switch (evt.Cmd) {
 	    case "upd":
 		if (evt.Hdr) {
-		    this.hdr.Fid = evt.Hdr.Fid;
-		    this.hdr.Name = evt.Hdr.Name;
+		    this.hdr.Cmdr = evt.Hdr.Cmdr;
 		    this.hdr.Loc = evt.Hdr.Loc;
 		    this.hdr.Ship = evt.Hdr.Ship;
 		}
