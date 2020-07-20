@@ -6,24 +6,14 @@ function sysDist2(coos1, coos2) {
 }
 function sysDist(coos1, coos2) { return Math.sqrt(sysDist2(coos1, coos2)); }
 
-Vue.component('trvlmap', {
-    props: {
-	size: Number,
-	hbar: Number,
-	data: Object
-    },
-    data: function() {return { anim: false }},
-    template: '<canvas :width="(2*size)+hbar" :height="size" \
-               v-on:click="anim=!anim;drawTrail(0)"></canvas>'
-});
-
 const trvlApp = new Vue({
     el: "main",
     data: {
 	cfg: {
 	    jblocks: [5,10,15,30]
 	},
-	jhist: []
+	jhist: [],
+	travel: { width: 0, height: 0 }
     },
     computed: {
 	jumps: function() {
@@ -40,15 +30,34 @@ const trvlApp = new Vue({
 		t0 = t1;
 	    }
 	    return res;
+	},
+	tmapDim: function() {
+	    const bar = 60;
+	    let q = this.travel.width - bar;
+	    if (q > this.travel.height)
+		q = this.travel.height;
+	    return {
+		bar: bar,
+		quad: q
+	    };
+	},
+	tmapStyle: function() {
+	    let sz = this.tmapDim.quad+"px "+this.tmapDim.quad+"px";
+	    return {
+		"background-size": sz
+	    };
 	}
     },
     methods: {
 	onMsg(evt) {
 	    switch (evt.Cmd) {
 	    case 'upd':
+		if (!evt.Data) return;
 		if (evt.Data.JumpHist) {
 		    this.sortJHist( evt.Data.JumpHist);
 		    this.jhist =  evt.Data.JumpHist;
+		} else if (evt.Data.Jump) {
+		    this.jhist.unshift(evt.Data.Jump);
 		}
 		break;
 	    default:
@@ -64,10 +73,22 @@ const trvlApp = new Vue({
 		    return rd.valueOf() - ld.valueOf();
 		});
 	    }
+	},
+	updTravelDim() {
+// https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Determining_the_dimensions_of_elements	
+	    let elm = document.getElementById('travel');
+	    this.travel.width = elm.clientWidth - 30;
+	    this.travel.height = window.innerHeight;
+	    elm = document.getElementById('vue-app');
+	    this.travel.height -= elm.offsetHeight + 30;
 	}
     },
     mounted: function() {
 	const app = this;
 	wsMsgCalls.push(this.onMsg);
+	window.addEventListener('resize', () => {
+	    this.updTravelDim();
+	});
+	this.updTravelDim();
     }
 });

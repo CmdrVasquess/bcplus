@@ -25,5 +25,5 @@ utils:
 deps: depgraph.svg
 
 depgraph.svg:
-	graphdot -p example.gprops | dot -Tsvg -o $@
+	go mod graph | modgraphviz | dot -Tsvg -o $@
 #	graphdot -p 'node [shape=box]' | dot -Tsvg -o $@

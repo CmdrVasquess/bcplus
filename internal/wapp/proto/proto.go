@@ -3,6 +3,8 @@ package proto
 import (
 	"net/http"
 
+	"github.com/CmdrVasquess/goedx"
+
 	"git.fractalqb.de/fractalqb/goxic"
 
 	"git.fractalqb.de/fractalqb/c4hgol"
@@ -41,6 +43,6 @@ func (tmpl *template) ServeHTTP(wr http.ResponseWriter, rq *http.Request) {
 	goxic.Must(bt.WriteTo(wr))
 }
 
-func (tmpl *template) Data() interface{} {
+func (tmpl *template) Data(chg goedx.Change) interface{} {
 	return "proto data"
 }

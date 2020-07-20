@@ -49,65 +49,23 @@ main {
 	overflow-y: auto;
 	padding: .5em;
 }
-#tmap-info {
-    display: inline-block;
-    vertical-align: top;
-    border: none;
-}
-#tmap-info tr {
-    border: none;
-    background-color: var(--colBkg);
-}
-#tmap-info th {
-    font-size: 90%;
-    padding: 0 .3em;
-    background-color: var(--colBkg);
-    text-align: left;
-    border: none;
-}
-#tmap-info td {
-    font-size: 90%;
-    padding: 0 .4em;
-    border: none;
-}
-#tmap-info td.tmima {
-	color: var(--colTxtDim);
-}
 #tmap {
 	display: inline-block;
 	vertical-align: top;
-	/*margin: 0 auto;*/
 	border: 2px solid var(--colFgrDim);
-	background-image: url("/s/img/mway.jpg");
-	background-size: 250px 250px;
+	background-image: url("/s/img/trvlmap.jpeg");
+	/*background-size: 100% 100%;*/
+	background-position: right;
 	background-repeat: no-repeat;
 	background-color: black;
 	cursor: pointer;
 }
-#speed-tbl {
-	margin-top: .7em;
-}
-#speed-tbl td.tavg {
-	text-align: center;
-}
-#speed-tbl td.tmima {
-	text-align: center;
-	font-size: 90%;
-	color: var(--colTxtDim);
-}
-#bms h1 {
-	font-size: 150%;
-	margin: 0;
-	margin-top: .3em;
-}
-#bms td { padding: 0 .3em; }
-#bms td:first-child { text-align: center; }
 	</style>
 <!-- <<< style <<< -->
   </head>
   <body>
 <!-- >>> main >>> -->
-    <main>
+    <main id="maaain">
       <div id="jumps">
         <div v-for="(jmp, i) in jhist" :key="i">
 	  <span v-if="i>0" class="diff">↥ {{jumps[i-1].len|f2}} Ly
@@ -119,7 +77,10 @@ main {
         </div>
       </div>
       <div id="travel">
-	<canvas width="640" height="300"></canvas>
+	<canvas id="tmap"
+		:width="tmapDim.quad+tmapDim.bar"
+		:height="tmapDim.quad"
+		v-bind:style="tmapStyle"></canvas>
       </div>
     </main>
     <script src="/s/js/travel.js"></script>

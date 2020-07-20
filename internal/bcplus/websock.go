@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	webLog wsockWr
-	webApp wsockWr
+	webLog        wsockWr
+	webApp        wsockWr
+	currentScreen *wapp.Screen
 )
 
 type wsockWr struct {
@@ -44,6 +45,14 @@ func (wlw *wsockWr) Write(p []byte) (n int, err error) {
 	}
 	return len(p), nil
 }
+
+// func (wlw *wsockWr) WriteJSON(data interface{}) (n int, err error) {
+// 	b, err := json.Marshal(data)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	return wlw.Write(b)
+// }
 
 func (wlw *wsockWr) Close() {
 	wlw.lock.Lock()
@@ -80,8 +89,8 @@ func logWs(wr http.ResponseWriter, rq *http.Request) {
 
 type wsEvent struct {
 	To  string
-	Key string
-	Cmd interface{}
+	Key string      `json:",omitempty"`
+	Cmd interface{} `json:",omitempty"`
 }
 
 func appWs(wr http.ResponseWriter, rq *http.Request) {
@@ -124,25 +133,35 @@ func appWs(wr http.ResponseWriter, rq *http.Request) {
 	}
 }
 
+type wuiEvent struct {
+	Cmd    string
+	Hdr    *wapp.ScreenHdr `json:",omitempty"`
+	Screen string          `json:",omitempty"`
+	Data   interface{}     `json:",omitempty"`
+}
+
+const (
+	wuiCmdUpdate = "upd"
+)
+
 func doWsEvent(evt *wsEvent) {
 	switch evt.To {
 	case "screen":
+		if evt.Cmd != "send-data" {
+			log.Errora("unknown ws screen `command`", evt.Cmd)
+		}
 		scr := wapp.Screens[evt.Key]
 		if scr == nil {
 			log.Errora("unkown `screen` as WS event target", evt.Key)
 		} else {
 			var msg []byte
 			err := App.EDState.Read(func() (err error) {
-				var data struct {
-					Cmd    string
-					Hdr    wapp.ScreenHdr
-					Screen string
-					Data   interface{}
+				data := wuiEvent{
+					Cmd:    wuiCmdUpdate,
+					Screen: evt.Key,
+					Data:   scr.Handler.Data(0),
 				}
-				data.Cmd = "upd"
-				data.Hdr.Set(App.EDState)
-				data.Screen = evt.Key
-				data.Data = scr.Handler.Data()
+				data.Hdr = wapp.NewScreenHdr(App.EDState)
 				msg, err = json.Marshal(&data)
 				return err
 			})
@@ -150,6 +169,7 @@ func doWsEvent(evt *wsEvent) {
 				log.Errore(err)
 			} else {
 				webApp.Write(msg)
+				currentScreen = scr
 			}
 		}
 	default:

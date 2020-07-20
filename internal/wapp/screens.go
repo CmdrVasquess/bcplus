@@ -30,7 +30,9 @@ type ScreenTmpl struct {
 
 type Handler interface {
 	http.Handler
-	Data() interface{}
+	// Request the data for the change chg to be sent to the web UI. When
+	// chg == 0 return the data to initialize the web UI.
+	Data(chg goedx.Change) interface{}
 }
 
 func (st *ScreenTmpl) PrepareScreen(bt *goxic.BounT) {
@@ -110,6 +112,12 @@ type ScreenHdr struct {
 		Cargo int
 	}
 	Loc goedx.JSONLocation
+}
+
+func NewScreenHdr(ed *goedx.EDState) *ScreenHdr {
+	res := new(ScreenHdr)
+	res.Set(ed)
+	return res
 }
 
 func (hdr *ScreenHdr) Set(ed *goedx.EDState) {

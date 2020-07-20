@@ -1,6 +1,7 @@
 package bcplus
 
 import (
+	"encoding/json"
 	"flag"
 	"io"
 	"os"
@@ -93,7 +94,7 @@ func (bcp *bcpApp) Init() {
 	if err != nil {
 		log.Fatale(err)
 	}
-	bcp.AddApp("bcp", goedx.NewAppChannel(bcp, 0))
+	bcp.AddApp("bcp", goedx.NewAppChannel(bcp, 16))
 	file = filepath.Join(bcp.dataDir, l10nDir)
 	bcp.appL10n = l10n.New(file, edState)
 	bcp.AddApp("l10n", bcp.appL10n)
@@ -123,20 +124,41 @@ func (bcp *bcpApp) Shutdown() {
 }
 
 func (bcp *bcpApp) PrepareEDEvent(e events.Event) (token interface{}) {
-	if _, ok := e.(*journal.Shutdown); ok {
-		return true
-	}
-	return nil
+	return true
 }
 
-func (bcp *bcpApp) FinishEDEvent(_ interface{}, e events.Event, _ goedx.Change) {
-	if _, ok := e.(*journal.Shutdown); !ok {
-		log.Errora("unexpected goedx `event`", e)
+func (bcp *bcpApp) FinishEDEvent(_ interface{}, e events.Event, chg goedx.Change) {
+	if _, ok := e.(*journal.Shutdown); ok {
+		err := edState.Save(bcp.stateFile(), "")
+		if err != nil {
+			log.Errore(err)
+		}
+	}
+	if chg == 0 || currentScreen == nil {
 		return
 	}
-	err := edState.Save(bcp.stateFile(), "")
+	const ScreenHdrChg = goedx.ChgCommander | goedx.ChgShip | goedx.ChgLocation |
+		goedx.ChgSystem
+	var msg []byte
+	var err error
+	data := wuiEvent{
+		Cmd:    wuiCmdUpdate,
+		Screen: currentScreen.Key,
+	}
+	err = bcp.EDState.Read(func() error {
+		if chg.Any(ScreenHdrChg) {
+			data.Hdr = wapp.NewScreenHdr(bcp.EDState)
+		}
+		if currentScreen != nil {
+			data.Data = currentScreen.Handler.Data(chg)
+		}
+		msg, err = json.Marshal(&data)
+		return err
+	})
 	if err != nil {
 		log.Errore(err)
+	} else {
+		webApp.Write(msg)
 	}
 }
 

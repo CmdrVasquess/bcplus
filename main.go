@@ -37,6 +37,7 @@ func main() {
 		fVerb := flag.String("log", "", c4hgol.LevelCfgDoc(nil))
 		fLog := flag.String("log-to", "", "Write log also to file")
 		fLogs := flag.Bool("logs", false, "List configurable loggers")
+		fLogSrc := flag.Bool("log-src", false, "Show source location in log message")
 		flag.BoolVar(&fBrowse, "web-browse", false,
 			"Start local web browser")
 		flag.Parse()
@@ -56,6 +57,9 @@ func main() {
 		}
 		bcplus.LogCfg.SetOutput(io.MultiWriter(bcplus.LogWrs...))
 		c4hgol.SetLevel(bcplus.LogCfg, *fVerb, nil)
+		if *fLogSrc {
+			c4hgol.ShowSource(bcplus.LogCfg, true, false)
+		}
 	}
 	if fBrowse {
 		go func() {
