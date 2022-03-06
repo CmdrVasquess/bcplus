@@ -1,3 +1,6 @@
+# Stop the war in Ukraine!
+----
+
 Personal goal reached: Know Go language and have an overview of what pure
 HTML/CSS/JS can do! Web frontend definitley needs better structure.
 
